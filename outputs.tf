@@ -1,10 +1,16 @@
+# ===================================
 # VPC 정보
+# ===================================
+
 output "vpc_id" {
   description = "VPC ID"
   value       = aws_vpc.devths_prod.id
 }
 
+# ===================================
 # EC2 인스턴스 정보
+# ===================================
+
 output "ec2_instance_id" {
   description = "EC2 Instance ID"
   value       = aws_instance.devths_prod_app.id
@@ -20,7 +26,15 @@ output "ec2_private_ip" {
   value       = aws_instance.devths_prod_app.private_ip
 }
 
+output "ec2_name_tag" {
+  description = "EC2 Name Tag"
+  value       = aws_instance.devths_prod_app.tags["Name"]
+}
+
+# ===================================
 # S3 버킷 정보
+# ===================================
+
 output "s3_bucket_name" {
   description = "S3 Bucket Name for deployment artifacts"
   value       = aws_s3_bucket.devths_prod_deploy.id
@@ -31,42 +45,46 @@ output "s3_bucket_arn" {
   value       = aws_s3_bucket.devths_prod_deploy.arn
 }
 
+# ===================================
 # CodeDeploy 정보
-output "codedeploy_app_name" {
-  description = "CodeDeploy Application Name"
-  value       = aws_codedeploy_app.devths_prod_app.name
+# ===================================
+
+output "codedeploy_fe_deployment_group" {
+  description = "Frontend CodeDeploy Deployment Group Name"
+  value       = aws_codedeploy_deployment_group.fe_prod_group.deployment_group_name
 }
 
-output "codedeploy_deployment_group_name" {
-  description = "CodeDeploy Deployment Group Name"
-  value       = aws_codedeploy_deployment_group.devths_prod_deployment_group.deployment_group_name
+output "codedeploy_be_deployment_group" {
+  description = "Backend CodeDeploy Deployment Group Name"
+  value       = aws_codedeploy_deployment_group.be_prod_group.deployment_group_name
 }
 
+output "codedeploy_ai_deployment_group" {
+  description = "AI CodeDeploy Deployment Group Name"
+  value       = aws_codedeploy_deployment_group.ai_prod_group.deployment_group_name
+}
+
+# ===================================
 # IAM Role 정보
+# ===================================
+
 output "ec2_iam_role_arn" {
   description = "EC2 IAM Role ARN"
-  value       = aws_iam_role.devths_prod_ec2_role.arn
+  value       = aws_iam_role.ec2_prod.arn
+}
+
+output "ec2_iam_role_name" {
+  description = "EC2 IAM Role Name"
+  value       = aws_iam_role.ec2_prod.name
 }
 
 output "codedeploy_iam_role_arn" {
   description = "CodeDeploy IAM Role ARN"
-  value       = aws_iam_role.devths_prod_codedeploy_role.arn
+  value       = aws_iam_role.codedeploy_prod.arn
 }
 
-# SSH 접속 명령어 (참고용)
-output "ssh_command" {
-  description = "SSH command to connect to EC2 instance"
-  value       = "ssh -i <your-key.pem> ec2-user@${aws_eip.devths_prod_app_eip.public_ip}"
+output "codedeploy_iam_role_name" {
+  description = "CodeDeploy IAM Role Name"
+  value       = aws_iam_role.codedeploy_prod.name
 }
 
-# CodeDeploy 배포 명령어 예시 (참고용)
-output "deploy_command_example" {
-  description = "Example CodeDeploy deployment command"
-  value       = <<-EOT
-    aws deploy create-deployment \
-      --application-name ${aws_codedeploy_app.devths_prod_app.name} \
-      --deployment-group-name ${aws_codedeploy_deployment_group.devths_prod_deployment_group.deployment_group_name} \
-      --s3-location bucket=${aws_s3_bucket.devths_prod_deploy.id},key=your-app.zip,bundleType=zip \
-      --region ap-northeast-2
-  EOT
-}
