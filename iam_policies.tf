@@ -85,8 +85,8 @@ resource "aws_iam_policy" "ec2_parameter_store" {
 
 # SSM Audit 로그 S3 저장
 resource "aws_iam_policy" "ec2_log_s3" {
-  name        = "EC2-LogS3"
-  description = "EC2-LogS3"
+  name        = "EC2-LogS3-Prod"
+  description = "EC2-LogS3-Prod"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -98,13 +98,14 @@ resource "aws_iam_policy" "ec2_log_s3" {
           "s3:PutObject",
           "s3:GetEncryptionConfiguration"
         ]
-        Resource = "arn:aws:s3:::devths-ssm-log/*"
+        Resource = [
+          "arn:aws:s3:::devths-ssm-log-prod/*"]
       },
       {
         Sid    = "S3BucketCheck"
         Effect = "Allow"
         Action = "s3:GetBucketLocation"
-        Resource = "arn:aws:s3:::devths-ssm-log"
+        Resource = "arn:aws:s3:::devths-ssm-log-prod"
       }
     ]
   })
@@ -112,15 +113,15 @@ resource "aws_iam_policy" "ec2_log_s3" {
   tags = merge(
     var.common_tags,
     {
-      Name = "EC2-LogS3"
+      Name = "EC2-LogS3-Prod"
     }
   )
 }
 
 # SSM Audit Logging
 resource "aws_iam_policy" "ec2_audit_ssm" {
-  name        = "EC2-Audit-SSM"
-  description = "EC2-Audit-SSM"
+  name        = "EC2-Audit-SSM-Prod"
+  description = "EC2-Audit-SSM-Prod"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -136,7 +137,7 @@ resource "aws_iam_policy" "ec2_audit_ssm" {
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ]
-        Resource = "arn:aws:logs:ap-northeast-2:015932244909:log-group:SSMSessionMangerLogGroup:*"
+        Resource = "arn:aws:logs:ap-northeast-2:015932244909:log-group:SSMSessionMangerLogGroup-Prod:*"
       }
     ]
   })
@@ -144,7 +145,7 @@ resource "aws_iam_policy" "ec2_audit_ssm" {
   tags = merge(
     var.common_tags,
     {
-      Name = "EC2-Audit-SSM"
+      Name = "EC2-Audit-SSM-Prod"
     }
   )
 }

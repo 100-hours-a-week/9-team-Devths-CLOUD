@@ -70,54 +70,6 @@ resource "aws_s3_bucket_lifecycle_configuration" "devths_prod_deploy_lifecycle" 
 # S3 버킷 - SSM Session Manager 로그 저장용
 # ===================================
 
-# 기존 SSM 로그 버킷 (devths-ssm-log)
-resource "aws_s3_bucket" "devths_ssm_log_legacy" {
-  bucket = "devths-ssm-log"
-
-  tags = {
-    Name        = "devths-ssm-log"
-    Environment = "legacy"
-    Purpose     = "SSM Session Manager logs"
-  }
-}
-
-# S3 버킷 퍼블릭 액세스 차단 (legacy)
-resource "aws_s3_bucket_public_access_block" "devths_ssm_log_legacy_public_access" {
-  bucket = aws_s3_bucket.devths_ssm_log_legacy.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-# S3 버킷 암호화 설정 (legacy)
-resource "aws_s3_bucket_server_side_encryption_configuration" "devths_ssm_log_legacy_encryption" {
-  bucket = aws_s3_bucket.devths_ssm_log_legacy.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-# S3 버킷 라이프사이클 정책 - 60일 후 자동 삭제 (legacy)
-resource "aws_s3_bucket_lifecycle_configuration" "devths_ssm_log_legacy_lifecycle" {
-  bucket = aws_s3_bucket.devths_ssm_log_legacy.id
-
-  rule {
-    id     = "delete_old_ssm_logs"
-    status = "Enabled"
-
-    filter {}
-
-    expiration {
-      days = 60
-    }
-  }
-}
-
 # Production SSM 로그 버킷 (devths-ssm-log-prod)
 resource "aws_s3_bucket" "devths_ssm_log" {
   bucket = "devths-ssm-log-prod"

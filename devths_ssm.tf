@@ -2,19 +2,6 @@
 # SSM Session Manager 설정
 # ===================================
 
-# CloudWatch Log Group for SSM Sessions (Legacy)
-resource "aws_cloudwatch_log_group" "ssm_session_logs_legacy" {
-  name              = "SSMSessionMangerLogGroup"
-  retention_in_days = 60 # 2개월 후 자동 삭제
-
-  tags = merge(
-    var.common_tags,
-    {
-      Name = "SSMSessionMangerLogGroup"
-    }
-  )
-}
-
 # CloudWatch Log Group for SSM Sessions (Production)
 resource "aws_cloudwatch_log_group" "ssm_session_logs" {
   name              = "SSMSessionMangerLogGroup-Prod"
