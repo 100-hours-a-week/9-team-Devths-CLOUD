@@ -82,7 +82,7 @@ resource "aws_cloudwatch_log_metric_filter" "dangerous_commands" {
   pattern = "?\"rm -rf\" ?\"chmod 777\" ?\"mkfs\" ?\"iptables -F\" ?\"ufw disable\" ?\"bash -i\" ?\"nc -e\" ?\"base64 -d\" ?\"systemctl stop\" ?\"userdel\""
 
   metric_transformation {
-    name          = "DangerousCommandCount"
+    name          = "DangerousCommandCount-Prod"
     namespace     = "Security/Logs"
     value         = "1"
     default_value = 0
@@ -96,7 +96,7 @@ resource "aws_cloudwatch_metric_alarm" "dangerous_command_alert" {
   alarm_description   = "[CRITICAL] Dangerous command detected in SSM session"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
-  metric_name         = "DangerousCommandCount"
+  metric_name         = "DangerousCommandCount-Prod"
   namespace           = "Security/Logs"
   period              = 60 # 1분
   statistic           = "Sum"
