@@ -64,9 +64,9 @@ resource "aws_ssm_document" "session_manager_prefs" {
 # CloudWatch Monitoring & Alarms
 # ===================================
 
-# 기존 Discord SNS 토픽 참조
+# 기존 Discord-Prod SNS 토픽 참조
 data "aws_sns_topic" "discord" {
-  name = "Discord"
+  name = "Discord-Prod"
 }
 
 # ===================================
@@ -75,7 +75,7 @@ data "aws_sns_topic" "discord" {
 
 # CloudWatch Metric Filter - 위험한 명령어 실행 감지
 resource "aws_cloudwatch_log_metric_filter" "dangerous_commands" {
-  name           = "DangerousCommandFilter"
+  name           = "DangerousCommandCount-Prod"
   log_group_name = aws_cloudwatch_log_group.ssm_session_logs.name
 
   # 위험한 명령어 패턴 감지 (간단한 텍스트 매칭)
