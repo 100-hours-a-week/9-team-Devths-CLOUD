@@ -99,13 +99,13 @@ resource "aws_iam_policy" "ec2_log_s3" {
           "s3:GetEncryptionConfiguration"
         ]
         Resource = [
-          "arn:aws:s3:::devths-ssm-log-prod/*"]
+          "arn:aws:s3:::devths-ssm-log/*"]
       },
       {
         Sid    = "S3BucketCheck"
         Effect = "Allow"
         Action = "s3:GetBucketLocation"
-        Resource = "arn:aws:s3:::devths-ssm-log-prod"
+        Resource = "arn:aws:s3:::devths-ssm-log"
       }
     ]
   })
@@ -137,7 +137,7 @@ resource "aws_iam_policy" "ec2_audit_ssm" {
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ]
-        Resource = "arn:aws:logs:ap-northeast-2:015932244909:log-group:SSMSessionMangerLogGroup:*"
+        Resource = "arn:aws:logs:ap-northeast-2:015932244909:log-group:SSMSessionManagerLogGroup:*"
       }
     ]
   })

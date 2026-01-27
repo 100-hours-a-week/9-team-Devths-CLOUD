@@ -4,13 +4,13 @@
 
 # CloudWatch Log Group for SSM Sessions (Production)
 resource "aws_cloudwatch_log_group" "ssm_session_logs" {
-  name              = "SSMSessionMangerLogGroup"
+  name              = "SSMSessionManagerLogGroup"
   retention_in_days = 14 # 2주 후 자동 삭제
 
   tags = merge(
     var.common_tags,
     {
-      Name = "SSMSessionMangerLogGroup"
+      Name = "SSMSessionManagerLogGroup"
     }
   )
 }
