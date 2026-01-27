@@ -21,7 +21,7 @@ resource "aws_instance" "devths_prod_app" {
   key_name               = var.key_name
   subnet_id              = aws_subnet.devths_prod_public_01.id
   vpc_security_group_ids = [aws_security_group.devths_prod_ec2.id]
-  iam_instance_profile   = aws_iam_instance_profile.devths_prod_ec2_profile.name
+  iam_instance_profile   = aws_iam_instance_profile.ec2_prod.name
 
   user_data = <<-EOF
               #!/bin/bash
