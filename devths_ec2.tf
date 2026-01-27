@@ -23,27 +23,20 @@ resource "aws_instance" "devths_prod_app" {
   vpc_security_group_ids = [aws_security_group.devths_prod_ec2.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2_prod.name
 
-  user_data = <<-EOF
-              #!/bin/bash
-              set -e
+  root_block_device {
+    volume_size           = 30     # 크기 (GB)
+    volume_type           = "gp3"  # 최신 가성비 타입 gp3 권장
+    iops                  = 3000   # gp3 기본 성능
+    throughput            = 125    # gp3 기본 성능
+    delete_on_termination = true   # 인스턴스 삭제 시 볼륨도 삭제 여부
+    encrypted             = true   # 암호화 여부
 
-              # 시스템 업데이트
-              apt-get update
-              apt-get upgrade -y
+    tags = {
+      Name = "devths-v1-prod-root-volume"
+    }
+  }
 
-              # 필수 패키지 설치
-              apt-get install -y ruby-full wget
-
-              # CodeDeploy 에이전트 설치
-              cd /home/ubuntu
-              wget https://aws-codedeploy-ap-northeast-2.s3.ap-northeast-2.amazonaws.com/latest/install
-              chmod +x ./install
-              ./install auto
-
-              # CodeDeploy 에이전트 시작 및 활성화
-              systemctl start codedeploy-agent
-              systemctl enable codedeploy-agent
-              EOF
+  user_data = file("user_data.sh")
 
   tags = {
     Name        = "devths-v1-prod"
