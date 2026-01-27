@@ -5,7 +5,7 @@
 # 운영용 S3 아티팩트 접근
 resource "aws_iam_policy" "s3_artifact_access" {
   name        = "S3-Access-Devths-artifact-prod"
-  description = "Access to CodeDeploy artifact S3 bucket"
+  description = "S3-Access-Devths-artifact-prod"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -46,7 +46,7 @@ resource "aws_iam_policy" "s3_artifact_access" {
 # Parameter Store 접근
 resource "aws_iam_policy" "ec2_parameter_store" {
   name        = "EC2-ParameterStore-Prod"
-  description = "Access to Parameter Store for application configuration"
+  description = "EC2-ParameterStore-Prod"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -86,7 +86,7 @@ resource "aws_iam_policy" "ec2_parameter_store" {
 # SSM Audit 로그 S3 저장
 resource "aws_iam_policy" "ec2_log_s3" {
   name        = "EC2-LogS3"
-  description = "Allow SSM to write logs to S3"
+  description = "EC2-LogS3"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -120,7 +120,7 @@ resource "aws_iam_policy" "ec2_log_s3" {
 # SSM Audit Logging
 resource "aws_iam_policy" "ec2_audit_ssm" {
   name        = "EC2-Audit-SSM"
-  description = "SSM session audit logging to CloudWatch"
+  description = "EC2-Audit-SSM"
 
   policy = jsonencode({
     Version = "2012-10-17"

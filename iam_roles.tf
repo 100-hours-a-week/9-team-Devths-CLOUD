@@ -97,7 +97,7 @@ resource "aws_iam_role" "codedeploy_prod" {
 # CodeDeploy 역할에 연결할 AWS 관리형 정책
 resource "aws_iam_role_policy_attachment" "codedeploy_managed" {
   role       = aws_iam_role.codedeploy_prod.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSCodeDeployRole"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
 }
 
 # CodeDeploy 역할에 연결할 커스텀 정책
