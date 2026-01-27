@@ -179,10 +179,13 @@ resource "aws_iam_policy" "github_actions_deploy" {
           "codedeploy:CreateDeployment",
           "codedeploy:RegisterApplicationRevision"
         ]
-        Resource = [
-          "arn:aws:codedeploy:ap-northeast-2:015932244909:application:Devhts-V1-FE",
-          "arn:aws:codedeploy:ap-northeast-2:015932244909:application:Devhts-V1-BE",
-          "arn:aws:codedeploy:ap-northeast-2:015932244909:application:Devhts-V1-AI"
+        Resource: [
+        "arn:aws:codedeploy:ap-northeast-2:015932244909:application:Devhts-V1-FE",
+        "arn:aws:codedeploy:ap-northeast-2:015932244909:deploymentgroup:Devhts-V1-FE/*",
+        "arn:aws:codedeploy:ap-northeast-2:015932244909:application:Devhts-V1-BE",
+        "arn:aws:codedeploy:ap-northeast-2:015932244909:deploymentgroup:Devhts-V1-BE/*",
+        "arn:aws:codedeploy:ap-northeast-2:015932244909:application:Devhts-V1-AI",
+        "arn:aws:codedeploy:ap-northeast-2:015932244909:deploymentgroup:Devhts-V1-AI/*"
         ]
       }
     ]

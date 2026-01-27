@@ -39,27 +39,31 @@ resource "aws_iam_role_policy_attachment" "ec2_ssm_managed" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+# 코드 디플로이
 resource "aws_iam_role_policy_attachment" "ec2_codedeploy" {
   role       = aws_iam_role.ec2_prod.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
 }
 
-# EC2 역할에 연결할 커스텀 정책
+# S3 아티팩트에 접근해서 다운받는 형식
 resource "aws_iam_role_policy_attachment" "ec2_s3_artifact" {
   role       = aws_iam_role.ec2_prod.name
   policy_arn = aws_iam_policy.s3_artifact_access.arn
 }
 
+# 파라미터 스토어
 resource "aws_iam_role_policy_attachment" "ec2_parameter_store" {
   role       = aws_iam_role.ec2_prod.name
   policy_arn = aws_iam_policy.ec2_parameter_store.arn
 }
 
+# 로그 접근
 resource "aws_iam_role_policy_attachment" "ec2_log_s3" {
   role       = aws_iam_role.ec2_prod.name
   policy_arn = aws_iam_policy.ec2_log_s3.arn
 }
 
+# SSM
 resource "aws_iam_role_policy_attachment" "ec2_audit_ssm" {
   role       = aws_iam_role.ec2_prod.name
   policy_arn = aws_iam_policy.ec2_audit_ssm.arn
@@ -102,13 +106,6 @@ resource "aws_iam_role_policy_attachment" "codedeploy_managed" {
 
 # CodeDeploy 역할에 연결할 아티팩트 S3 정책
 resource "aws_iam_role_policy_attachment" "s3_artifact_access" {
-  role       = aws_iam_role.codedeploy_prod.name
-  policy_arn = aws_iam_policy.s3_artifact_access.arn
-}
-
-
-# CodeDeploy 역할에 연결할 커스텀 정책
-resource "aws_iam_role_policy_attachment" "github_actions_deploy" {
   role       = aws_iam_role.codedeploy_prod.name
   policy_arn = aws_iam_policy.s3_artifact_access.arn
 }
