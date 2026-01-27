@@ -64,6 +64,15 @@ resource "aws_subnet" "devths_prod_private_02" {
   }
 }
 
+# 기본 라우팅 테이블 관리 (이름 붙이기)
+resource "aws_default_route_table" "devths_prod_default" {
+  default_route_table_id = aws_vpc.devths_prod.default_route_table_id
+
+  tags = {
+    Name = "devths_v1_prod_private_rt"
+  }
+}
+
 # 퍼블릭 라우트 테이블
 resource "aws_route_table" "devths_prod_public" {
   vpc_id = aws_vpc.devths_prod.id

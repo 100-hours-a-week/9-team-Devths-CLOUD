@@ -85,8 +85,8 @@ resource "aws_iam_policy" "ec2_parameter_store" {
 
 # SSM Audit 로그 S3 저장
 resource "aws_iam_policy" "ec2_log_s3" {
-  name        = "EC2-LogS3-Prod"
-  description = "EC2-LogS3-Prod"
+  name        = "EC2-LogS3"
+  description = "EC2-LogS3"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -113,15 +113,15 @@ resource "aws_iam_policy" "ec2_log_s3" {
   tags = merge(
     var.common_tags,
     {
-      Name = "EC2-LogS3-Prod"
+      Name = "EC2-LogS3"
     }
   )
 }
 
 # SSM Audit Logging
 resource "aws_iam_policy" "ec2_audit_ssm" {
-  name        = "EC2-Audit-SSM-Prod"
-  description = "EC2-Audit-SSM-Prod"
+  name        = "EC2-Audit-SSM"
+  description = "EC2-Audit-SSM"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -137,7 +137,7 @@ resource "aws_iam_policy" "ec2_audit_ssm" {
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ]
-        Resource = "arn:aws:logs:ap-northeast-2:015932244909:log-group:SSMSessionMangerLogGroup-Prod:*"
+        Resource = "arn:aws:logs:ap-northeast-2:015932244909:log-group:SSMSessionMangerLogGroup:*"
       }
     ]
   })
@@ -145,7 +145,7 @@ resource "aws_iam_policy" "ec2_audit_ssm" {
   tags = merge(
     var.common_tags,
     {
-      Name = "EC2-Audit-SSM-Prod"
+      Name = "EC2-Audit-SSM"
     }
   )
 }
@@ -169,7 +169,8 @@ resource "aws_iam_policy" "github_actions_deploy" {
           "codedeploy:GetDeploymentConfig",
           "codedeploy:GetDeploymentGroup",
           "codedeploy:ListApplications",
-          "codedeploy:ListDeployments"
+          "codedeploy:ListDeployments",
+          "codedeploy:ListDeploymentInstances"
         ]
         Resource = "*"
       },
@@ -180,7 +181,7 @@ resource "aws_iam_policy" "github_actions_deploy" {
           "codedeploy:CreateDeployment",
           "codedeploy:RegisterApplicationRevision"
         ]
-        Resource: [
+        Resource = [
         "arn:aws:codedeploy:ap-northeast-2:015932244909:application:Devhts-V1-FE",
         "arn:aws:codedeploy:ap-northeast-2:015932244909:deploymentgroup:Devhts-V1-FE/*",
         "arn:aws:codedeploy:ap-northeast-2:015932244909:application:Devhts-V1-BE",
