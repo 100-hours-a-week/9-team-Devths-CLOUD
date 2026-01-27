@@ -47,6 +47,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "devths_prod_deploy_lifecycle" 
     id     = "delete_old_versions"
     status = "Enabled"
 
+    filter {}
+
     noncurrent_version_expiration {
       noncurrent_days = 90
     }
@@ -55,6 +57,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "devths_prod_deploy_lifecycle" 
   rule {
     id     = "delete_old_artifacts"
     status = "Enabled"
+
+    filter {}
 
     expiration {
       days = 180

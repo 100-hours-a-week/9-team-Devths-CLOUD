@@ -52,6 +52,7 @@ variable "instance_type" {
 variable "key_name" {
   description = "SSH key pair name for EC2 instances"
   type        = string
+  default     = "devths-prod"
 }
 
 variable "ssh_allowed_cidr" {
