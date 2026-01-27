@@ -36,27 +36,7 @@ resource "aws_instance" "devths_prod_app" {
     }
   }
 
-  user_data = <<-EOF
-              #!/bin/bash
-              set -e
-
-              # 시스템 업데이트
-              apt-get update
-              apt-get upgrade -y
-
-              # 필수 패키지 설치
-              apt-get install -y ruby-full wget
-
-              # CodeDeploy 에이전트 설치
-              cd /home/ubuntu
-              wget https://aws-codedeploy-ap-northeast-2.s3.ap-northeast-2.amazonaws.com/latest/install
-              chmod +x ./install
-              ./install auto
-
-              # CodeDeploy 에이전트 시작 및 활성화
-              systemctl start codedeploy-agent
-              systemctl enable codedeploy-agent
-              EOF
+  user_data = file("user_data.sh")
 
   tags = {
     Name        = "devths-v1-prod"
