@@ -5,7 +5,7 @@ resource "aws_vpc" "devths_prod" {
   enable_dns_support   = true
 
   tags = {
-    Name = "devths_prod"
+    Name = "devths_v1_prod"
   }
 }
 
@@ -14,7 +14,7 @@ resource "aws_internet_gateway" "devths_prod_igw" {
   vpc_id = aws_vpc.devths_prod.id
 
   tags = {
-    Name = "devths_prod_igw"
+    Name = "devths_v1_prod_igw"
   }
 }
 
@@ -26,7 +26,7 @@ resource "aws_subnet" "devths_prod_public_01" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "devths_prod_public_01"
+    Name = "devths_v1_prod_public_01"
   }
 }
 
@@ -84,17 +84,19 @@ resource "aws_route_table_association" "devths_prod_public_01" {
   route_table_id = aws_route_table.devths_prod_public.id
 }
 
+# 퍼블릭 서브넷 라우트 테이블 연결
 resource "aws_route_table_association" "devths_prod_public_02" {
   subnet_id      = aws_subnet.devths_prod_public_02.id
   route_table_id = aws_route_table.devths_prod_public.id
 }
 
-# Security Group - EC2 인스턴스용
+# Security Group
 resource "aws_security_group" "devths_prod_ec2" {
-  name        = "devths_prod_ec2_sg"
+  name        = "devths-v1-prod"
   description = "Security group for EC2 instances"
   vpc_id      = aws_vpc.devths_prod.id
 
+  # HTTP
   ingress {
     description = "HTTP"
     from_port   = 80
@@ -103,6 +105,7 @@ resource "aws_security_group" "devths_prod_ec2" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # HTTPS
   ingress {
     description = "HTTPS"
     from_port   = 443
@@ -111,14 +114,7 @@ resource "aws_security_group" "devths_prod_ec2" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  ingress {
-    description = "SSH"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
+  # 모든 아웃바운드 트래픽 허용
   egress {
     description = "All outbound traffic"
     from_port   = 0
@@ -128,6 +124,6 @@ resource "aws_security_group" "devths_prod_ec2" {
   }
 
   tags = {
-    Name = "devths_prod_ec2_sg"
+    Name = "devths-v1-prod"
   }
 }

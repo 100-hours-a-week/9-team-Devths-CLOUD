@@ -1,11 +1,11 @@
-# 최신 Amazon Linux 2 AMI 가져오기
-data "aws_ami" "amazon_linux_2" {
+# 최신 Ubuntu 22.04 LTS AMI 가져오기
+data "aws_ami" "ubuntu_22_04" {
   most_recent = true
-  owners      = ["amazon"]
+  owners      = ["099720109477"] # Canonical
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
   }
 
   filter {
@@ -16,28 +16,33 @@ data "aws_ami" "amazon_linux_2" {
 
 # EC2 인스턴스
 resource "aws_instance" "devths_prod_app" {
-  ami                    = data.aws_ami.amazon_linux_2.id
-  instance_type          = "t3.large"
+  ami                    = data.aws_ami.ubuntu_22_04.id
+  instance_type          = var.instance_type
+  key_name               = var.key_name
   subnet_id              = aws_subnet.devths_prod_public_01.id
   vpc_security_group_ids = [aws_security_group.devths_prod_ec2.id]
   iam_instance_profile   = aws_iam_instance_profile.devths_prod_ec2_profile.name
 
   user_data = <<-EOF
               #!/bin/bash
-              yum update -y
-              yum install -y ruby wget
+              set -e
+
+              # 시스템 업데이트
+              apt-get update
+              apt-get upgrade -y
+
+              # 필수 패키지 설치
+              apt-get install -y ruby-full wget
 
               # CodeDeploy 에이전트 설치
-              cd /home/ec2-user
+              cd /home/ubuntu
               wget https://aws-codedeploy-ap-northeast-2.s3.ap-northeast-2.amazonaws.com/latest/install
               chmod +x ./install
               ./install auto
 
-              # CodeDeploy 에이전트 시작
-              service codedeploy-agent start
-
-              # 시스템 부팅 시 자동 시작 설정
-              chkconfig codedeploy-agent on
+              # CodeDeploy 에이전트 시작 및 활성화
+              systemctl start codedeploy-agent
+              systemctl enable codedeploy-agent
               EOF
 
   tags = {

@@ -46,7 +46,12 @@ variable "availability_zones" {
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
-  default     = "t3.micro"
+  default     = "t3.large"
+}
+
+variable "key_name" {
+  description = "SSH key pair name for EC2 instances"
+  type        = string
 }
 
 variable "ssh_allowed_cidr" {
@@ -80,6 +85,13 @@ variable "deployment_config_name" {
   type        = string
   default     = "CodeDeployDefault.OneAtATime"
   # 다른 옵션: CodeDeployDefault.HalfAtATime, CodeDeployDefault.AllAtOnce
+}
+
+# Route53 변수
+variable "domain_name" {
+  description = "Domain name for Route53 records"
+  type        = string
+  default     = "devths.com"
 }
 
 # Tags
