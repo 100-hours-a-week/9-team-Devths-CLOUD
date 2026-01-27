@@ -46,7 +46,7 @@ resource "aws_instance" "devths_prod_app" {
               EOF
 
   tags = {
-    Name        = "devths_prod_app"
+    Name        = "devths-v1-prod"
     Environment = "production"
     Project     = "devths"
   }
@@ -58,6 +58,6 @@ resource "aws_eip" "devths_prod_app_eip" {
   domain   = "vpc"
 
   tags = {
-    Name = "devths_prod_app_eip"
+    Name = "devths-v1-prod-eip"
   }
 }
