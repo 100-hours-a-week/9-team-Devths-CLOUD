@@ -184,26 +184,6 @@ resource "aws_iam_policy" "github_actions_deploy" {
           "arn:aws:codedeploy:ap-northeast-2:015932244909:application:Devhts-V1-BE",
           "arn:aws:codedeploy:ap-northeast-2:015932244909:application:Devhts-V1-AI"
         ]
-      },
-      {
-        Sid    = "S3ArtifactAccess"
-        Effect = "Allow"
-        Action = [
-          "s3:PutObject",
-          "s3:PutObjectAcl",
-          "s3:GetObject",
-          "s3:GetObjectVersion"
-        ]
-        Resource = "${aws_s3_bucket.devths_prod_deploy.arn}/*"
-      },
-      {
-        Sid    = "S3BucketAccess"
-        Effect = "Allow"
-        Action = [
-          "s3:ListBucket",
-          "s3:GetBucketLocation"
-        ]
-        Resource = aws_s3_bucket.devths_prod_deploy.arn
       }
     ]
   })

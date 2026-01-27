@@ -100,8 +100,15 @@ resource "aws_iam_role_policy_attachment" "codedeploy_managed" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
 }
 
+# CodeDeploy 역할에 연결할 아티팩트 S3 정책
+resource "aws_iam_role_policy_attachment" "s3_artifact_access" {
+  role       = aws_iam_role.codedeploy_prod.name
+  policy_arn = aws_iam_policy.s3_artifact_access.arn
+}
+
+
 # CodeDeploy 역할에 연결할 커스텀 정책
-resource "aws_iam_role_policy_attachment" "codedeploy_s3_artifact" {
+resource "aws_iam_role_policy_attachment" "github_actions_deploy" {
   role       = aws_iam_role.codedeploy_prod.name
   policy_arn = aws_iam_policy.s3_artifact_access.arn
 }
