@@ -23,6 +23,19 @@ resource "aws_instance" "devths_prod_app" {
   vpc_security_group_ids = [aws_security_group.devths_prod_ec2.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2_prod.name
 
+  root_block_device {
+    volume_size           = 30     # 크기 (GB)
+    volume_type           = "gp3"  # 최신 가성비 타입 gp3 권장
+    iops                  = 3000   # gp3 기본 성능
+    throughput            = 125    # gp3 기본 성능
+    delete_on_termination = true   # 인스턴스 삭제 시 볼륨도 삭제 여부
+    encrypted             = true   # 암호화 여부
+
+    tags = {
+      Name = "devths-v1-prod-root-volume"
+    }
+  }
+
   user_data = <<-EOF
               #!/bin/bash
               set -e
