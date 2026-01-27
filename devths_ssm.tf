@@ -114,3 +114,68 @@ resource "aws_cloudwatch_metric_alarm" "dangerous_command_alert" {
     }
   )
 }
+
+# ===================================
+# EC2 리소스 모니터링
+# ===================================
+
+# CloudWatch Alarm - CPU 사용률 60% 이상
+resource "aws_cloudwatch_metric_alarm" "cpu_60_alert" {
+  alarm_name          = "CPU-60-Alert-Prod"
+  alarm_description   = "[WARNING] EC2 CPU utilization is above 60%"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 300 # 5분
+  statistic           = "Average"
+  threshold           = 60
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    InstanceId = aws_instance.devths_prod_app.id
+  }
+
+  alarm_actions = [data.aws_sns_topic.discord.arn]
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name     = "CPU-60-Alert-Prod"
+      Severity = "Medium"
+      Type     = "Performance"
+    }
+  )
+}
+
+# CloudWatch Alarm - EBS 디스크 사용률 80% 이상 (남은 용량 20% 미만)
+resource "aws_cloudwatch_metric_alarm" "ebs_under_20_alert" {
+  alarm_name          = "EBS-Under-20-Prod"
+  alarm_description   = "[WARNING] EBS disk usage is above 80% (less than 20% free)"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 2
+  metric_name         = "disk_used_percent"
+  namespace           = "CWAgent"
+  period              = 300 # 5분
+  statistic           = "Average"
+  threshold           = 80
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    InstanceId = aws_instance.devths_prod_app.id
+    path       = "/"
+    device     = "nvme0n1p1"
+    fstype     = "ext4"
+  }
+
+  alarm_actions = [data.aws_sns_topic.discord.arn]
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name     = "EBS-Under-20-Prod"
+      Severity = "Medium"
+      Type     = "Storage"
+    }
+  )
+}
