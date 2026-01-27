@@ -38,7 +38,7 @@ resource "aws_subnet" "devths_prod_public_02" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "devths_prod_public_02"
+    Name = "devths_v1_prod_public_02"
   }
 }
 
@@ -49,7 +49,7 @@ resource "aws_subnet" "devths_prod_private_01" {
   availability_zone = "ap-northeast-2a"
 
   tags = {
-    Name = "devths_prod_private_01"
+    Name = "devths_v1_prod_private_01"
   }
 }
 
@@ -60,7 +60,7 @@ resource "aws_subnet" "devths_prod_private_02" {
   availability_zone = "ap-northeast-2c"
 
   tags = {
-    Name = "devths_prod_private_02"
+    Name = "devths_v1_prod_private_02"
   }
 }
 
@@ -74,7 +74,7 @@ resource "aws_route_table" "devths_prod_public" {
   }
 
   tags = {
-    Name = "devths_prod_public_rt"
+    Name = "devths_v1_prod_public_rt"
   }
 }
 
