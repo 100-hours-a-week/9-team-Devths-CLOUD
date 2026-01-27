@@ -1,0 +1,38 @@
+# Terraform 관련 파일
+*.tfstate
+*.tfstate.*
+*.tfvars
+!terraform.tfvars.example
+.terraform/
+.terraform.lock.hcl
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# CLI 설정 파일
+.terraformrc
+terraform.rc
+
+# AWS 자격증명
+*.pem
+*.key
+credentials
+config
+
+# IDE 설정
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS 파일
+.DS_Store
+Thumbs.db
+
+# 백업 파일
+*.backup
+*.bak
