@@ -10,7 +10,9 @@ echo "=========================================="
 echo "[1/12] Updating system packages..."
 apt-get update -y
 apt-get upgrade -y
-apt-get install -y software-properties-common curl wget gnupg2 lsb-release awscli jq
+apt-get install -y software-properties-common curl wget gnupg2 lsb-release awscli jq \
+    build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev \
+    libsqlite3-dev libncursesw5-dev libffi-dev liblzma-dev tk-dev
 
 # 2. Java 21 설치
 echo "[2/12] Installing Java 21..."
@@ -323,10 +325,17 @@ EOF
 # 11. CodeDeploy 에이전트 설치
 # -----------------------------------------------------------
 echo "[9/12] Installing CodeDeploy Agent..."
+# 1. 시스템 업데이트 및 필수 패키지(Ruby) 설치
+sudo apt update
+sudo apt install ruby-full wget -y
+
+# 2. 설치 파일 다운로드 (서울 리전 기준)
 cd /home/ubuntu
 wget https://aws-codedeploy-ap-northeast-2.s3.ap-northeast-2.amazonaws.com/latest/install
+
+# 3. 설치 권한 부여 및 실행
 chmod +x ./install
-./install auto
+sudo ./install auto
 
 # CodeDeploy 에이전트 시작 및 활성화
 systemctl start codedeploy-agent
