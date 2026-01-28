@@ -95,8 +95,95 @@ systemctl enable nginx
 systemctl start nginx
 nginx -v
 
+# 6. Certbot 설치 (Let's Encrypt SSL 인증서용)
+echo "[7.5/11] Installing Certbot..."
+apt-get install -y certbot python3-certbot-nginx
+
+# 7. Nginx 설정 파일 생성
+echo "[7.6/11] Configuring Nginx server blocks..."
+
+# 기본 nginx 설정 비활성화
+rm -f /etc/nginx/sites-enabled/default
+
+# API (Spring Boot) - api.devths.com
+cat > /etc/nginx/sites-available/api.devths.com << 'EOF'
+server {
+    listen 80;
+    server_name api.devths.com;
+
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+EOF
+
+# Frontend (Next.js) - www.devths.com
+cat > /etc/nginx/sites-available/www.devths.com << 'EOF'
+server {
+    listen 80;
+    server_name www.devths.com devths.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+EOF
+
+# AI (FastAPI) - ai.devths.com
+cat > /etc/nginx/sites-available/ai.devths.com << 'EOF'
+server {
+    listen 80;
+    server_name ai.devths.com;
+
+    location / {
+        proxy_pass http://localhost:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+EOF
+
+# 심볼릭 링크 생성 (sites-enabled로 활성화)
+echo "[7.7/11] Creating symbolic links..."
+ln -sf /etc/nginx/sites-available/api.devths.com /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/www.devths.com /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/ai.devths.com /etc/nginx/sites-enabled/
+
+# Nginx 설정 테스트 및 재시작
+echo "[7.8/11] Testing Nginx configuration..."
+nginx -t
+systemctl reload nginx
+
+# SSL 인증서 자동 발급 (도메인이 이미 이 서버를 가리키고 있어야 함)
+# 주의: 도메인 DNS가 설정되지 않았다면 이 단계는 실패할 수 있습니다.
+# 실패해도 나중에 수동으로 실행 가능: certbot --nginx -d api.devths.com -d www.devths.com -d devths.com -d ai.devths.com
+echo "[7.9/11] Requesting SSL certificates with Certbot..."
+certbot --nginx -d api.devths.com -d www.devths.com -d devths.com -d ai.devths.com --non-interactive --agree-tos --email admin@devths.com --redirect || echo "Certbot failed. You can run it manually later after DNS is configured."
+
 # -----------------------------------------------------------
-# 6. CodeDeploy 에이전트 설치
+# 8. CodeDeploy 에이전트 설치
 # -----------------------------------------------------------
 echo "[8/11] Installing CodeDeploy Agent..."
 cd /home/ubuntu
