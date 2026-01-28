@@ -7,19 +7,19 @@ echo "Starting User Data Script: Infra Setup"
 echo "=========================================="
 
 # 1. 시스템 패키지 업데이트
-echo "[1/5] Updating system packages..."
+echo "[1/9] Updating system packages..."
 apt-get update -y
 apt-get upgrade -y
-apt-get install -y software-properties-common curl wget gnupg2 lsb-release
+apt-get install -y software-properties-common curl wget gnupg2 lsb-release awscli jq
 
 # 2. Java 21 설치
-echo "[2/5] Installing Java 21..."
+echo "[2/9] Installing Java 21..."
 apt-get install -y openjdk-21-jdk
 java -version
 
 # 3. Python 3.10 설치
 # Ubuntu 24.04의 기본 파이썬은 3.12이므로, 3.10 설치를 위해 PPA 추가
-echo "[3/5] Installing Python 3.10..."
+echo "[3/9] Installing Python 3.10..."
 add-apt-repository ppa:deadsnakes/ppa -y
 apt-get update -y
 apt-get install -y python3.10 python3.10-venv python3.10-dev
@@ -27,7 +27,7 @@ python3.10 --version
 
 # 4. PostgreSQL 14 설치
 # 공식 PostgreSQL 리포지토리를 추가하여 14 버전을 명시적으로 설치
-echo "[4/5] Installing PostgreSQL 14..."
+echo "[4/9] Installing PostgreSQL 14..."
 sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
 apt-get update -y
@@ -38,11 +38,88 @@ sudo -u postgres psql -c "SELECT version();"
 
 # 5. Nginx 설치
 # Ubuntu 24.04 저장소의 최신 안정 버전 설치 (1.18.0은 오래된 버전이라 24.04에서 직접 지원이 어려울 수 있음)
-echo "[5/5] Installing Nginx..."
+echo "[5/9] Installing Nginx..."
 apt-get install -y nginx
 systemctl enable nginx
 systemctl start nginx
 nginx -v
+
+# -----------------------------------------------------------
+# 6. CodeDeploy 에이전트 설치
+# -----------------------------------------------------------
+echo "[6/9] Installing CodeDeploy Agent..."
+cd /home/ubuntu
+wget https://aws-codedeploy-ap-northeast-2.s3.ap-northeast-2.amazonaws.com/latest/install
+chmod +x ./install
+./install auto
+
+# CodeDeploy 에이전트 시작 및 활성화
+systemctl start codedeploy-agent
+systemctl enable codedeploy-agent
+
+# -----------------------------------------------------------
+# 추가 시스템 설정
+# -----------------------------------------------------------
+
+# 7. 타임존 설정 (Asia/Seoul)
+echo "[7/9] Setting timezone to Asia/Seoul..."
+timedatectl set-timezone Asia/Seoul
+
+# 8. 스왑 메모리 설정 (2GB)
+echo "[8/9] Configuring 2GB Swap memory..."
+if [ ! -f /swapfile ]; then
+    fallocate -l 2G /swapfile
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+    echo '/swapfile none swap sw 0 0' >> /etc/fstab
+    echo "Swap created successfully."
+else
+    echo "Swap file already exists."
+fi
+
+# 9. CloudWatch Agent 설치 및 설정
+echo "[9/9] Installing CloudWatch Agent..."
+wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+dpkg -i -E ./amazon-cloudwatch-agent.deb
+rm ./amazon-cloudwatch-agent.deb
+
+# 기본 메트릭 설정 파일 생성 (메모리, 디스크 사용량)
+cat <<EOF > /opt/aws/amazon-cloudwatch-agent/bin/config.json
+{
+  "agent": {
+    "metrics_collection_interval": 60,
+    "run_as_user": "root"
+  },
+  "metrics": {
+    "append_dimensions": {
+      "InstanceId": "\${aws:InstanceId}",
+      "ImageId": "\${aws:ImageId}",
+      "InstanceType": "\${aws:InstanceType}"
+    },
+    "metrics_collected": {
+      "mem": {
+        "measurement": [
+          "mem_used_percent"
+        ],
+        "metrics_collection_interval": 60
+      },
+      "disk": {
+        "measurement": [
+          "used_percent"
+        ],
+        "resources": [
+          "/"
+        ],
+        "metrics_collection_interval": 60
+      }
+    }
+  }
+}
+EOF
+
+# CloudWatch Agent 실행
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
 
 echo "=========================================="
 echo "User Data Script Completed Successfully!"

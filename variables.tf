@@ -105,3 +105,10 @@ variable "common_tags" {
     ManagedBy   = "Terraform"
   }
 }
+
+# Security 변수
+variable "kms_key_id" {
+  description = "KMS Key ID for SSM Parameter Store decryption"
+  type        = string
+  default     = "a8cb4dd5-8a26-4335-a38c-7bcca70affb8"
+}

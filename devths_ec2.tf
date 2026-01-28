@@ -36,7 +36,12 @@ resource "aws_instance" "devths_prod_app" {
     }
   }
 
-  user_data = file("user_data.sh")
+  user_data = <<-EOF
+              #!/bin/bash
+              export AWS_REGION="${var.aws_region}"
+              ${file("${path.module}/user_data.sh")}
+              ${file("${path.module}/init_db.sh")}
+              EOF
 
   tags = {
     Name        = "devths-v1-prod"
