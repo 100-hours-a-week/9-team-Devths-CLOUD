@@ -17,7 +17,7 @@ resource "aws_cloudwatch_log_group" "ssm_session_logs" {
 
 # SSM Document - Session Manager 설정
 resource "aws_ssm_document" "session_manager_prefs" {
-  name            = "SSM-SessionManagerRunShell-V1-PROD"
+  name            = "SSM-SessionManagerRunShell"
   document_type   = "Session"
   document_format = "JSON"
 
