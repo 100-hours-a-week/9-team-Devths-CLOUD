@@ -3,21 +3,22 @@
 # ===================================
 
 # CloudWatch Log Group for SSM Sessions (Production)
+# 참고: 암호화 비활성화 (비용 절감)
 resource "aws_cloudwatch_log_group" "ssm_session_logs" {
-  name              = "SSMSessionMangerLogGroup-Prod"
-  retention_in_days = 60 # 2개월 후 자동 삭제
+  name              = "SSMSessionManagerLogGroup"
+  retention_in_days = 14 # 2주 후 자동 삭제
 
   tags = merge(
     var.common_tags,
     {
-      Name = "SSMSessionMangerLogGroup-Prod"
+      Name = "SSMSessionManagerLogGroup"
     }
   )
 }
 
 # SSM Document - Session Manager 설정
 resource "aws_ssm_document" "session_manager_prefs" {
-  name            = "SSM-SessionManagerRunShell-V1-PROD"
+  name            = "SSM-SessionManagerRunShell"
   document_type   = "Session"
   document_format = "JSON"
 
@@ -28,21 +29,26 @@ resource "aws_ssm_document" "session_manager_prefs" {
     inputs = {
       s3BucketName                = aws_s3_bucket.devths_ssm_log.id
       s3KeyPrefix                 = "session-logs/"
-      s3EncryptionEnabled         = true
+      s3EncryptionEnabled         = false
       cloudWatchLogGroupName      = aws_cloudwatch_log_group.ssm_session_logs.name
-      cloudWatchEncryptionEnabled = true
+      cloudWatchEncryptionEnabled = false
       cloudWatchStreamingEnabled  = true
       idleSessionTimeout          = "20" # 20분 유휴 시 종료
       maxSessionDuration          = "60" # 최대 60분
+      kmsKeyId                    = ""
       runAsEnabled                = false
       runAsDefaultUser            = ""
+      shellProfile = {
+        windows = ""
+        linux   = "exec /bin/bash\nsudo su - ubuntu\ncd ~"
+      }
     }
   })
 
   tags = merge(
     var.common_tags,
     {
-      Name = "SSM-SessionManagerRunShell-V1-PROD"
+      Name = "SSM-SessionManagerRunShell"
     }
   )
 }
@@ -51,8 +57,13 @@ resource "aws_ssm_document" "session_manager_prefs" {
 # CloudWatch Monitoring & Alarms
 # ===================================
 
-# 기존 Discord-Prod SNS 토픽 참조
+# 모니터링 서버 Discord-Prod SNS 토픽 참조
 data "aws_sns_topic" "discord" {
+  name = "Discord"
+}
+
+# 운영용 서버 Discord-Prod SNS 토픽 참조
+data "aws_sns_topic" "discord_prod" {
   name = "Discord-Prod"
 }
 
@@ -62,7 +73,7 @@ data "aws_sns_topic" "discord" {
 
 # CloudWatch Metric Filter - 위험한 명령어 실행 감지
 resource "aws_cloudwatch_log_metric_filter" "dangerous_commands" {
-  name           = "DangerousCommandCount-Prod"
+  name           = "DangerousCommandCount"
   log_group_name = aws_cloudwatch_log_group.ssm_session_logs.name
 
   # 위험한 명령어 패턴 감지 (간단한 텍스트 매칭)
@@ -79,7 +90,7 @@ resource "aws_cloudwatch_log_metric_filter" "dangerous_commands" {
 
 # CloudWatch Alarm - 위험한 명령어 실행 시 즉시 알림
 resource "aws_cloudwatch_metric_alarm" "dangerous_command_alert" {
-  alarm_name          = "Alert-Dangerous-Keyword-Prod"
+  alarm_name          = "Alert-Dangerous-Keyword"
   alarm_description   = "[CRITICAL] Dangerous command detected in SSM session"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
@@ -123,7 +134,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_60_alert" {
     InstanceId = aws_instance.devths_prod_app.id
   }
 
-  alarm_actions = [data.aws_sns_topic.discord.arn]
+  alarm_actions = [data.aws_sns_topic.discord_prod.arn]
 
   tags = merge(
     var.common_tags,
@@ -155,7 +166,7 @@ resource "aws_cloudwatch_metric_alarm" "ebs_under_20_alert" {
     fstype     = "ext4"
   }
 
-  alarm_actions = [data.aws_sns_topic.discord.arn]
+  alarm_actions = [data.aws_sns_topic.discord_prod.arn]
 
   tags = merge(
     var.common_tags,

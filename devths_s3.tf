@@ -70,18 +70,17 @@ resource "aws_s3_bucket_lifecycle_configuration" "devths_prod_deploy_lifecycle" 
 # S3 버킷 - SSM Session Manager 로그 저장용
 # ===================================
 
-# Production SSM 로그 버킷 (devths-ssm-log-prod)
+# SSM 로그 버킷
 resource "aws_s3_bucket" "devths_ssm_log" {
-  bucket = "devths-ssm-log-prod"
+  bucket = "devths-ssm-log"
 
   tags = {
-    Name        = "devths-ssm-log-prod"
-    Environment = "production"
-    Purpose     = "SSM Session Manager logs"
+    Name    = "devths-ssm-log"
+    Purpose = "SSM Session Manager logs"
   }
 }
 
-# S3 버킷 퍼블릭 액세스 차단 (prod)
+# S3 버킷 퍼블릭 액세스 차단
 resource "aws_s3_bucket_public_access_block" "devths_ssm_log_public_access" {
   bucket = aws_s3_bucket.devths_ssm_log.id
 
@@ -91,7 +90,7 @@ resource "aws_s3_bucket_public_access_block" "devths_ssm_log_public_access" {
   restrict_public_buckets = true
 }
 
-# S3 버킷 암호화 설정 (prod)
+# S3 버킷 암호화 설정
 resource "aws_s3_bucket_server_side_encryption_configuration" "devths_ssm_log_encryption" {
   bucket = aws_s3_bucket.devths_ssm_log.id
 
@@ -102,7 +101,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "devths_ssm_log_en
   }
 }
 
-# S3 버킷 라이프사이클 정책 - 60일 후 자동 삭제 (prod)
+# S3 버킷 라이프사이클 정책 - 60일 후 자동 삭제
 resource "aws_s3_bucket_lifecycle_configuration" "devths_ssm_log_lifecycle" {
   bucket = aws_s3_bucket.devths_ssm_log.id
 
