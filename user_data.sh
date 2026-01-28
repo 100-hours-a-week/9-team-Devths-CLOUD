@@ -7,19 +7,19 @@ echo "Starting User Data Script: Infra Setup"
 echo "=========================================="
 
 # 1. 시스템 패키지 업데이트
-echo "[1/9] Updating system packages..."
+echo "[1/11] Updating system packages..."
 apt-get update -y
 apt-get upgrade -y
 apt-get install -y software-properties-common curl wget gnupg2 lsb-release awscli jq
 
 # 2. Java 21 설치
-echo "[2/9] Installing Java 21..."
+echo "[2/11] Installing Java 21..."
 apt-get install -y openjdk-21-jdk
 java -version
 
 # 3. pyenv 및 Python 3.10.19 설치
 # Ubuntu 22.04에서 pyenv를 사용하여 정확한 Python 버전 관리
-echo "[3/9] Installing pyenv and Python 3.10.19..."
+echo "[3/11] Installing pyenv and Python 3.10.19..."
 
 # ubuntu 사용자로 pyenv 설치
 export HOME=/home/ubuntu
@@ -53,14 +53,14 @@ echo "Python version installed:"
 sudo -u ubuntu bash -c 'export PYENV_ROOT="/home/ubuntu/.pyenv" && export PATH="$PYENV_ROOT/bin:$PATH" && eval "$(pyenv init -)" && python --version'
 
 # 4. ChromaDB 설치
-echo "[4/9] Installing ChromaDB..."
+echo "[4/11] Installing ChromaDB..."
 sudo -u ubuntu bash -c 'export PYENV_ROOT="/home/ubuntu/.pyenv" && export PATH="$PYENV_ROOT/bin:$PATH" && eval "$(pyenv init -)" && pip install --upgrade pip && pip install chromadb'
 
 echo "ChromaDB installed:"
 sudo -u ubuntu bash -c 'export PYENV_ROOT="/home/ubuntu/.pyenv" && export PATH="$PYENV_ROOT/bin:$PATH" && eval "$(pyenv init -)" && pip show chromadb'
 
 # 5. Poetry 설치
-echo "[5/9] Installing Poetry..."
+echo "[5/11] Installing Poetry..."
 sudo -u ubuntu bash -c 'export PYENV_ROOT="/home/ubuntu/.pyenv" && export PATH="$PYENV_ROOT/bin:$PATH" && eval "$(pyenv init -)" && curl -sSL https://install.python-poetry.org | python3 -'
 
 # Poetry PATH 추가
@@ -78,7 +78,7 @@ sudo -u ubuntu bash -c 'export PATH="/home/ubuntu/.local/bin:$PATH" && poetry --
 
 # 4. PostgreSQL 14 설치
 # 공식 PostgreSQL 리포지토리를 추가하여 14 버전을 명시적으로 설치
-echo "[4/9] Installing PostgreSQL 14..."
+echo "[6/11] Installing PostgreSQL 14..."
 sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
 apt-get update -y
@@ -89,7 +89,7 @@ sudo -u postgres psql -c "SELECT version();"
 
 # 5. Nginx 설치
 # Ubuntu 24.04 저장소의 최신 안정 버전 설치 (1.18.0은 오래된 버전이라 24.04에서 직접 지원이 어려울 수 있음)
-echo "[5/9] Installing Nginx..."
+echo "[7/11] Installing Nginx..."
 apt-get install -y nginx
 systemctl enable nginx
 systemctl start nginx
@@ -98,7 +98,7 @@ nginx -v
 # -----------------------------------------------------------
 # 6. CodeDeploy 에이전트 설치
 # -----------------------------------------------------------
-echo "[6/9] Installing CodeDeploy Agent..."
+echo "[8/11] Installing CodeDeploy Agent..."
 cd /home/ubuntu
 wget https://aws-codedeploy-ap-northeast-2.s3.ap-northeast-2.amazonaws.com/latest/install
 chmod +x ./install
@@ -113,11 +113,11 @@ systemctl enable codedeploy-agent
 # -----------------------------------------------------------
 
 # 7. 타임존 설정 (Asia/Seoul)
-echo "[7/9] Setting timezone to Asia/Seoul..."
+echo "[9/11] Setting timezone to Asia/Seoul..."
 timedatectl set-timezone Asia/Seoul
 
 # 8. 스왑 메모리 설정 (2GB)
-echo "[8/9] Configuring 2GB Swap memory..."
+echo "[10/11] Configuring 2GB Swap memory..."
 if [ ! -f /swapfile ]; then
     fallocate -l 2G /swapfile
     chmod 600 /swapfile
@@ -130,7 +130,7 @@ else
 fi
 
 # 9. CloudWatch Agent 설치 및 설정
-echo "[9/9] Installing CloudWatch Agent..."
+echo "[11/11] Installing CloudWatch Agent..."
 wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
 dpkg -i -E ./amazon-cloudwatch-agent.deb
 rm ./amazon-cloudwatch-agent.deb
