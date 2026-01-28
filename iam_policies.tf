@@ -170,7 +170,8 @@ resource "aws_iam_policy" "github_actions_deploy" {
           "codedeploy:GetDeploymentGroup",
           "codedeploy:ListApplications",
           "codedeploy:ListDeployments",
-          "codedeploy:ListDeploymentInstances"
+          "codedeploy:ListDeploymentInstances",
+          "codedeploy:GetDeploymentInstance"
         ]
         Resource = "*"
       },
