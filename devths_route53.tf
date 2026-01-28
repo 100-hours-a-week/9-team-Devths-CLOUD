@@ -13,6 +13,16 @@ resource "aws_route53_record" "devths_prod_www" {
   records = [aws_eip.devths_prod_app_eip.public_ip]
 }
 
+# A 레코드 - 일반 도메인 연결
+resource "aws_route53_record" "devths_prod" {
+  zone_id = data.aws_route53_zone.devths_prod.zone_id
+  name    = "${var.domain_name}"
+  type    = "A"
+  ttl     = 300
+  records = [aws_eip.devths_prod_app_eip.public_ip]
+}
+
+
 # A 레코드 - 백엔드 연결
 resource "aws_route53_record" "devths_prod_api" {
   zone_id = data.aws_route53_zone.devths_prod.zone_id

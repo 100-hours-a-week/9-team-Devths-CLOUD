@@ -180,7 +180,7 @@ systemctl reload nginx
 # 주의: 도메인 DNS가 설정되지 않았다면 이 단계는 실패할 수 있습니다.
 # 실패해도 나중에 수동으로 실행 가능: certbot --nginx -d api.devths.com -d www.devths.com -d devths.com -d ai.devths.com
 echo "[7.9/11] Requesting SSL certificates with Certbot..."
-certbot --nginx -d api.devths.com -d www.devths.com -d devths.com -d ai.devths.com --non-interactive --agree-tos --email admin@devths.com --redirect || echo "Certbot failed. You can run it manually later after DNS is configured."
+sudo certbot --nginx -d devths.com -d www.devths.com -d api.devths.com -d ai.devths.com --non-interactive --agree-tos --email ktb_devth@gmail.com --redirect || echo "Certbot failed. You can run it manually later after DNS is configured."
 
 # -----------------------------------------------------------
 # 8. CodeDeploy 에이전트 설치
