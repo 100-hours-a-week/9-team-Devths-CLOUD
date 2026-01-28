@@ -163,7 +163,7 @@ echo ""
 # ===================================
 echo "[9/11] SSM 및 CloudWatch import..."
 
-terraform import aws_ssm_document.session_manager_prefs SSM-SessionManagerRunShell-V1-PROD || echo "  ⚠ 이미 import되었거나 존재하지 않습니다."
+terraform import aws_ssm_document.session_manager_prefs SSM-SessionManagerRunShell || echo "  ⚠ 이미 import되었거나 존재하지 않습니다."
 
 terraform import aws_cloudwatch_log_group.ssm_session_logs SSMSessionManagerLogGroup || echo "  ⚠ 이미 import되었거나 존재하지 않습니다."
 terraform import aws_cloudwatch_log_metric_filter.dangerous_commands DangerousCommandCount || echo "  ⚠ 이미 import되었거나 존재하지 않습니다."
