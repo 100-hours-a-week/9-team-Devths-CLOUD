@@ -59,8 +59,8 @@ resource "aws_iam_policy" "ec2_parameter_store" {
           "ssm:GetParametersByPath"
         ]
         Resource = [
-          "arn:aws:ssm:ap-northeast-2:015932244909:parameter/Prod/BE*",
-          "arn:aws:ssm:ap-northeast-2:015932244909:parameter/Prod/AI*"
+          "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/Prod/BE*",
+          "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/Prod/AI*"
         ]
       },
       {
@@ -69,7 +69,7 @@ resource "aws_iam_policy" "ec2_parameter_store" {
           "kms:Decrypt"
         ]
         Resource = [
-          "arn:aws:kms:ap-northeast-2:015932244909:key/a8cb4dd5-8a26-4335-a38c-7bcca70affb8"
+          "arn:aws:kms:${var.aws_region}:${data.aws_caller_identity.current.account_id}:key/${var.kms_key_id}"
         ]
       }
     ]
@@ -137,7 +137,7 @@ resource "aws_iam_policy" "ec2_audit_ssm" {
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ]
-        Resource = "arn:aws:logs:ap-northeast-2:015932244909:log-group:SSMSessionManagerLogGroup:*"
+        Resource = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:SSMSessionMangerLogGroup:*"
       }
     ]
   })
@@ -182,13 +182,13 @@ resource "aws_iam_policy" "github_actions_deploy" {
           "codedeploy:CreateDeployment",
           "codedeploy:RegisterApplicationRevision"
         ]
-        Resource = [
-        "arn:aws:codedeploy:ap-northeast-2:015932244909:application:Devhts-V1-FE",
-        "arn:aws:codedeploy:ap-northeast-2:015932244909:deploymentgroup:Devhts-V1-FE/*",
-        "arn:aws:codedeploy:ap-northeast-2:015932244909:application:Devhts-V1-BE",
-        "arn:aws:codedeploy:ap-northeast-2:015932244909:deploymentgroup:Devhts-V1-BE/*",
-        "arn:aws:codedeploy:ap-northeast-2:015932244909:application:Devhts-V1-AI",
-        "arn:aws:codedeploy:ap-northeast-2:015932244909:deploymentgroup:Devhts-V1-AI/*"
+        Resource: [
+        "arn:aws:codedeploy:${var.aws_region}:${data.aws_caller_identity.current.account_id}:application:Devhts-V1-FE",
+        "arn:aws:codedeploy:${var.aws_region}:${data.aws_caller_identity.current.account_id}:deploymentgroup:Devhts-V1-FE/*",
+        "arn:aws:codedeploy:${var.aws_region}:${data.aws_caller_identity.current.account_id}:application:Devhts-V1-BE",
+        "arn:aws:codedeploy:${var.aws_region}:${data.aws_caller_identity.current.account_id}:deploymentgroup:Devhts-V1-BE/*",
+        "arn:aws:codedeploy:${var.aws_region}:${data.aws_caller_identity.current.account_id}:application:Devhts-V1-AI",
+        "arn:aws:codedeploy:${var.aws_region}:${data.aws_caller_identity.current.account_id}:deploymentgroup:Devhts-V1-AI/*"
         ]
       }
     ]
