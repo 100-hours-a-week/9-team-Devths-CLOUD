@@ -35,8 +35,13 @@ resource "aws_ssm_document" "session_manager_prefs" {
       cloudWatchStreamingEnabled  = true
       idleSessionTimeout          = "20" # 20분 유휴 시 종료
       maxSessionDuration          = "60" # 최대 60분
+      kmsKeyId                    = ""
       runAsEnabled                = false
       runAsDefaultUser            = ""
+      shellProfile = {
+        windows = ""
+        linux   = "exec /bin/bash\nsudo su - ubuntu\ncd ~"
+      }
     }
   })
 
