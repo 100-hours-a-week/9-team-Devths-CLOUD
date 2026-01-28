@@ -3,6 +3,7 @@
 # ===================================
 
 # CloudWatch Log Group for SSM Sessions (Production)
+# 참고: 암호화 비활성화 (비용 절감)
 resource "aws_cloudwatch_log_group" "ssm_session_logs" {
   name              = "SSMSessionManagerLogGroup"
   retention_in_days = 14 # 2주 후 자동 삭제
@@ -28,9 +29,9 @@ resource "aws_ssm_document" "session_manager_prefs" {
     inputs = {
       s3BucketName                = aws_s3_bucket.devths_ssm_log.id
       s3KeyPrefix                 = "session-logs/"
-      s3EncryptionEnabled         = true
+      s3EncryptionEnabled         = false
       cloudWatchLogGroupName      = aws_cloudwatch_log_group.ssm_session_logs.name
-      cloudWatchEncryptionEnabled = true
+      cloudWatchEncryptionEnabled = false
       cloudWatchStreamingEnabled  = true
       idleSessionTimeout          = "20" # 20분 유휴 시 종료
       maxSessionDuration          = "60" # 최대 60분
