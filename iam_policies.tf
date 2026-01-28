@@ -137,7 +137,7 @@ resource "aws_iam_policy" "ec2_audit_ssm" {
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ]
-        Resource = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:SSMSessionMangerLogGroup:*"
+        Resource = "arn:aws:logs:${var.aws_region}:${data.aws_caller_identity.current.account_id}:log-group:SSMSessionManagerLogGroup:*"
       }
     ]
   })
