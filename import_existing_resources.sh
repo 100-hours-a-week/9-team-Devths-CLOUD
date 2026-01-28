@@ -187,6 +187,7 @@ ZONE_ID="Z092923335TM9BWMNP3GX"
 terraform import aws_route53_record.devths_prod_www ${ZONE_ID}_www.devths.com_A || echo "  ⚠ 이미 import되었거나 존재하지 않습니다."
 terraform import aws_route53_record.devths_prod_api ${ZONE_ID}_api.devths.com_A || echo "  ⚠ 이미 import되었거나 존재하지 않습니다."
 terraform import aws_route53_record.devths_prod_ai ${ZONE_ID}_ai.devths.com_A || echo "  ⚠ 이미 import되었거나 존재하지 않습니다."
+terraform import aws_route53_record.devths_prod_ai ${ZONE_ID}.devths.com_A || echo "  ⚠ 이미 import되었거나 존재하지 않습니다."
 
 echo "  ✓ Route53 레코드 import 완료"
 echo ""

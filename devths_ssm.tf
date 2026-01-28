@@ -94,7 +94,7 @@ resource "aws_cloudwatch_metric_alarm" "dangerous_command_alert" {
   alarm_description   = "[CRITICAL] Dangerous command detected in SSM session"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
-  metric_name         = "DangerousCommandCount-Prod"
+  metric_name         = "DangerousCommandCount"
   namespace           = "Security/Logs"
   period              = 60 # 1분
   statistic           = "Sum"
@@ -106,7 +106,7 @@ resource "aws_cloudwatch_metric_alarm" "dangerous_command_alert" {
   tags = merge(
     var.common_tags,
     {
-      Name     = "Alert-Dangerous-Keyword-Prod"
+      Name     = "Alert-Dangerous-Keyword"
       Severity = "High"
       Type     = "Security"
     }
