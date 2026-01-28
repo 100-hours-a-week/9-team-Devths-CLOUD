@@ -80,7 +80,7 @@ resource "aws_cloudwatch_log_metric_filter" "dangerous_commands" {
   pattern = "?\"rm -rf\" ?\"chmod 777\" ?\"mkfs\" ?\"iptables -F\" ?\"ufw disable\" ?\"bash -i\" ?\"nc -e\" ?\"base64 -d\" ?\"systemctl stop\" ?\"userdel\""
 
   metric_transformation {
-    name          = "DangerousCommandCount-Prod"
+    name          = "DangerousCommandCount"
     namespace     = "Security/Logs"
     value         = "1"
     default_value = 0
