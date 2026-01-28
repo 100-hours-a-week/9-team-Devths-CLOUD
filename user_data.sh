@@ -7,19 +7,19 @@ echo "Starting User Data Script: Infra Setup"
 echo "=========================================="
 
 # 1. 시스템 패키지 업데이트
-echo "[1/11] Updating system packages..."
+echo "[1/12] Updating system packages..."
 apt-get update -y
 apt-get upgrade -y
 apt-get install -y software-properties-common curl wget gnupg2 lsb-release awscli jq
 
 # 2. Java 21 설치
-echo "[2/11] Installing Java 21..."
+echo "[2/12] Installing Java 21..."
 apt-get install -y openjdk-21-jdk
 java -version
 
 # 3. pyenv 및 Python 3.10.19 설치
 # Ubuntu 22.04에서 pyenv를 사용하여 정확한 Python 버전 관리
-echo "[3/11] Installing pyenv and Python 3.10.19..."
+echo "[3/12] Installing pyenv and Python 3.10.19..."
 
 # ubuntu 사용자로 pyenv 설치
 export HOME=/home/ubuntu
@@ -53,14 +53,14 @@ echo "Python version installed:"
 sudo -u ubuntu bash -c 'export PYENV_ROOT="/home/ubuntu/.pyenv" && export PATH="$PYENV_ROOT/bin:$PATH" && eval "$(pyenv init -)" && python --version'
 
 # 4. ChromaDB 설치
-echo "[4/11] Installing ChromaDB..."
+echo "[4/12] Installing ChromaDB..."
 sudo -u ubuntu bash -c 'export PYENV_ROOT="/home/ubuntu/.pyenv" && export PATH="$PYENV_ROOT/bin:$PATH" && eval "$(pyenv init -)" && pip install --upgrade pip && pip install chromadb'
 
 echo "ChromaDB installed:"
 sudo -u ubuntu bash -c 'export PYENV_ROOT="/home/ubuntu/.pyenv" && export PATH="$PYENV_ROOT/bin:$PATH" && eval "$(pyenv init -)" && pip show chromadb'
 
 # 5. Poetry 설치
-echo "[5/11] Installing Poetry..."
+echo "[5/12] Installing Poetry..."
 sudo -u ubuntu bash -c 'export PYENV_ROOT="/home/ubuntu/.pyenv" && export PATH="$PYENV_ROOT/bin:$PATH" && eval "$(pyenv init -)" && curl -sSL https://install.python-poetry.org | python3 -'
 
 # Poetry PATH 추가
@@ -76,9 +76,28 @@ ln -sf /home/ubuntu/.local/bin/poetry /usr/local/bin/poetry
 echo "Poetry version installed:"
 sudo -u ubuntu bash -c 'export PATH="/home/ubuntu/.local/bin:$PATH" && poetry --version'
 
-# 4. PostgreSQL 14 설치
+# 6. Node.js 22.21.0 및 pnpm 설치
+echo "[6/12] Installing Node.js 22.21.0 and pnpm..."
+
+# NodeSource repository를 사용하여 Node.js 22.x 설치
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+apt-get install -y nodejs
+
+# Node.js 버전 확인
+echo "Node.js version installed:"
+node -v
+npm -v
+
+# pnpm 전역 설치
+npm install -g pnpm
+
+# pnpm 버전 확인
+echo "pnpm version installed:"
+pnpm -v
+
+# 7. PostgreSQL 14 설치
 # 공식 PostgreSQL 리포지토리를 추가하여 14 버전을 명시적으로 설치
-echo "[6/11] Installing PostgreSQL 14..."
+echo "[7/12] Installing PostgreSQL 14..."
 sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
 apt-get update -y
@@ -87,26 +106,26 @@ systemctl enable postgresql
 systemctl start postgresql
 sudo -u postgres psql -c "SELECT version();"
 
-# 5. Nginx 설치
+# 8. Nginx 설치
 # Ubuntu 24.04 저장소의 최신 안정 버전 설치 (1.18.0은 오래된 버전이라 24.04에서 직접 지원이 어려울 수 있음)
-echo "[7/11] Installing Nginx..."
+echo "[8/12] Installing Nginx..."
 apt-get install -y nginx
 systemctl enable nginx
 systemctl start nginx
 nginx -v
 
-# 6. Certbot 설치 (Let's Encrypt SSL 인증서용)
-echo "[7.5/11] Installing Certbot..."
+# 9. Certbot 설치 (Let's Encrypt SSL 인증서용)
+echo "[8.5/12] Installing Certbot..."
 apt-get install -y certbot python3-certbot-nginx
 
-# 7. Nginx 설정 파일 생성
-echo "[7.6/11] Configuring Nginx server blocks..."
+# 10. Nginx 설정 파일 생성
+echo "[8.6/12] Configuring Nginx server blocks..."
 
 # 기본 nginx 설정 비활성화
 rm -f /etc/nginx/sites-enabled/default
 
 # API (Spring Boot) - api.devths.com
-cat > /etc/nginx/sites-available/api.devths.com << 'EOF'
+cat > /etc/nginx/sites-available/be << 'EOF'
 server {
     listen 80;
     server_name api.devths.com;
@@ -126,7 +145,7 @@ server {
 EOF
 
 # Frontend (Next.js) - www.devths.com
-cat > /etc/nginx/sites-available/www.devths.com << 'EOF'
+cat > /etc/nginx/sites-available/fe << 'EOF'
 server {
     listen 80;
     server_name www.devths.com devths.com;
@@ -146,7 +165,7 @@ server {
 EOF
 
 # AI (FastAPI) - ai.devths.com
-cat > /etc/nginx/sites-available/ai.devths.com << 'EOF'
+cat > /etc/nginx/sites-available/ai << 'EOF'
 server {
     listen 80;
     server_name ai.devths.com;
@@ -165,27 +184,145 @@ server {
 }
 EOF
 
+# 점검중 HTML 작성
+cat > /var/www/html/maintenance.html << 'EOF'
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devths - 배포 중</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 600px;
+        }
+
+        .icon {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.7;
+            margin-top: 2rem;
+        }
+
+        .spinner {
+            margin: 2rem auto;
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🚀</div>
+        <h1>배포 중입니다</h1>
+        <p>더 나은 서비스를 위해 업데이트를 진행하고 있습니다.</p>
+        <div class="spinner"></div>
+        <p class="subtitle">잠시만 기다려 주세요. 곧 정상적으로 서비스됩니다.</p>
+    </div>
+</body>
+</html>
+EOF
+
 # 심볼릭 링크 생성 (sites-enabled로 활성화)
-echo "[7.7/11] Creating symbolic links..."
-ln -sf /etc/nginx/sites-available/api.devths.com /etc/nginx/sites-enabled/
-ln -sf /etc/nginx/sites-available/www.devths.com /etc/nginx/sites-enabled/
-ln -sf /etc/nginx/sites-available/ai.devths.com /etc/nginx/sites-enabled/
+echo "[8.7/12] Creating symbolic links..."
+ln -sf /etc/nginx/sites-available/be /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/fe /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/ai /etc/nginx/sites-enabled/
 
 # Nginx 설정 테스트 및 재시작
-echo "[7.8/11] Testing Nginx configuration..."
+echo "[8.8/12] Testing Nginx configuration..."
 nginx -t
 systemctl reload nginx
 
 # SSL 인증서 자동 발급 (도메인이 이미 이 서버를 가리키고 있어야 함)
 # 주의: 도메인 DNS가 설정되지 않았다면 이 단계는 실패할 수 있습니다.
 # 실패해도 나중에 수동으로 실행 가능: certbot --nginx -d api.devths.com -d www.devths.com -d devths.com -d ai.devths.com
-echo "[7.9/11] Requesting SSL certificates with Certbot..."
+echo "[8.9/12] Requesting SSL certificates with Certbot..."
 sudo certbot --nginx -d devths.com -d www.devths.com -d api.devths.com -d ai.devths.com --non-interactive --agree-tos --email ktb_devth@gmail.com --redirect || echo "Certbot failed. You can run it manually later after DNS is configured."
 
+# 점검중 페이지 서버 블록 작성 (SSL 인증서 발급 후)
+echo "[8.10/12] Creating maintenance server block..."
+cat > /etc/nginx/sites-available/maintenance << 'EOF'
+server {
+    listen 80;
+    listen 443 ssl;
+    server_name www.devths.com;
+
+    # SSL 설정
+    ssl_certificate /etc/letsencrypt/live/www.devths.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/www.devths.com/privkey.pem;
+
+    root /var/www/html; # 점검 페이지 HTML이 위치한 경로
+    error_page 503 /maintenance.html;
+
+    location / {
+        return 503;
+    }
+
+    location = /maintenance.html {
+        internal;
+    }
+}
+EOF
+
 # -----------------------------------------------------------
-# 8. CodeDeploy 에이전트 설치
+# 11. CodeDeploy 에이전트 설치
 # -----------------------------------------------------------
-echo "[8/11] Installing CodeDeploy Agent..."
+echo "[9/12] Installing CodeDeploy Agent..."
 cd /home/ubuntu
 wget https://aws-codedeploy-ap-northeast-2.s3.ap-northeast-2.amazonaws.com/latest/install
 chmod +x ./install
@@ -199,12 +336,12 @@ systemctl enable codedeploy-agent
 # 추가 시스템 설정
 # -----------------------------------------------------------
 
-# 7. 타임존 설정 (Asia/Seoul)
-echo "[9/11] Setting timezone to Asia/Seoul..."
+# 12. 타임존 설정 (Asia/Seoul)
+echo "[10/12] Setting timezone to Asia/Seoul..."
 timedatectl set-timezone Asia/Seoul
 
-# 8. 스왑 메모리 설정 (2GB)
-echo "[10/11] Configuring 2GB Swap memory..."
+# 13. 스왑 메모리 설정 (2GB)
+echo "[11/12] Configuring 2GB Swap memory..."
 if [ ! -f /swapfile ]; then
     fallocate -l 2G /swapfile
     chmod 600 /swapfile
@@ -216,8 +353,8 @@ else
     echo "Swap file already exists."
 fi
 
-# 9. CloudWatch Agent 설치 및 설정
-echo "[11/11] Installing CloudWatch Agent..."
+# 14. CloudWatch Agent 설치 및 설정
+echo "[12/12] Installing CloudWatch Agent..."
 wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
 dpkg -i -E ./amazon-cloudwatch-agent.deb
 rm ./amazon-cloudwatch-agent.deb
