@@ -41,6 +41,7 @@ resource "aws_instance" "devths_prod_app" {
               export AWS_REGION="${var.aws_region}"
               ${file("${path.module}/user_data.sh")}
               ${file("${path.module}/init_db.sh")}
+              ${file("${path.module}/setup_logrotate.sh")}
               EOF
 
   tags = {
