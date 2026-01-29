@@ -76,11 +76,14 @@ resource "aws_cloudwatch_log_metric_filter" "dangerous_commands" {
   name           = "DangerousCommandCount"
   log_group_name = aws_cloudwatch_log_group.ssm_session_logs.name
 
-  # 위험한 명령어 패턴 감지 (간단한 텍스트 매칭)
-  pattern = "?\"rm -rf\" ?\"chmod 777\" ?\"mkfs\" ?\"iptables -F\" ?\"ufw disable\" ?\"bash -i\" ?\"nc -e\" ?\"base64 -d\" ?\"systemctl stop\" ?\"userdel\""
+  # 위험한 명령어 패턴 감지 (포괄적인 텍스트 매칭)
+  # Patterns: rm -rf, rm -fr, chmod 777/666, mkfs, iptables -F, ufw disable, setenforce 0,
+  #           wget/curl http, bash -i, nc -e, dd if=, /dev/tcp/, base64 -d, eval $(,
+  #           systemctl stop, kill -9, userdel, sudo su
+  pattern = "?\"rm -rf\" ?\"rm -fr\" ?\"chmod 777\" ?\"chmod 666\" ?\"mkfs\" ?\"iptables -F\" ?\"ufw disable\" ?\"setenforce 0\" ?\"wget http\" ?\"curl http\" ?\"bash -i\" ?\"nc -e\" ?\"dd if=\" ?\"/dev/tcp/\" ?\"base64 -d\" ?\"eval $(\" ?\"systemctl stop\" ?\"kill -9\" ?\"userdel\" ?\"sudo su\""
 
   metric_transformation {
-    name          = "DangerousCommandCount-Prod"
+    name          = "DangerousCommandCount"
     namespace     = "Security/Logs"
     value         = "1"
     default_value = 0
@@ -94,7 +97,7 @@ resource "aws_cloudwatch_metric_alarm" "dangerous_command_alert" {
   alarm_description   = "[CRITICAL] Dangerous command detected in SSM session"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
-  metric_name         = "DangerousCommandCount-Prod"
+  metric_name         = "DangerousCommandCount"
   namespace           = "Security/Logs"
   period              = 60 # 1분
   statistic           = "Sum"
@@ -106,7 +109,7 @@ resource "aws_cloudwatch_metric_alarm" "dangerous_command_alert" {
   tags = merge(
     var.common_tags,
     {
-      Name     = "Alert-Dangerous-Keyword-Prod"
+      Name     = "Alert-Dangerous-Keyword"
       Severity = "High"
       Type     = "Security"
     }
