@@ -132,6 +132,13 @@ server {
     listen 80;
     server_name api.devths.com;
 
+    # 숨김 파일 접근 금지 (.env, .git 등)
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
     location / {
         proxy_pass http://localhost:8080;
         proxy_http_version 1.1;
@@ -152,6 +159,13 @@ server {
     listen 80;
     server_name www.devths.com devths.com;
 
+    # 숨김 파일 접근 금지 (.env, .git 등)
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
@@ -171,6 +185,13 @@ cat > /etc/nginx/sites-available/ai << 'EOF'
 server {
     listen 80;
     server_name ai.devths.com;
+
+    # 숨김 파일 접근 금지 (.env, .git 등)
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
 
     location / {
         proxy_pass http://localhost:8000;
@@ -310,6 +331,13 @@ server {
 
     root /var/www/html; # 점검 페이지 HTML이 위치한 경로
     error_page 503 /maintenance.html;
+
+    # 숨김 파일 접근 금지 (.env, .git 등)
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
 
     location / {
         return 503;
