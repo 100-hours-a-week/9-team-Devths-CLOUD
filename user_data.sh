@@ -132,6 +132,10 @@ server {
     listen 80;
     server_name api.devths.com;
 
+    # 로그 설정
+    access_log /var/log/nginx/be_access.log;
+    error_log /var/log/nginx/be_error.log;
+
     # 숨김 파일 접근 금지 (.env, .git 등)
     location ~ /\. {
         deny all;
@@ -159,6 +163,10 @@ server {
     listen 80;
     server_name www.devths.com devths.com;
 
+    # 로그 설정
+    access_log /var/log/nginx/fe_access.log;
+    error_log /var/log/nginx/fe_error.log;
+
     # 숨김 파일 접근 금지 (.env, .git 등)
     location ~ /\. {
         deny all;
@@ -185,6 +193,10 @@ cat > /etc/nginx/sites-available/ai << 'EOF'
 server {
     listen 80;
     server_name ai.devths.com;
+
+    # 로그 설정
+    access_log /var/log/nginx/ai_access.log;
+    error_log /var/log/nginx/ai_error.log;
 
     # 숨김 파일 접근 금지 (.env, .git 등)
     location ~ /\. {
@@ -328,6 +340,10 @@ server {
     # SSL 설정
     ssl_certificate /etc/letsencrypt/live/www.devths.com/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/www.devths.com/privkey.pem;
+
+    # 로그 설정
+    access_log /var/log/nginx/maintenance_access.log;
+    error_log /var/log/nginx/maintenance_error.log;
 
     root /var/www/html; # 점검 페이지 HTML이 위치한 경로
     error_page 503 /maintenance.html;
