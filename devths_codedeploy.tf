@@ -24,7 +24,8 @@ resource "aws_codedeploy_deployment_group" "fe_prod_group" {
 
   # 자동 롤백 설정
   auto_rollback_configuration {
-    enabled = false
+    enabled = true
+    events  = ["DEPLOYMENT_FAILURE"]
   }
 
   # 배포 스타일 설정
@@ -62,7 +63,8 @@ resource "aws_codedeploy_deployment_group" "be_prod_group" {
 
   # 자동 롤백 설정
   auto_rollback_configuration {
-    enabled = false
+    enabled = true
+    events  = ["DEPLOYMENT_FAILURE"]
   }
 
   # 배포 스타일 설정
@@ -100,7 +102,8 @@ resource "aws_codedeploy_deployment_group" "ai_prod_group" {
 
   # 자동 롤백 설정
   auto_rollback_configuration {
-    enabled = false
+    enabled = true
+    events  = ["DEPLOYMENT_FAILURE"]
   }
 
   # 배포 스타일 설정
