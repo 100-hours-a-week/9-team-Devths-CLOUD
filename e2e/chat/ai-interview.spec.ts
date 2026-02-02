@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('AI Mock Interview Process (Real API)', () => {
+test.describe('AI 채팅 E2E 테스트', () => {
     // 실제 API 통신과 AI 생성이 포함되므로 타임아웃을 넉넉하게 설정 (5분)
     test.setTimeout(300 * 1000);
 
