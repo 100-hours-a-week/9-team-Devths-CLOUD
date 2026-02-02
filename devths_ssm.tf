@@ -77,10 +77,7 @@ resource "aws_cloudwatch_log_metric_filter" "dangerous_commands" {
   log_group_name = aws_cloudwatch_log_group.ssm_session_logs.name
 
   # 위험한 명령어 패턴 감지 (포괄적인 텍스트 매칭)
-  # Patterns: rm -rf, rm -fr, chmod 777/666, mkfs, iptables -F, ufw disable, setenforce 0,
-  #           wget/curl http, bash -i, nc -e, dd if=, /dev/tcp/, base64 -d, eval $(,
-  #           systemctl stop, kill -9, userdel, sudo su
-  pattern = "?\"rm -rf\" ?\"rm -fr\" ?\"chmod 777\" ?\"chmod 666\" ?\"mkfs\" ?\"iptables -F\" ?\"ufw disable\" ?\"setenforce 0\" ?\"wget http\" ?\"curl http\" ?\"bash -i\" ?\"nc -e\" ?\"dd if=\" ?\"/dev/tcp/\" ?\"base64 -d\" ?\"eval $(\" ?\"systemctl stop\" ?\"kill -9\" ?\"userdel\" ?\"sudo su\""
+  pattern = "?\"rm -rf\" ?\"rm -fr\" ?\"chmod 777\" ?\"chmod 666\" ?\"mkfs\" ?\"iptables -F\" ?\"ufw disable\" ?\"setenforce 0\" ?\"wget http\" ?\"curl http\" ?\"bash -i\" ?\"nc -e\" ?\"dd if=\" ?\"/dev/tcp/\" ?\"base64 -d\" ?\"eval $(\" ?\"systemctl stop\" ?\"kill -9\" ?\"userdel\""
 
   metric_transformation {
     name          = "DangerousCommandCount"
