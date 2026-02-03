@@ -13,7 +13,7 @@ variable "project_name" {
 variable "bucket_name" {
   description = "S3 bucket name for SSM logs"
   type        = string
-  default     = "devths-v1-ssm-log"
+  default     = "devths-log-ssm"
 }
 
 variable "cloudwatch_log_group_name" {
