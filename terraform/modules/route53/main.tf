@@ -17,7 +17,7 @@ resource "aws_route53_record" "root" {
   name    = local.base_domain
   type    = "A"
   ttl     = var.ttl
-  records = [var.eip_public_ip]
+  records = [var.public_ip]
 }
 
 # A 레코드 - www 서브도메인 (prod only)
@@ -28,7 +28,7 @@ resource "aws_route53_record" "www" {
   name    = "www.${var.domain_name}"
   type    = "A"
   ttl     = var.ttl
-  records = [var.eip_public_ip]
+  records = [var.public_ip]
 }
 
 # A 레코드 - api 서브도메인 (백엔드)
@@ -39,7 +39,7 @@ resource "aws_route53_record" "api" {
   name    = local.api_domain
   type    = "A"
   ttl     = var.ttl
-  records = [var.eip_public_ip]
+  records = [var.public_ip]
 }
 
 # A 레코드 - ai 서브도메인
@@ -50,5 +50,5 @@ resource "aws_route53_record" "ai" {
   name    = local.ai_domain
   type    = "A"
   ttl     = var.ttl
-  records = [var.eip_public_ip]
+  records = [var.public_ip]
 }

@@ -9,8 +9,8 @@ variable "subdomain_prefix" {
   default     = ""
 }
 
-variable "eip_public_ip" {
-  description = "Elastic IP public IP address"
+variable "public_ip" {
+  description = "Public IP address to point records to (EIP if enabled, otherwise instance public IP)"
   type        = string
 }
 

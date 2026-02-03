@@ -50,13 +50,6 @@ variable "ssm_log_retention_days" {
   default     = 7
 }
 
-# Route53 변수
-variable "enable_route53" {
-  description = "Enable Route53 DNS configuration"
-  type        = bool
-  default     = false
-}
-
 # EIP 변수
 variable "enable_eip" {
   description = "Enable Elastic IP for EC2 instance"

@@ -136,18 +136,17 @@ module "codedeploy_ai" {
   depends_on = [module.ec2, module.iam]
 }
 
-# Route53 모듈 (선택적)
+# Route53 모듈 - EC2 public IP 기반으로 항상 레코드 생성
 module "route53" {
-  count  = var.enable_route53 ? 1 : 0
   source = "../../modules/route53"
 
   domain_name       = "devths.com"
   subdomain_prefix  = "stg"
-  eip_public_ip     = module.ec2.instance_public_ip
+  public_ip         = module.ec2.instance_public_ip
   create_www_record = false
   create_api_record = true
   create_ai_record  = true
-  ttl               = 300
+  ttl               = 60
 
   common_tags = var.common_tags
 

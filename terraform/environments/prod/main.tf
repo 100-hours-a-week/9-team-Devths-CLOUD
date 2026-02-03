@@ -15,6 +15,11 @@ provider "aws" {
   region = var.aws_region
 }
 
+moved {
+  from = module.route53[0]
+  to   = module.route53
+}
+
 # SSM Parameter Store 모듈
 module "ssm_parameters" {
   source = "../../modules/ssm_parameters"
@@ -170,14 +175,13 @@ module "codedeploy_ai" {
   depends_on = [module.ec2, module.iam]
 }
 
-# Route53 모듈 (선택적)
+# Route53 모듈 - EC2 public IP 기반으로 항상 레코드 생성
 module "route53" {
-  count  = var.enable_route53 ? 1 : 0
   source = "../../modules/route53"
 
   domain_name       = "devths.com"
   subdomain_prefix  = ""
-  eip_public_ip     = module.ec2.instance_public_ip
+  public_ip         = module.ec2.instance_public_ip
   create_www_record = true
   create_api_record = true
   create_ai_record  = true
