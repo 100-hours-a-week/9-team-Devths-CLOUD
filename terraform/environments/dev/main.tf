@@ -91,6 +91,14 @@ module "s3_storage" {
   common_tags = var.common_tags
 }
 
+# SSM Parameter Store 모듈
+module "ssm_parameters" {
+  source = "../../modules/ssm_parameters"
+
+  environment_prefix = "Dev"
+  common_tags        = var.common_tags
+}
+
 # EC2 모듈
 module "ec2" {
   source = "../../modules/ec2"
