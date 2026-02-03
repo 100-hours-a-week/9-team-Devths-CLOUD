@@ -5,12 +5,14 @@ variable "project_name" {
   default     = "devths"
 }
 
+# 환경 정의
 variable "environment" {
   description = "Environment name"
   type        = string
   default     = "prod"
 }
 
+# AWS 지역
 variable "aws_region" {
   description = "AWS Region"
   type        = string
@@ -24,18 +26,21 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
+# 퍼블릭 서브넷 CIDR
 variable "public_subnet_cidrs" {
   description = "Public subnet CIDR blocks"
   type        = list(string)
   default     = ["10.0.0.0/24", "10.0.1.0/24"]
 }
 
+# 프라이빗 서브넷 CIDR
 variable "private_subnet_cidrs" {
   description = "Private subnet CIDR blocks"
   type        = list(string)
   default     = ["10.0.10.0/24", "10.0.11.0/24"]
 }
 
+# 가용영역
 variable "availability_zones" {
   description = "Availability zones"
   type        = list(string)
@@ -49,16 +54,11 @@ variable "instance_type" {
   default     = "t3.large"
 }
 
+# SSH
 variable "key_name" {
   description = "SSH key pair name"
   type        = string
-  default     = "devths-prod"
-}
-
-variable "ssh_allowed_cidr" {
-  description = "CIDR blocks allowed to SSH"
-  type        = list(string)
-  default     = ["0.0.0.0/0"]
+  default     = "devths-non-prod"
 }
 
 # CodeDeploy 변수
@@ -68,13 +68,20 @@ variable "deployment_config_name" {
   default     = "CodeDeployDefault.OneAtATime"
 }
 
+# SSM 변수
+variable "ssm_log_retention_days" {
+  description = "SSM session log retention in days"
+  type        = number
+  default     = 7
+}
+
 # Tags
 variable "common_tags" {
   description = "Common tags for all resources"
   type        = map(string)
   default = {
     Project     = "devths"
-    Environment = "production"
+    Environment = "staging"
     ManagedBy   = "Terraform"
   }
 }

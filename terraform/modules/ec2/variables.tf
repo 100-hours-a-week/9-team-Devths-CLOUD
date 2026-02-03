@@ -6,7 +6,6 @@ variable "instance_name" {
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string
-  default     = "t3.large"
 }
 
 variable "key_name" {
@@ -29,12 +28,14 @@ variable "iam_instance_profile_name" {
   type        = string
 }
 
+# AWS 지역
 variable "aws_region" {
   description = "AWS region"
   type        = string
   default     = "ap-northeast-2"
 }
 
+# 공통 태그
 variable "common_tags" {
   description = "Common tags for all resources"
   type        = map(string)

@@ -166,7 +166,7 @@ module "route53" {
 
   domain_name       = "devths.com"
   subdomain_prefix  = "stg"
-  eip_public_ip     = module.ec2.public_ip
+  eip_public_ip     = module.ec2.instance_public_ip
   create_www_record = false
   create_api_record = true
   create_ai_record  = true

@@ -1,4 +1,4 @@
-# CodeDeploy Deployment Group
+# CodeDeploy
 resource "aws_codedeploy_deployment_group" "this" {
   app_name              = var.app_name
   deployment_group_name = var.deployment_group_name

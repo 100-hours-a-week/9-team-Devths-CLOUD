@@ -1,8 +1,10 @@
+# 어플리케이션 이름은 내부에서 진행
 variable "app_name" {
   description = "CodeDeploy application name"
   type        = string
 }
 
+# 배포 그룹
 variable "deployment_group_name" {
   description = "Deployment group name"
   type        = string
@@ -35,12 +37,14 @@ variable "deployment_config_name" {
   default     = "CodeDeployDefault.OneAtATime"
 }
 
+# 자동 롤백 false
 variable "auto_rollback_enabled" {
   description = "Enable auto rollback"
   type        = bool
   default     = false
 }
 
+# 자동 롤백 조건
 variable "auto_rollback_events" {
   description = "Events that trigger auto rollback"
   type        = list(string)

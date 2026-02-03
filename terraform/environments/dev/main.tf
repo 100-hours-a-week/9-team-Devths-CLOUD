@@ -1,3 +1,4 @@
+# 테라폼 설정
 terraform {
   required_version = ">= 1.0"
 
@@ -9,6 +10,7 @@ terraform {
   }
 }
 
+# 테라폼 설정 - 프로바이더
 provider "aws" {
   region = var.aws_region
 }
@@ -70,7 +72,21 @@ module "s3_storage" {
   bucket_name        = "${var.project_name}-${var.environment}"
   purpose            = "Development storage"
   versioning_enabled = true
-  lifecycle_rules    = null
+
+  lifecycle_rules = [
+    {
+      id              = "delete_old_versions"
+      status          = "Enabled"
+      noncurrent_days = 30
+      expiration_days = null
+    },
+    {
+      id              = "delete_old_artifacts"
+      status          = "Enabled"
+      noncurrent_days = null
+      expiration_days = 7
+    }
+  ]
 
   common_tags = var.common_tags
 }
@@ -166,7 +182,7 @@ module "route53" {
 
   domain_name       = "devths.com"
   subdomain_prefix  = "dev"
-  eip_public_ip     = module.ec2.public_ip
+  eip_public_ip     = module.ec2.instance_public_ip
   create_www_record = false
   create_api_record = true
   create_ai_record  = true

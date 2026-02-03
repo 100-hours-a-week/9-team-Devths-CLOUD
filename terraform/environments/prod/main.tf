@@ -1,3 +1,4 @@
+# 테라폼 설정
 terraform {
   required_version = ">= 1.0"
 
@@ -9,6 +10,7 @@ terraform {
   }
 }
 
+# 테라폼 설정 - 프로바이더
 provider "aws" {
   region = var.aws_region
 }
@@ -173,7 +175,7 @@ module "route53" {
   source = "../../modules/route53"
 
   domain_name       = "devths.com"
-  eip_public_ip     = module.ec2.public_ip
+  eip_public_ip     = module.ec2.instance_public_ip
   create_www_record = true
   create_api_record = true
   create_ai_record  = true

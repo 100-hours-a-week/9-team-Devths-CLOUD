@@ -1,3 +1,4 @@
+# EC2
 output "ec2_role_arn" {
   description = "EC2 IAM role ARN"
   value       = aws_iam_role.ec2.arn
@@ -13,6 +14,7 @@ output "ec2_instance_profile_name" {
   value       = aws_iam_instance_profile.ec2.name
 }
 
+# CodeDeploy
 output "codedeploy_role_arn" {
   description = "CodeDeploy IAM role ARN"
   value       = aws_iam_role.codedeploy.arn

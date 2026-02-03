@@ -31,12 +31,13 @@ resource "aws_iam_instance_profile" "ec2" {
   role = aws_iam_role.ec2.name
 }
 
-# AWS Managed Policies
+# SSM 권한
 resource "aws_iam_role_policy_attachment" "ec2_ssm" {
   role       = aws_iam_role.ec2.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+# CodeDeploy 권한
 resource "aws_iam_role_policy_attachment" "ec2_codedeploy" {
   role       = aws_iam_role.ec2.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
@@ -70,6 +71,7 @@ resource "aws_iam_role" "codedeploy" {
   )
 }
 
+# CodeDeploy 권한
 resource "aws_iam_role_policy_attachment" "codedeploy" {
   role       = aws_iam_role.codedeploy.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"

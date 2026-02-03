@@ -1,15 +1,16 @@
-# VPC Outputs
+# VPC 결과
 output "vpc_id" {
   description = "VPC ID"
   value       = module.vpc.vpc_id
 }
 
-# EC2 Outputs
+# EC2 결과
 output "ec2_instance_id" {
   description = "EC2 instance ID"
   value       = module.ec2.instance_id
 }
 
+# 호스팅에 쓰일 IP
 output "ec2_public_ip" {
   description = "EC2 public IP"
   value       = module.ec2.instance_public_ip
