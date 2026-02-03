@@ -1,4 +1,4 @@
-# 최신 Ubuntu 22.04 LTS AMI 가져오기
+# 최신 Ubuntu 22.04
 data "aws_ami" "ubuntu_22_04" {
   most_recent = true
   owners      = ["099720109477"] # Canonical
@@ -23,27 +23,12 @@ resource "aws_instance" "this" {
   vpc_security_group_ids = [var.security_group_id]
   iam_instance_profile   = var.iam_instance_profile_name
 
-  user_data = <<-EOF
-              #!/bin/bash
-              set -e
-
-              # 시스템 업데이트
-              apt-get update
-              apt-get upgrade -y
-
-              # 필수 패키지 설치
-              apt-get install -y ruby-full wget
-
-              # CodeDeploy 에이전트 설치
-              cd /home/ubuntu
-              wget https://aws-codedeploy-${var.aws_region}.s3.${var.aws_region}.amazonaws.com/latest/install
-              chmod +x ./install
-              ./install auto
-
-              # CodeDeploy 에이전트 시작 및 활성화
-              systemctl start codedeploy-agent
-              systemctl enable codedeploy-agent
-              EOF
+  user_data = join("\n", [
+    "#!/bin/bash",
+    file("${path.module}/scripts/user_data.sh"),
+    file("${path.module}/scripts/init_db.sh"),
+    file("${path.module}/scripts/setup_logrotate.sh"),
+  ])
 
   tags = merge(
     var.common_tags,
@@ -53,7 +38,7 @@ resource "aws_instance" "this" {
   )
 }
 
-# Elastic IP
+# 공인 IP
 resource "aws_eip" "this" {
   instance = aws_instance.this.id
   domain   = "vpc"
