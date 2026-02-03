@@ -7,11 +7,13 @@ variable "aws_region" {
 variable "project_name" {
   description = "Project name"
   type        = string
+  default     = "devths"
 }
 
 variable "bucket_name" {
   description = "S3 bucket name for SSM logs"
   type        = string
+  default     = "devths-v1-ssm-log"
 }
 
 variable "cloudwatch_log_group_name" {

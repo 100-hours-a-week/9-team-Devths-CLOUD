@@ -57,14 +57,3 @@ output "codedeploy_ai_group" {
   description = "AI deployment group name"
   value       = module.codedeploy_ai.deployment_group_name
 }
-
-# SSM Outputs
-output "ssm_log_bucket" {
-  description = "S3 bucket for SSM session logs"
-  value       = module.ssm.ssm_log_bucket_id
-}
-
-output "ssm_cloudwatch_log_group" {
-  description = "CloudWatch Log Group for SSM sessions"
-  value       = module.ssm.cloudwatch_log_group_name
-}
