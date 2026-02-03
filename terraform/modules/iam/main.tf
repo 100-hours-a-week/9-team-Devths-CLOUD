@@ -43,6 +43,38 @@ resource "aws_iam_role_policy_attachment" "ec2_codedeploy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
 }
 
+# CloudWatch Metrics 정책
+resource "aws_iam_policy" "cloudwatch_metrics" {
+  name        = "${title(var.project_name)}-CloudWatch-Metrics-${title(var.environment)}"
+  description = "CloudWatch PutMetricData policy for EC2"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "cloudwatch:PutMetricData"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "${title(var.project_name)}-CloudWatch-Metrics-${title(var.environment)}"
+    }
+  )
+}
+
+# CloudWatch Metrics 권한 연결
+resource "aws_iam_role_policy_attachment" "ec2_cloudwatch_metrics" {
+  role       = aws_iam_role.ec2.name
+  policy_arn = aws_iam_policy.cloudwatch_metrics.arn
+}
+
 # SSM Parameter Store 및 KMS 권한
 resource "aws_iam_role_policy" "ec2_ssm_kms" {
   count = var.kms_key_arn != null && var.environment_prefix != null ? 1 : 0

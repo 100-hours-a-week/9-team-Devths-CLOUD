@@ -14,6 +14,16 @@ output "ec2_instance_profile_name" {
   value       = aws_iam_instance_profile.ec2.name
 }
 
+output "cloudwatch_metrics_policy_arn" {
+  description = "CloudWatch metrics policy ARN"
+  value       = aws_iam_policy.cloudwatch_metrics.arn
+}
+
+output "cloudwatch_metrics_policy_name" {
+  description = "CloudWatch metrics policy name"
+  value       = aws_iam_policy.cloudwatch_metrics.name
+}
+
 # CodeDeploy
 output "codedeploy_role_arn" {
   description = "CodeDeploy IAM role ARN"
