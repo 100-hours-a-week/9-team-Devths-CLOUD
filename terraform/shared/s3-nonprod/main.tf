@@ -17,7 +17,7 @@ provider "aws" {
 module "s3_artifact" {
   source = "../../modules/s3"
 
-  bucket_name        = "${var.project_name}-artifact-nonprod"
+  bucket_name        = "${var.project_name}-v1-artifact-nonprod"
   purpose            = "CodeDeploy artifacts for Dev and Staging"
   versioning_enabled = true
 
