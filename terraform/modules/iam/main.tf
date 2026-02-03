@@ -108,6 +108,30 @@ resource "aws_iam_role_policy" "ec2_ssm_kms" {
   })
 }
 
+# S3 Artifact 버킷 권한
+resource "aws_iam_role_policy" "ec2_s3_artifact" {
+  name = "${title(var.project_name)}-EC2-S3-Artifact-${title(var.environment)}"
+  role = aws_iam_role.ec2.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:GetObjectVersion",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          var.artifact_bucket_arn,
+          "${var.artifact_bucket_arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
 # ===================================
 # CodeDeploy IAM Role
 # ===================================

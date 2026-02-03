@@ -15,6 +15,22 @@ provider "aws" {
   region = var.aws_region
 }
 
+# 공유 VPC 참조
+data "terraform_remote_state" "vpc" {
+  backend = "local"
+  config = {
+    path = "../../shared/vpc-nonprod/terraform.tfstate"
+  }
+}
+
+# 공유 S3 Artifact 버킷 참조
+data "terraform_remote_state" "s3" {
+  backend = "local"
+  config = {
+    path = "../../shared/s3-nonprod/terraform.tfstate"
+  }
+}
+
 # SSM Parameter Store 모듈
 module "ssm_parameters" {
   source = "../../modules/ssm_parameters"
@@ -23,61 +39,21 @@ module "ssm_parameters" {
   common_tags        = var.common_tags
 }
 
-# VPC 모듈
-module "vpc" {
-  source = "../../modules/vpc"
-
-  project_name         = var.project_name
-  environment          = var.environment
-  vpc_cidr             = var.vpc_cidr
-  public_subnet_cidrs  = var.public_subnet_cidrs
-  private_subnet_cidrs = var.private_subnet_cidrs
-  availability_zones   = var.availability_zones
-  ssh_allowed_cidr     = null  # SSH 비활성화
-  additional_ingress_rules = []
-  common_tags          = var.common_tags
-}
-
 # IAM 모듈
 module "iam" {
   source = "../../modules/iam"
 
-  project_name       = var.project_name
-  environment        = var.environment
-  environment_prefix = "Dev"
-  kms_key_arn        = module.ssm_parameters.kms_key_arn
-  common_tags        = var.common_tags
+  project_name        = var.project_name
+  environment         = var.environment
+  environment_prefix  = "Dev"
+  kms_key_arn         = module.ssm_parameters.kms_key_arn
+  artifact_bucket_arn = data.terraform_remote_state.s3.outputs.artifact_bucket_arn
+  common_tags         = var.common_tags
 
   depends_on = [module.ssm_parameters]
 }
 
-# S3 모듈 - Artifact 버킷
-module "s3_artifact" {
-  source = "../../modules/s3"
-
-  bucket_name        = "${var.project_name}-artifact-${var.environment}"
-  purpose            = "CodeDeploy artifacts"
-  versioning_enabled = true
-
-  lifecycle_rules = [
-    {
-      id              = "delete_old_versions"
-      status          = "Enabled"
-      noncurrent_days = 90
-      expiration_days = null
-    },
-    {
-      id              = "delete_old_artifacts"
-      status          = "Enabled"
-      noncurrent_days = null
-      expiration_days = 180
-    }
-  ]
-
-  common_tags = var.common_tags
-}
-
-# S3 모듈 - Storage 버킷
+# S3 모듈 - Storage 버킷 (환경별로 분리)
 module "s3_storage" {
   source = "../../modules/s3"
 
@@ -110,8 +86,8 @@ module "ec2" {
   instance_name              = "${var.project_name}-v1-${var.environment}"
   instance_type              = var.instance_type
   key_name                   = var.key_name
-  subnet_id                  = module.vpc.public_subnet_ids[0]
-  security_group_id          = module.vpc.ec2_security_group_id
+  subnet_id                  = data.terraform_remote_state.vpc.outputs.public_subnet_ids[0]
+  security_group_id          = data.terraform_remote_state.vpc.outputs.ec2_security_group_id
   iam_instance_profile_name  = module.iam.ec2_instance_profile_name
   aws_region                 = var.aws_region
   enable_eip                 = var.enable_eip

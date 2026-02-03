@@ -18,6 +18,11 @@ variable "kms_key_arn" {
   type        = string
 }
 
+variable "artifact_bucket_arn" {
+  description = "S3 artifact bucket ARN for CodeDeploy"
+  type        = string
+}
+
 variable "common_tags" {
   description = "Common tags for all resources"
   type        = map(string)

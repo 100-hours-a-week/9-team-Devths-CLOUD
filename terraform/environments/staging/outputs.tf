@@ -1,7 +1,7 @@
-# VPC Outputs
+# VPC Outputs (공유 VPC)
 output "vpc_id" {
-  description = "VPC ID"
-  value       = module.vpc.vpc_id
+  description = "Shared VPC ID"
+  value       = data.terraform_remote_state.vpc.outputs.vpc_id
 }
 
 # EC2 Outputs
@@ -22,8 +22,8 @@ output "ec2_private_ip" {
 
 # S3 Outputs
 output "s3_artifact_bucket" {
-  description = "S3 artifact bucket name"
-  value       = module.s3_artifact.bucket_name
+  description = "Shared S3 artifact bucket name"
+  value       = data.terraform_remote_state.s3.outputs.artifact_bucket_name
 }
 
 output "s3_storage_bucket" {
