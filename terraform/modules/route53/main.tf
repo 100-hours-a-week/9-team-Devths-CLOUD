@@ -1,4 +1,4 @@
-# Route53 호스팅 영역 데이터 소스 (기존 도메인 사용)
+# Route53 호스팅 영역 데이터 소스
 data "aws_route53_zone" "this" {
   name         = var.domain_name
   private_zone = false
