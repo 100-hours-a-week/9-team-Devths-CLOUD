@@ -35,6 +35,13 @@ variable "aws_region" {
   default     = "ap-northeast-2"
 }
 
+# EIP 활성화 여부
+variable "enable_eip" {
+  description = "Enable Elastic IP for the instance"
+  type        = bool
+  default     = true
+}
+
 # 공통 태그
 variable "common_tags" {
   description = "Common tags for all resources"

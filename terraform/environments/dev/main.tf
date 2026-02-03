@@ -81,7 +81,7 @@ module "s3_artifact" {
 module "s3_storage" {
   source = "../../modules/s3"
 
-  bucket_name        = "${var.project_name}-${var.environment}"
+  bucket_name        = "${var.project_name}-storage-${var.environment}"
   purpose            = "Development storage"
   versioning_enabled = true
 
@@ -114,6 +114,7 @@ module "ec2" {
   security_group_id          = module.vpc.ec2_security_group_id
   iam_instance_profile_name  = module.iam.ec2_instance_profile_name
   aws_region                 = var.aws_region
+  enable_eip                 = var.enable_eip
 
   common_tags = var.common_tags
 
@@ -174,8 +175,9 @@ module "codedeploy_ai" {
   depends_on = [module.ec2, module.iam]
 }
 
-# Route53 모듈
+# Route53 모듈 (선택적)
 module "route53" {
+  count  = var.enable_route53 ? 1 : 0
   source = "../../modules/route53"
 
   domain_name       = "devths.com"

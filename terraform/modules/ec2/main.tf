@@ -38,8 +38,9 @@ resource "aws_instance" "this" {
   )
 }
 
-# 공인 IP
+# 공인 IP (선택적)
 resource "aws_eip" "this" {
+  count    = var.enable_eip ? 1 : 0
   instance = aws_instance.this.id
   domain   = "vpc"
 
