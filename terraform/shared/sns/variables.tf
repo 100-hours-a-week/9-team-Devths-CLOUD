@@ -19,7 +19,7 @@ variable "discord_webhook_url" {
 variable "discord_role_id" {
   description = "Discord role ID to mention (optional)"
   type        = string
-  default     = ""
+  sensitive   = true
 }
 
 variable "log_group_name" {

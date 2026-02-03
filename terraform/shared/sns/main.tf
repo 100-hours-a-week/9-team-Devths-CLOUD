@@ -40,7 +40,7 @@ resource "aws_sns_topic" "security_alerts" {
 
 # Lambda IAM Role
 resource "aws_iam_role" "lambda_role" {
-  name = "${var.project_name}-discord-notifier-role"
+  name = "Devths-Discord-Notifier"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
