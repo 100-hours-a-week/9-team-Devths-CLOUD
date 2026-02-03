@@ -23,6 +23,16 @@ variable "artifact_bucket_arn" {
   type        = string
 }
 
+variable "ssm_log_bucket_arn" {
+  description = "S3 bucket ARN for SSM Session Manager logs"
+  type        = string
+}
+
+variable "cloudwatch_log_group_arn" {
+  description = "CloudWatch Log Group ARN for SSM sessions"
+  type        = string
+}
+
 variable "common_tags" {
   description = "Common tags for all resources"
   type        = map(string)

@@ -20,6 +20,14 @@ moved {
   to   = module.route53
 }
 
+# 공유 SSM Session Manager 로그 설정 참조
+data "terraform_remote_state" "ssm" {
+  backend = "local"
+  config = {
+    path = "../../shared/ssm/terraform.tfstate"
+  }
+}
+
 # SSM Parameter Store 모듈
 module "ssm_parameters" {
   source = "../../modules/ssm_parameters"
@@ -55,13 +63,16 @@ module "vpc" {
 module "iam" {
   source = "../../modules/iam"
 
-  project_name       = var.project_name
-  environment        = var.environment
-  environment_prefix = "Prod"
-  kms_key_arn        = module.ssm_parameters.kms_key_arn
-  common_tags        = var.common_tags
+  project_name               = var.project_name
+  environment                = var.environment
+  environment_prefix         = "Prod"
+  kms_key_arn                = module.ssm_parameters.kms_key_arn
+  artifact_bucket_arn        = module.s3_artifact.bucket_arn
+  ssm_log_bucket_arn         = data.terraform_remote_state.ssm.outputs.ssm_log_bucket_arn
+  cloudwatch_log_group_arn   = data.terraform_remote_state.ssm.outputs.cloudwatch_log_group_arn
+  common_tags                = var.common_tags
 
-  depends_on = [module.ssm_parameters]
+  depends_on = [module.ssm_parameters, module.s3_artifact]
 }
 
 # S3 모듈 - Artifact 버킷

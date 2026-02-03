@@ -132,6 +132,62 @@ resource "aws_iam_role_policy" "ec2_s3_artifact" {
   })
 }
 
+# SSM Session Manager 로그 권한 (CloudWatch Logs)
+resource "aws_iam_role_policy" "ec2_ssm_logs" {
+  name = "${title(var.project_name)}-EC2-SSM-Logs-${title(var.environment)}"
+  role = aws_iam_role.ec2.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:DescribeLogGroups"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "${var.cloudwatch_log_group_arn}:*"
+      }
+    ]
+  })
+}
+
+# SSM Session Manager 로그 권한 (S3)
+resource "aws_iam_role_policy" "ec2_ssm_s3_logs" {
+  name = "${title(var.project_name)}-EC2-SSM-S3-Logs-${title(var.environment)}"
+  role = aws_iam_role.ec2.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "S3BucketCheck"
+        Effect = "Allow"
+        Action = [
+          "s3:GetBucketLocation"
+        ]
+        Resource = var.ssm_log_bucket_arn
+      },
+      {
+        Sid    = "SSMLogging"
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetEncryptionConfiguration"
+        ]
+        Resource = "${var.ssm_log_bucket_arn}/*"
+      }
+    ]
+  })
+}
+
 # ===================================
 # CodeDeploy IAM Role
 # ===================================
