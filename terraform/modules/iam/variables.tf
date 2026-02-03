@@ -11,13 +11,11 @@ variable "environment" {
 variable "environment_prefix" {
   description = "Environment prefix for SSM parameters (Dev, Stg, Prod)"
   type        = string
-  default     = null
 }
 
 variable "kms_key_arn" {
   description = "KMS key ARN for SSM parameter encryption"
   type        = string
-  default     = null
 }
 
 variable "common_tags" {

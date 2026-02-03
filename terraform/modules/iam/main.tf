@@ -77,9 +77,8 @@ resource "aws_iam_role_policy_attachment" "ec2_cloudwatch_metrics" {
 
 # SSM Parameter Store 및 KMS 권한
 resource "aws_iam_role_policy" "ec2_ssm_kms" {
-  count = var.kms_key_arn != null && var.environment_prefix != null ? 1 : 0
-  name  = "${title(var.project_name)}-EC2-SSM-KMS-${title(var.environment)}"
-  role  = aws_iam_role.ec2.id
+  name = "${title(var.project_name)}-EC2-SSM-KMS-${title(var.environment)}"
+  role = aws_iam_role.ec2.id
 
   policy = jsonencode({
     Version = "2012-10-17"
