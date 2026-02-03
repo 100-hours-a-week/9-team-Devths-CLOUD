@@ -23,6 +23,15 @@ resource "aws_instance" "this" {
   vpc_security_group_ids = [var.security_group_id]
   iam_instance_profile   = var.iam_instance_profile_name
 
+  root_block_device {
+    volume_size           = 30
+    volume_type           = "gp3"
+    iops                  = 3000
+    throughput            = 125
+    delete_on_termination = true
+    encrypted             = true
+  }
+
   user_data = join("\n", [
     "#!/bin/bash",
     file("${path.module}/scripts/user_data.sh"),
