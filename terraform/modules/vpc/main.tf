@@ -108,15 +108,6 @@ resource "aws_security_group" "ec2" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # 랭퓨즈
-  ingress {
-    description = "HTTPS"
-    from_port   = 3001
-    to_port     = 3001
-    protocol    = "tcp"
-    cidr_blocks = ["3.39.223.35/32"]
-  }
-
   # 추가할 포트
   dynamic "ingress" {
     for_each = var.additional_ingress_rules
