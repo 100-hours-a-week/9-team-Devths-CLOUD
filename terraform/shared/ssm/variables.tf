@@ -52,6 +52,12 @@ variable "max_session_duration" {
   default     = "60"
 }
 
+variable "sns_topic_arn" {
+  description = "SNS topic ARN for CloudWatch Alarm notifications (optional)"
+  type        = string
+  default     = ""
+}
+
 variable "common_tags" {
   description = "Common tags for all resources"
   type        = map(string)

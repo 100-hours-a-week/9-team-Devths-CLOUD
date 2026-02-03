@@ -22,3 +22,18 @@ output "session_manager_document_name" {
   description = "SSM Session Manager document name"
   value       = aws_ssm_document.session_manager_prefs.name
 }
+
+output "metric_filter_name" {
+  description = "CloudWatch Metric Filter name for dangerous commands"
+  value       = aws_cloudwatch_log_metric_filter.dangerous_commands.name
+}
+
+output "alarm_name" {
+  description = "CloudWatch Alarm name for dangerous commands"
+  value       = aws_cloudwatch_metric_alarm.dangerous_commands_alarm.alarm_name
+}
+
+output "alarm_arn" {
+  description = "CloudWatch Alarm ARN for dangerous commands"
+  value       = aws_cloudwatch_metric_alarm.dangerous_commands_alarm.arn
+}
