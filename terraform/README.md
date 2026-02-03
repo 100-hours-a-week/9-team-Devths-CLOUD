@@ -133,8 +133,8 @@ terraform apply
 ```
 
 **참고**:
-- Dev/Staging 환경은 기본적으로 Elastic IP와 Route53이 비활성화되어 있습니다
-- Production 환경은 Elastic IP와 Route53이 활성화되어 있습니다 (도메인 사용 시)
+- Dev/Staging 환경은 Elastic IP를 사용하지 않으며(`enable_eip = false`), Route53 레코드는 EC2 Public IP 기준으로 생성됩니다 (IP 변경 시 `terraform apply` 재실행 필요)
+- Production 환경은 Elastic IP를 사용하여(`enable_eip = true`) 고정 IP 기반으로 Route53 레코드를 생성합니다
 
 ### 4. SSM Parameter 값 설정
 
@@ -204,7 +204,7 @@ EC2와 CodeDeploy에 필요한 IAM 역할 및 정책을 생성합니다.
 
 ### CodeDeploy 모듈 (`modules/codedeploy`)
 
-애플리케이션 자동 배포를 위한 CodeDeploy 리소스를 생성합니다.
+환경별 Deployment Group을 생성합니다. CodeDeploy Application(FE/BE/AI)은 `shared/codedeploy`에서 공통으로 생성합니다.
 
 **배포 그룹:**
 - `Devths-V1-FE-Dev-Group`: Frontend 배포
@@ -237,7 +237,7 @@ EC2와 CodeDeploy에 필요한 IAM 역할 및 정책을 생성합니다.
 
 ### Staging 환경
 
-- **도메인**: `staging.devths.com`
+- **도메인**: `stg.devths.com`
 - Production 배포 전 테스트 환경
 
 ### Production 환경
