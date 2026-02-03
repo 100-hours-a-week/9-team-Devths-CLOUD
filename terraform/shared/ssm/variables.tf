@@ -1,3 +1,9 @@
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+  default     = "ap-northeast-2"
+}
+
 variable "project_name" {
   description = "Project name"
   type        = string
@@ -6,6 +12,18 @@ variable "project_name" {
 variable "bucket_name" {
   description = "S3 bucket name for SSM logs"
   type        = string
+}
+
+variable "cloudwatch_log_group_name" {
+  description = "CloudWatch Log Group name for SSM sessions"
+  type        = string
+  default     = "SSMSessionMangerLogGroup"
+}
+
+variable "ssm_document_name" {
+  description = "SSM Document name"
+  type        = string
+  default     = "SSM-SessionManagerRunShell"
 }
 
 variable "log_retention_days" {
@@ -30,12 +48,6 @@ variable "max_session_duration" {
   description = "Maximum session duration in minutes"
   type        = string
   default     = "60"
-}
-
-variable "kms_key_id" {
-  description = "KMS key ID for encryption (optional)"
-  type        = string
-  default     = null
 }
 
 variable "common_tags" {

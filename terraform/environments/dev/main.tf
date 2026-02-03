@@ -91,20 +91,6 @@ module "s3_storage" {
   common_tags = var.common_tags
 }
 
-# SSM 모듈 - Session Manager 설정
-module "ssm" {
-  source = "../../modules/ssm"
-
-  project_name                  = var.project_name
-  bucket_name                   = "devths-ssm-log"
-  log_retention_days            = var.ssm_log_retention_days
-  cloudwatch_streaming_enabled  = true
-  idle_session_timeout          = "20"
-  max_session_duration          = "60"
-
-  common_tags = var.common_tags
-}
-
 # EC2 모듈
 module "ec2" {
   source = "../../modules/ec2"

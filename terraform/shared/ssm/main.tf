@@ -1,3 +1,18 @@
+terraform {
+  required_version = ">= 1.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = var.aws_region
+}
+
 # SSM Session Manager 로그용 S3 버킷
 resource "aws_s3_bucket" "ssm_logs" {
   bucket = var.bucket_name
@@ -34,20 +49,20 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "ssm_logs" {
 
 # CloudWatch Logs 그룹 - SSM 세션 로그
 resource "aws_cloudwatch_log_group" "ssm_sessions" {
-  name              = "SSMSessionMangerLogGroup"
+  name              = var.cloudwatch_log_group_name
   retention_in_days = var.log_retention_days
 
   tags = merge(
     var.common_tags,
     {
-      Name = "SSMSessionMangerLogGroup"
+      Name = var.cloudwatch_log_group_name
     }
   )
 }
 
 # SSM Document - Session Manager 설정
 resource "aws_ssm_document" "session_manager_prefs" {
-  name            = "SSM-SessionManagerRunShell"
+  name            = var.ssm_document_name
   document_type   = "Session"
   document_format = "JSON"
 
@@ -72,38 +87,7 @@ resource "aws_ssm_document" "session_manager_prefs" {
   tags = merge(
     var.common_tags,
     {
-      Name = "SSM-SessionManagerRunShell"
-    }
-  )
-}
-
-# SSM Session Manager preferences 설정
-resource "aws_ssm_document" "session_preferences" {
-  name            = "SSM-SessionManagerPreferences"
-  document_type   = "Session"
-  document_format = "JSON"
-
-  content = jsonencode({
-    schemaVersion = "1.0"
-    description   = "Session Manager Preferences"
-    sessionType   = "Standard_Stream"
-    inputs = {
-      s3BucketName                = aws_s3_bucket.ssm_logs.id
-      s3KeyPrefix                 = "session-logs/"
-      s3EncryptionEnabled         = true
-      cloudWatchLogGroupName      = aws_cloudwatch_log_group.ssm_sessions.name
-      cloudWatchEncryptionEnabled = true
-      cloudWatchStreamingEnabled  = var.cloudwatch_streaming_enabled
-      kmsKeyId                    = var.kms_key_id != null ? var.kms_key_id : ""
-      runAsEnabled                = false
-      runAsDefaultUser            = ""
-    }
-  })
-
-  tags = merge(
-    var.common_tags,
-    {
-      Name = "SSM-SessionManagerPreferences"
+      Name = var.ssm_document_name
     }
   )
 }
