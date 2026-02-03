@@ -1,0 +1,17 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Cloud Directory E2E
+e2e/node_modules/
+e2e/test-results/
+e2e/playwright-report/
+e2e/.env

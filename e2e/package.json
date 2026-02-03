@@ -1,0 +1,19 @@
+{
+    "name": "devths-cloud-e2e",
+    "version": "1.0.0",
+    "description": "End-to-end testing for Devths Cloud",
+    "scripts": {
+        "test": "playwright test",
+        "test:ui": "playwright test --ui",
+        "test:debug": "playwright test --debug",
+        "codegen": "playwright codegen"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "@playwright/test": "^1.58.1",
+        "@types/node": "^25.2.0",
+        "typescript": "^5.9.3"
+    }
+}
