@@ -1,4 +1,4 @@
-# 어플리케이션 이름은 내부에서 진행
+# CodeDeploy Application 이름(공유 스택에서 생성)
 variable "app_name" {
   description = "CodeDeploy application name"
   type        = string

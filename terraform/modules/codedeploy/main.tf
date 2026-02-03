@@ -1,20 +1,6 @@
-# CodeDeploy Application
-resource "aws_codedeploy_app" "this" {
-  name             = var.app_name
-  compute_platform = "Server"
-
-  tags = merge(
-    var.common_tags,
-    {
-      Name    = var.app_name
-      Service = var.service_name
-    }
-  )
-}
-
 # CodeDeploy Deployment Group
 resource "aws_codedeploy_deployment_group" "this" {
-  app_name              = aws_codedeploy_app.this.name
+  app_name              = var.app_name
   deployment_group_name = var.deployment_group_name
   service_role_arn      = var.service_role_arn
 

@@ -33,7 +33,7 @@ module "vpc" {
   public_subnet_cidrs  = var.public_subnet_cidrs
   private_subnet_cidrs = var.private_subnet_cidrs
   availability_zones   = var.availability_zones
-  ssh_allowed_cidr     = null  # SSH 비활성화
+  ssh_allowed_cidr     = null # SSH 비활성화
   additional_ingress_rules = [
     {
       from_port   = 3001
@@ -43,7 +43,7 @@ module "vpc" {
       description = "Backend API port"
     }
   ]
-  common_tags          = var.common_tags
+  common_tags = var.common_tags
 }
 
 # IAM 모듈
@@ -101,20 +101,21 @@ module "s3_storage" {
 module "ec2" {
   source = "../../modules/ec2"
 
-  instance_name              = "${var.project_name}-v1-${var.environment}"
-  instance_type              = var.instance_type
-  key_name                   = var.key_name
-  subnet_id                  = module.vpc.public_subnet_ids[0]
-  security_group_id          = module.vpc.ec2_security_group_id
-  iam_instance_profile_name  = module.iam.ec2_instance_profile_name
-  aws_region                 = var.aws_region
-  enable_eip                 = var.enable_eip
+  instance_name             = "${var.project_name}-v1-${var.environment}"
+  instance_type             = var.instance_type
+  key_name                  = var.key_name
+  subnet_id                 = module.vpc.public_subnet_ids[0]
+  security_group_id         = module.vpc.ec2_security_group_id
+  iam_instance_profile_name = module.iam.ec2_instance_profile_name
+  aws_region                = var.aws_region
+  enable_eip                = var.enable_eip
 
   common_tags = var.common_tags
 
   depends_on = [module.iam]
 }
 
+# CodeDeploy Application은 `terraform/shared/codedeploy`에서 공통으로 생성합니다.
 # CodeDeploy 모듈 - Frontend
 module "codedeploy_fe" {
   source = "../../modules/codedeploy"
