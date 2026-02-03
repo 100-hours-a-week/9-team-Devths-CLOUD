@@ -126,7 +126,7 @@ module "ec2" {
 module "codedeploy_fe" {
   source = "../../modules/codedeploy"
 
-  app_name               = "Devhts-V1-FE"
+  app_name               = "Devths-V1-FE"
   deployment_group_name  = "Devths-V1-FE-Dev-Group"
   service_role_arn       = module.iam.codedeploy_role_arn
   service_name           = "Frontend"
@@ -144,7 +144,7 @@ module "codedeploy_fe" {
 module "codedeploy_be" {
   source = "../../modules/codedeploy"
 
-  app_name               = "Devhts-V1-BE"
+  app_name               = "Devths-V1-BE"
   deployment_group_name  = "Devths-V1-BE-Dev-Group"
   service_role_arn       = module.iam.codedeploy_role_arn
   service_name           = "Backend"
@@ -162,7 +162,7 @@ module "codedeploy_be" {
 module "codedeploy_ai" {
   source = "../../modules/codedeploy"
 
-  app_name               = "Devhts-V1-AI"
+  app_name               = "Devths-V1-AI"
   deployment_group_name  = "Devths-V1-AI-Dev-Group"
   service_role_arn       = module.iam.codedeploy_role_arn
   service_name           = "AI"
