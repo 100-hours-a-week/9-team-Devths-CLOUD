@@ -73,14 +73,18 @@ resource "aws_ssm_document" "session_manager_prefs" {
     inputs = {
       s3BucketName                = aws_s3_bucket.ssm_logs.id
       s3KeyPrefix                 = "session-logs/"
-      s3EncryptionEnabled         = true
+      s3EncryptionEnabled         = false
       cloudWatchLogGroupName      = aws_cloudwatch_log_group.ssm_sessions.name
-      cloudWatchEncryptionEnabled = true
+      cloudWatchEncryptionEnabled = false
       cloudWatchStreamingEnabled  = var.cloudwatch_streaming_enabled
       idleSessionTimeout          = var.idle_session_timeout
       maxSessionDuration          = var.max_session_duration
       runAsEnabled                = false
       runAsDefaultUser            = ""
+      shellProfile = {
+        windows = ""
+        linux   = "exec /bin/bash\nsudo su - ubuntu\ncd ~"
+      }
     }
   })
 
