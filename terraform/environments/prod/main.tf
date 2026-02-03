@@ -15,6 +15,14 @@ provider "aws" {
   region = var.aws_region
 }
 
+# SSM Parameter Store 모듈
+module "ssm_parameters" {
+  source = "../../modules/ssm_parameters"
+
+  environment_prefix = "Prod"
+  common_tags        = var.common_tags
+}
+
 # VPC 모듈
 module "vpc" {
   source = "../../modules/vpc"
@@ -42,9 +50,13 @@ module "vpc" {
 module "iam" {
   source = "../../modules/iam"
 
-  project_name = var.project_name
-  environment  = var.environment
-  common_tags  = var.common_tags
+  project_name       = var.project_name
+  environment        = var.environment
+  environment_prefix = "Prod"
+  kms_key_arn        = module.ssm_parameters.kms_key_arn
+  common_tags        = var.common_tags
+
+  depends_on = [module.ssm_parameters]
 }
 
 # S3 모듈 - Artifact 버킷
@@ -83,14 +95,6 @@ module "s3_storage" {
   lifecycle_rules    = null
 
   common_tags = var.common_tags
-}
-
-# SSM Parameter Store 모듈
-module "ssm_parameters" {
-  source = "../../modules/ssm_parameters"
-
-  environment_prefix = "Prod"
-  common_tags        = var.common_tags
 }
 
 # EC2 모듈

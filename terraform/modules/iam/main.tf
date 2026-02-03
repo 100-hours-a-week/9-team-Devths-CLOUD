@@ -43,6 +43,40 @@ resource "aws_iam_role_policy_attachment" "ec2_codedeploy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
 }
 
+# SSM Parameter Store 및 KMS 권한
+resource "aws_iam_role_policy" "ec2_ssm_kms" {
+  count = var.kms_key_arn != null && var.environment_prefix != null ? 1 : 0
+  name  = "${title(var.project_name)}-EC2-SSM-KMS-${title(var.environment)}"
+  role  = aws_iam_role.ec2.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameter",
+          "ssm:GetParameters",
+          "ssm:GetParametersByPath"
+        ]
+        Resource = [
+          "arn:aws:ssm:*:*:parameter/${var.environment_prefix}/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:Decrypt",
+          "kms:DescribeKey"
+        ]
+        Resource = [
+          var.kms_key_arn
+        ]
+      }
+    ]
+  })
+}
+
 # ===================================
 # CodeDeploy IAM Role
 # ===================================

@@ -1,3 +1,25 @@
+# KMS Key for SSM Parameter Encryption
+resource "aws_kms_key" "ssm_params" {
+  description             = "KMS key for SSM Parameter Store encryption - ${var.environment_prefix}"
+  deletion_window_in_days = 10
+  enable_key_rotation     = true
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name        = "ssm-params-${lower(var.environment_prefix)}"
+      Environment = var.environment_prefix
+      Purpose     = "SSM Parameter Store Encryption"
+    }
+  )
+}
+
+# KMS Key Alias
+resource "aws_kms_alias" "ssm_params" {
+  name          = "alias/ssm-params-${lower(var.environment_prefix)}"
+  target_key_id = aws_kms_key.ssm_params.key_id
+}
+
 # Backend Parameters
 resource "aws_ssm_parameter" "be_params" {
   for_each = local.be_params
@@ -6,6 +28,7 @@ resource "aws_ssm_parameter" "be_params" {
   description = each.value.description
   type        = each.value.type
   value       = each.value.value != null ? each.value.value : "PLACEHOLDER_${each.key}"
+  key_id      = aws_kms_key.ssm_params.key_id
 
   tags = merge(
     var.common_tags,
@@ -19,6 +42,8 @@ resource "aws_ssm_parameter" "be_params" {
   lifecycle {
     ignore_changes = [value]
   }
+
+  depends_on = [aws_kms_key.ssm_params]
 }
 
 # AI Parameters
@@ -29,6 +54,7 @@ resource "aws_ssm_parameter" "ai_params" {
   description = each.value.description
   type        = each.value.type
   value       = each.value.value != null ? each.value.value : "PLACEHOLDER_${each.key}"
+  key_id      = aws_kms_key.ssm_params.key_id
 
   tags = merge(
     var.common_tags,
@@ -42,6 +68,8 @@ resource "aws_ssm_parameter" "ai_params" {
   lifecycle {
     ignore_changes = [value]
   }
+
+  depends_on = [aws_kms_key.ssm_params]
 }
 
 locals {
