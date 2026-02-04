@@ -364,7 +364,7 @@ ignoreregex =
 EOF
 
 # 디스코드 알림
-cat > /etc/fail2ban/action.d/discord-notify << 'EOF'
+cat > /etc/fail2ban/action.d/discord-notify.conf << 'EOF'
 [Definition]
 actionban = curl -H "Content-Type: application/json" -X POST -d '{
     "content": "⚠️  <@&1462613320942223410> **[${server_label}] 보안 위협 감지!**",
