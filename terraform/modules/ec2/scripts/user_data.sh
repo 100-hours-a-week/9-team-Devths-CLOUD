@@ -448,7 +448,6 @@ cat <<EOF > /opt/aws/amazon-cloudwatch-agent/bin/config.json
   "metrics": {
     "namespace": "${cloudwatch_namespace}",
     "append_dimensions": {
-      "InstanceId": "$${aws:InstanceId}",
       "Environment": "${environment}"
     },
     "metrics_collected": {
