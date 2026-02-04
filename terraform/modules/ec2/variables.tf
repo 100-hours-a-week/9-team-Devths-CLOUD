@@ -61,3 +61,10 @@ variable "domain_name" {
   type        = string
   default     = "devths.com"
 }
+
+# 디스코드 웹훅 URL (fail2ban 알림용)
+variable "discord_webhook_url" {
+  description = "Discord webhook URL for fail2ban notifications"
+  type        = string
+  sensitive   = true
+}

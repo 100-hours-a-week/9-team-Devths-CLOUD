@@ -27,6 +27,9 @@ locals {
 
   # SSL 인증서 경로에 사용될 도메인 (Certbot이 첫 번째 도메인으로 디렉토리 생성)
   ssl_cert_domain = var.environment == "prod" ? var.domain_name : "${local.env_prefix}${var.domain_name}"
+
+  # 서버 레이블 (fail2ban 알림용)
+  server_label = var.environment == "prod" ? "운영 서버" : var.environment == "stg" ? "스테이징 서버" : "개발 서버"
 }
 
 # EC2 인스턴스
@@ -50,11 +53,14 @@ resource "aws_instance" "this" {
   user_data = join("\n", [
     "#!/bin/bash",
     templatefile("${path.module}/scripts/user_data.sh", {
-      env_prefix      = local.env_prefix
-      domain_name     = var.domain_name
-      fe_server_names = local.fe_server_names
-      certbot_domains = local.certbot_domains
-      ssl_cert_domain = local.ssl_cert_domain
+      env_prefix          = local.env_prefix
+      domain_name         = var.domain_name
+      fe_server_names     = local.fe_server_names
+      certbot_domains     = local.certbot_domains
+      ssl_cert_domain     = local.ssl_cert_domain
+      environment         = var.environment
+      server_label        = local.server_label
+      discord_webhook_url = var.discord_webhook_url
     }),
     file("${path.module}/scripts/init_db.sh"),
     file("${path.module}/scripts/setup_logrotate.sh"),

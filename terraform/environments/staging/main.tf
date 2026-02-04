@@ -110,6 +110,7 @@ module "ec2" {
   enable_eip                = var.enable_eip
   environment               = var.environment
   domain_name               = "devths.com"
+  discord_webhook_url       = var.discord_webhook_url
 
   common_tags = var.common_tags
 

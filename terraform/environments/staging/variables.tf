@@ -72,6 +72,13 @@ variable "ai_parameter_values" {
   sensitive   = true
 }
 
+# Discord Webhook URL (fail2ban 알림용)
+variable "discord_webhook_url" {
+  description = "Discord webhook URL for fail2ban security alerts"
+  type        = string
+  sensitive   = true
+}
+
 # Tags
 variable "common_tags" {
   description = "Common tags for all resources"

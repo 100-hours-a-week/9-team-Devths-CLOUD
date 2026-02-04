@@ -175,6 +175,22 @@ locals {
       type        = "SecureString"
       description = "Log Level"
     }
+    RATELIMIT_GOOGLE_CALENDAR = {
+      type        = "SecureString"
+      description = "RATELIMIT_GOOGLE_CALENDAR"
+    }
+    RATELIMIT_GOOGLE_TASKS = {
+      type        = "SecureString"
+      description = "RATELIMIT_GOOGLE_TASKS"
+    }
+    RATELIMIT_FASTAPI = {
+      type        = "SecureString"
+      description = "RATELIMIT_FASTAPI"
+    }
+    RATELIMIT_GOOGLE_OAUTH = {
+      type        = "SecureString"
+      description = "RATELIMIT_GOOGLE_OAUTH"
+    }
   }
 
   # AI Parameters
