@@ -132,6 +132,31 @@ resource "aws_iam_role_policy" "ec2_s3_artifact" {
   })
 }
 
+# S3 Storage 버킷 권한 (presigned URL 생성용)
+resource "aws_iam_role_policy" "ec2_s3_storage" {
+  name = "${title(var.project_name)}-EC2-S3-Storage-${title(var.environment)}"
+  role = aws_iam_role.ec2.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          var.storage_bucket_arn,
+          "${var.storage_bucket_arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
 # SSM Session Manager 로그 권한 (CloudWatch Logs)
 resource "aws_iam_role_policy" "ec2_ssm_logs" {
   name = "${title(var.project_name)}-EC2-SSM-Logs-${title(var.environment)}"

@@ -23,6 +23,11 @@ variable "artifact_bucket_arn" {
   type        = string
 }
 
+variable "storage_bucket_arn" {
+  description = "S3 storage bucket ARN for application data"
+  type        = string
+}
+
 variable "ssm_log_bucket_arn" {
   description = "S3 bucket ARN for SSM Session Manager logs"
   type        = string
