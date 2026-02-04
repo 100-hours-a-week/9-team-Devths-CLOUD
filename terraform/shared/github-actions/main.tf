@@ -21,6 +21,7 @@ provider "aws" {
 # IAM 유저 생성
 resource "aws_iam_user" "github_actions" {
   name = var.github_actions_user_name
+  path = "/service-accounts/"
 
   tags = merge(
     var.common_tags,
