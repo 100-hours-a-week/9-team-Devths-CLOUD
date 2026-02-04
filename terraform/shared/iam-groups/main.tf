@@ -22,6 +22,20 @@ resource "aws_iam_group" "developers" {
   path = "/"
 }
 
+resource "aws_iam_group" "service_accounts" {
+  name = "service-accounts"
+  path = "/"
+}
+
+# ===================================
+# 외부 IAM 사용자 참조
+# ===================================
+
+# GitHub Actions IAM 사용자 (shared/github-actions에서 생성됨)
+data "aws_iam_user" "github_actions" {
+  user_name = var.github_actions_user_name
+}
+
 # ===================================
 # IAM 사용자
 # ===================================
@@ -342,6 +356,13 @@ resource "aws_iam_group_policy_attachment" "developers_ec2_readonly" {
 }
 
 # ===================================
+# service-accounts 정책 연결
+# ===================================
+
+# 서비스 계정은 프로그래밍 방식 접근만 하므로 추가 정책 불필요
+# 각 서비스 계정은 개별적으로 필요한 S3 정책만 보유
+
+# ===================================
 # S3 전용 서비스 계정 (로컬 개발용 - 환경별 분리)
 # ===================================
 
@@ -391,6 +412,13 @@ resource "aws_iam_user_policy_attachment" "s3_service_dev" {
   policy_arn = aws_iam_policy.s3_storage_dev.arn
 }
 
+resource "aws_iam_user_group_membership" "s3_service_dev" {
+  user = aws_iam_user.s3_service_dev.name
+  groups = [
+    aws_iam_group.service_accounts.name
+  ]
+}
+
 # Staging 환경 S3 서비스 계정
 resource "aws_iam_user" "s3_service_staging" {
   name = "devths-s3-service-staging"
@@ -437,6 +465,13 @@ resource "aws_iam_user_policy_attachment" "s3_service_staging" {
   policy_arn = aws_iam_policy.s3_storage_staging.arn
 }
 
+resource "aws_iam_user_group_membership" "s3_service_staging" {
+  user = aws_iam_user.s3_service_staging.name
+  groups = [
+    aws_iam_group.service_accounts.name
+  ]
+}
+
 # Production 환경 S3 서비스 계정
 resource "aws_iam_user" "s3_service_prod" {
   name = "devths-s3-service-prod"
@@ -481,4 +516,19 @@ resource "aws_iam_policy" "s3_storage_prod" {
 resource "aws_iam_user_policy_attachment" "s3_service_prod" {
   user       = aws_iam_user.s3_service_prod.name
   policy_arn = aws_iam_policy.s3_storage_prod.arn
+}
+
+resource "aws_iam_user_group_membership" "s3_service_prod" {
+  user = aws_iam_user.s3_service_prod.name
+  groups = [
+    aws_iam_group.service_accounts.name
+  ]
+}
+
+# GitHub Actions 사용자를 service-accounts 그룹에 추가
+resource "aws_iam_user_group_membership" "github_actions" {
+  user = data.aws_iam_user.github_actions.user_name
+  groups = [
+    aws_iam_group.service_accounts.name
+  ]
 }

@@ -15,6 +15,12 @@ variable "aws_account_id" {
   type        = string
 }
 
+variable "github_actions_user_name" {
+  description = "GitHub Actions IAM user name"
+  type        = string
+  default     = "devths-github-actions"
+}
+
 variable "common_tags" {
   description = "Common tags for all resources"
   type        = map(string)

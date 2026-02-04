@@ -9,6 +9,16 @@ output "developers_fullstack_group_arn" {
   value       = aws_iam_group.developers.arn
 }
 
+output "service_accounts_group_name" {
+  description = "Name of the service-accounts IAM group"
+  value       = aws_iam_group.service_accounts.name
+}
+
+output "service_accounts_group_arn" {
+  description = "ARN of the service-accounts IAM group"
+  value       = aws_iam_group.service_accounts.arn
+}
+
 # IAM 정책 ARN 출력
 output "s3_storage_readonly_policy_arn" {
   description = "ARN of S3 Storage Read-Only policy"
@@ -70,5 +80,14 @@ output "s3_service_accounts" {
       name = aws_iam_user.s3_service_prod.name
       arn  = aws_iam_user.s3_service_prod.arn
     }
+  }
+}
+
+# GitHub Actions 서비스 계정 출력
+output "github_actions_service_account" {
+  description = "GitHub Actions service account"
+  value = {
+    name = data.aws_iam_user.github_actions.user_name
+    arn  = data.aws_iam_user.github_actions.arn
   }
 }
