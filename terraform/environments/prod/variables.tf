@@ -82,6 +82,21 @@ variable "enable_eip" {
   default     = true
 }
 
+# SSM Parameter Store 값
+variable "be_parameter_values" {
+  description = "Backend SSM parameter values (sensitive)"
+  type        = map(string)
+  default     = {}
+  sensitive   = true
+}
+
+variable "ai_parameter_values" {
+  description = "AI SSM parameter values (sensitive)"
+  type        = map(string)
+  default     = {}
+  sensitive   = true
+}
+
 # Tags
 variable "common_tags" {
   description = "Common tags for all resources"
