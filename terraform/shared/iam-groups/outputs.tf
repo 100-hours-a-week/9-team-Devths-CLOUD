@@ -64,6 +64,26 @@ output "developer_users" {
   }
 }
 
+# 개발자 초기 비밀번호 (sensitive)
+output "developer_initial_passwords" {
+  description = "Initial passwords for developer users - MUST be changed on first login"
+  sensitive   = true
+  value = {
+    yun = {
+      password                = aws_iam_user_login_profile.yun.password
+      password_reset_required = aws_iam_user_login_profile.yun.password_reset_required
+    }
+    neon = {
+      password                = aws_iam_user_login_profile.neon.password
+      password_reset_required = aws_iam_user_login_profile.neon.password_reset_required
+    }
+    estar = {
+      password                = aws_iam_user_login_profile.estar.password
+      password_reset_required = aws_iam_user_login_profile.estar.password_reset_required
+    }
+  }
+}
+
 # S3 서비스 계정 출력
 output "s3_service_accounts" {
   description = "S3 service accounts for each environment"

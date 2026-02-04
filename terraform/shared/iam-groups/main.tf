@@ -54,6 +54,18 @@ resource "aws_iam_user" "yun" {
   )
 }
 
+# yun 콘솔 로그인 프로필 (초기 비밀번호 강제 변경)
+resource "aws_iam_user_login_profile" "yun" {
+  user                    = aws_iam_user.yun.name
+  password_reset_required = true
+
+  lifecycle {
+    ignore_changes = [
+      password_reset_required,
+    ]
+  }
+}
+
 resource "aws_iam_user" "neon" {
   name = "neon"
   path = "/developers/"
@@ -67,6 +79,18 @@ resource "aws_iam_user" "neon" {
   )
 }
 
+# neon 콘솔 로그인 프로필 (초기 비밀번호 강제 변경)
+resource "aws_iam_user_login_profile" "neon" {
+  user                    = aws_iam_user.neon.name
+  password_reset_required = true
+
+  lifecycle {
+    ignore_changes = [
+      password_reset_required,
+    ]
+  }
+}
+
 resource "aws_iam_user" "estar" {
   name = "estar"
   path = "/developers/"
@@ -78,6 +102,18 @@ resource "aws_iam_user" "estar" {
       Team = "Development"
     }
   )
+}
+
+# estar 콘솔 로그인 프로필 (초기 비밀번호 강제 변경)
+resource "aws_iam_user_login_profile" "estar" {
+  user                    = aws_iam_user.estar.name
+  password_reset_required = true
+
+  lifecycle {
+    ignore_changes = [
+      password_reset_required,
+    ]
+  }
 }
 
 # developers 그룹에 사용자 추가
