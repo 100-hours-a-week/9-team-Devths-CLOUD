@@ -108,6 +108,8 @@ module "ec2" {
   iam_instance_profile_name = module.iam.ec2_instance_profile_name
   aws_region                = var.aws_region
   enable_eip                = var.enable_eip
+  environment               = var.environment
+  domain_name               = "devths.com"
 
   common_tags = var.common_tags
 

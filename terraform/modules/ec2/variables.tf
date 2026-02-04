@@ -48,3 +48,16 @@ variable "common_tags" {
   type        = map(string)
   default     = {}
 }
+
+# 환경 (dev, stg, prod)
+variable "environment" {
+  description = "Environment name (dev, stg, prod)"
+  type        = string
+}
+
+# 도메인 이름
+variable "domain_name" {
+  description = "Base domain name (e.g., devths.com)"
+  type        = string
+  default     = "devths.com"
+}

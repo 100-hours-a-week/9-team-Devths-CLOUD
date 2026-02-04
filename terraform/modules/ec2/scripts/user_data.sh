@@ -1,11 +1,4 @@
 #!/bin/bash
-# 로그를 /var/log/user-data.log에 저장하여 디버깅 용이하게 설정
-exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
-
-echo "=========================================="
-echo "Starting User Data Script: Infra Setup"
-echo "=========================================="
-
 # 1. 시스템 패키지 업데이트
 echo "[1/13] Updating system packages..."
 apt-get update -y
@@ -51,15 +44,11 @@ sudo -u ubuntu bash -c 'export PYENV_ROOT="/home/ubuntu/.pyenv" && export PATH="
 # 시스템 전역에서도 사용 가능하도록 심볼릭 링크 생성
 ln -sf /home/ubuntu/.pyenv/versions/3.10.19/bin/python3 /usr/local/bin/python3
 ln -sf /home/ubuntu/.pyenv/versions/3.10.19/bin/pip3 /usr/local/bin/pip3
-
-echo "Python version installed:"
 sudo -u ubuntu bash -c 'export PYENV_ROOT="/home/ubuntu/.pyenv" && export PATH="$PYENV_ROOT/bin:$PATH" && eval "$(pyenv init -)" && python --version'
 
 # 4. ChromaDB 설치
 echo "[4/13] Installing ChromaDB..."
 sudo -u ubuntu bash -c 'export PYENV_ROOT="/home/ubuntu/.pyenv" && export PATH="$PYENV_ROOT/bin:$PATH" && eval "$(pyenv init -)" && pip install --upgrade pip && pip install chromadb'
-
-echo "ChromaDB installed:"
 sudo -u ubuntu bash -c 'export PYENV_ROOT="/home/ubuntu/.pyenv" && export PATH="$PYENV_ROOT/bin:$PATH" && eval "$(pyenv init -)" && pip show chromadb'
 
 # 5. Poetry 설치
@@ -76,7 +65,6 @@ EOF'
 # 시스템 전역에서도 사용 가능하도록 심볼릭 링크 생성
 ln -sf /home/ubuntu/.local/bin/poetry /usr/local/bin/poetry
 
-echo "Poetry version installed:"
 sudo -u ubuntu bash -c 'export PATH="/home/ubuntu/.local/bin:$PATH" && poetry --version'
 
 # 6. Node.js 22.21.0 및 pnpm 설치
@@ -87,7 +75,6 @@ curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 apt-get install -y nodejs
 
 # Node.js 버전 확인
-echo "Node.js version installed:"
 node -v
 npm -v
 
@@ -95,7 +82,6 @@ npm -v
 npm install -g pnpm
 
 # pnpm 버전 확인
-echo "pnpm version installed:"
 pnpm -v
 
 # 7. PostgreSQL 14 설치
@@ -127,11 +113,11 @@ echo "[8.6/13] Configuring Nginx server blocks..."
 # 기본 nginx 설정 비활성화
 rm -f /etc/nginx/sites-enabled/default
 
-# API (Spring Boot) - api.devths.com
+# API (Spring Boot) - ${env_prefix}api.${domain_name}
 cat > /etc/nginx/sites-available/be << 'EOF'
 server {
     listen 80;
-    server_name api.devths.com;
+    server_name ${env_prefix}api.${domain_name};
 
     # 로그 설정
     access_log /var/log/nginx/be_access.log;
@@ -158,11 +144,11 @@ server {
 }
 EOF
 
-# Frontend (Next.js) - www.devths.com
+# Frontend (Next.js) - ${fe_server_names}
 cat > /etc/nginx/sites-available/fe << 'EOF'
 server {
     listen 80;
-    server_name www.devths.com devths.com;
+    server_name ${fe_server_names};
 
     # 로그 설정
     access_log /var/log/nginx/fe_access.log;
@@ -189,11 +175,11 @@ server {
 }
 EOF
 
-# AI (FastAPI) - ai.devths.com
+# AI (FastAPI) - ${env_prefix}ai.${domain_name}
 cat > /etc/nginx/sites-available/ai << 'EOF'
 server {
     listen 80;
-    server_name ai.devths.com;
+    server_name ${env_prefix}ai.${domain_name};
 
     # 로그 설정
     access_log /var/log/nginx/ai_access.log;
@@ -227,7 +213,7 @@ cat > /var/www/html/maintenance.html << 'EOF'
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Devths - 배포 중</title>
+    <title>Devths - 점검 중</title>
     <style>
         * {
             margin: 0;
@@ -326,9 +312,9 @@ systemctl reload nginx
 
 # SSL 인증서 자동 발급 (도메인이 이미 이 서버를 가리키고 있어야 함)
 # 주의: 도메인 DNS가 설정되지 않았다면 이 단계는 실패할 수 있습니다.
-# 실패해도 나중에 수동으로 실행 가능: certbot --nginx -d api.devths.com -d www.devths.com -d devths.com -d ai.devths.com
+# 실패해도 나중에 수동으로 실행 가능: certbot --nginx ${certbot_domains}
 echo "[8.9/13] Requesting SSL certificates with Certbot..."
-sudo certbot --nginx -d devths.com -d www.devths.com -d api.devths.com -d ai.devths.com --non-interactive --agree-tos --email ktb_devth@gmail.com --redirect || echo "Certbot failed. You can run it manually later after DNS is configured."
+sudo certbot --nginx ${certbot_domains} --non-interactive --agree-tos --email ktb_devth@gmail.com --redirect || echo "Certbot failed. You can run it manually later after DNS is configured."
 
 # 점검중 페이지 서버 블록 작성 (SSL 인증서 발급 후)
 echo "[8.10/13] Creating maintenance server block..."
@@ -336,11 +322,11 @@ cat > /etc/nginx/sites-available/maintenance << 'EOF'
 server {
     listen 80;
     listen 443 ssl;
-    server_name www.devths.com;
+    server_name ${fe_server_names};
 
     # SSL 설정
-    ssl_certificate /etc/letsencrypt/live/www.devths.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/www.devths.com/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/${ssl_cert_domain}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${ssl_cert_domain}/privkey.pem;
 
     # 로그 설정
     access_log /var/log/nginx/maintenance_access.log;
@@ -376,58 +362,54 @@ EOF
 # -----------------------------------------------------------
 echo "[9/13] Installing and configuring Fail2ban..."
 apt-get install -y fail2ban
+cd /etc/fail2ban
 
-# Fail2ban 설정 파일 생성
+# 필터링
+cat > /etc/fail2ban/filter.d/nginx-forbidden.conf << 'EOF'
+[Definition]
+failregex = ^<HOST> -.*"(GET|POST|HEAD|PROPFIND|CONNECT).*(env|config|php|git|yaml|sql|vendor|jenkins).*".* (404|403|444|405|400|301)
+ignoreregex =
+EOF
+
+# 디스코드 알림
+cat > /etc/fail2ban/action.d/discord-notify << 'EOF'
+[Definition]
+actionban = curl -H "Content-Type: application/json" -X POST -d '{
+    "content": "⚠️  <@&1462613320942223410> **[개발용 서버] 보안 위협 감지!**",
+    "embeds": [{
+      "title": "🚨 실시간 탐지 보고",
+      "description": "서버에 비정상적인 접근 시도가 발생했습니다.",
+      "color": 15158332,
+      "fields": [
+        { "name": "🔒 공격자 IP", "value": "`<ip>`", "inline": true },
+        { "name": "📂 감시 항목", "value": "`<name>`", "inline": true },
+        { "name": "📊 시도 횟수", "value": "**<failures>회**", "inline": true }
+      ],
+      "footer": { "text": "Fail2Ban Protection System" }
+    }]
+  }' "https://discord.com/api/webhooks/1467676787222773853/YEUKHSOocfIvGqs6BzA5AUsh6AKZfJtehOm18kfz51_csOySHSWqV56ZwV3_Ph7jWTSM"
+
+actionunban =
+EOF
+
+cp jail.conf jail.local
+
 cat > /etc/fail2ban/jail.local << 'EOF'
-[DEFAULT]
-# Ban 설정
-bantime = 1h
-findtime = 10m
+[nginx-env-scan]
+enabled = true
+port = http,https
+filter = nginx-forbidden
+logpath = /var/log/nginx/*.log
 maxretry = 5
-backend = systemd
-
-# 알림 설정 (선택사항)
-destemail = ktb_devth@gmail.com
-sendername = Fail2Ban
-action = %(action_mwl)s
-
-[sshd]
-enabled = true
-port = ssh
-logpath = /var/log/auth.log
-
-[nginx-http-auth]
-enabled = true
-port = http,https
-logpath = /var/log/nginx/error.log
-
-[nginx-noscript]
-enabled = true
-port = http,https
-logpath = /var/log/nginx/access.log
-
-[nginx-badbots]
-enabled = true
-port = http,https
-logpath = /var/log/nginx/access.log
-
-[nginx-noproxy]
-enabled = true
-port = http,https
-logpath = /var/log/nginx/access.log
-
-[nginx-limit-req]
-enabled = true
-port = http,https
-logpath = /var/log/nginx/error.log
+findtime = 600
+bantime = 200
+action = discord-notify
+         iptables-multiport[name=nginx-env, port="http,https", protocol=tcp]
 EOF
 
 # Fail2ban 시작 및 활성화
 systemctl enable fail2ban
 systemctl start fail2ban
-
-echo "Fail2ban installed and configured successfully."
-echo "Check status with: fail2ban-client status"
 
 # -----------------------------------------------------------
 # 12. CodeDeploy 에이전트 설치
@@ -457,21 +439,8 @@ systemctl enable codedeploy-agent
 echo "[11/13] Setting timezone to Asia/Seoul..."
 timedatectl set-timezone Asia/Seoul
 
-# 14. 스왑 메모리 설정 (2GB)
-echo "[12/13] Configuring 2GB Swap memory..."
-if [ ! -f /swapfile ]; then
-    fallocate -l 2G /swapfile
-    chmod 600 /swapfile
-    mkswap /swapfile
-    swapon /swapfile
-    echo '/swapfile none swap sw 0 0' >> /etc/fstab
-    echo "Swap created successfully."
-else
-    echo "Swap file already exists."
-fi
-
-# 15. CloudWatch Agent 설치 및 설정
-echo "[13/13] Installing CloudWatch Agent..."
+# 14. CloudWatch Agent 설치 및 설정
+echo "[12/13] Installing CloudWatch Agent..."
 wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
 dpkg -i -E ./amazon-cloudwatch-agent.deb
 rm ./amazon-cloudwatch-agent.deb
@@ -485,26 +454,33 @@ cat <<EOF > /opt/aws/amazon-cloudwatch-agent/bin/config.json
   },
   "metrics": {
     "append_dimensions": {
-      "InstanceId": "\${aws:InstanceId}",
-      "ImageId": "\${aws:ImageId}",
-      "InstanceType": "\${aws:InstanceType}"
+      "InstanceId": "${aws:InstanceId}"
     },
     "metrics_collected": {
-      "mem": {
-        "measurement": [
-          "mem_used_percent"
-        ],
-        "metrics_collection_interval": 60
-      },
-      "disk": {
-        "measurement": [
-          "used_percent"
-        ],
-        "resources": [
-          "/"
-        ],
-        "metrics_collection_interval": 60
-      }
+      "mem": { "measurement": ["mem_used_percent"] },
+      "disk": { "measurement": ["used_percent"], "resources": ["/"] },
+      "jmx": [
+        {
+          "endpoint": "localhost:9010",
+          "jvm": {
+            "measurement": [
+              "jvm.memory.heap.used",
+              "jvm.threads.count",
+              "jvm.gc.collections.count"
+            ]
+          }
+        },
+        {
+          "endpoint": "localhost:9011",
+          "jvm": {
+            "measurement": [
+              "jvm.memory.heap.used",
+              "jvm.threads.count",
+              "jvm.gc.collections.count"
+            ]
+          }
+        }
+      ]
     }
   }
 }
@@ -512,7 +488,3 @@ EOF
 
 # CloudWatch Agent 실행
 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
-
-echo "=========================================="
-echo "User Data Script Completed Successfully!"
-echo "=========================================="
