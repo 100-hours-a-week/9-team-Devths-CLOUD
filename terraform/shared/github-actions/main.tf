@@ -52,8 +52,8 @@ resource "aws_iam_policy" "s3_artifacts" {
           "s3:ListBucket"
         ]
         Resource = [
-          "arn:aws:s3:::${var.project_name}-artifact-*",
-          "arn:aws:s3:::${var.project_name}-artifact-*/*"
+          "arn:aws:s3:::${var.project_name}-v1-artifact-*",
+          "arn:aws:s3:::${var.project_name}-v1-artifact-*/*"
         ]
       },
       {
