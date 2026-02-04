@@ -113,15 +113,25 @@ echo "[8.6/13] Configuring Nginx server blocks..."
 # 기본 nginx 설정 비활성화
 rm -f /etc/nginx/sites-enabled/default
 
+# 상세 로그 포맷 정의
+cat > /etc/nginx/conf.d/log_format.conf << 'EOF'
+log_format detailed '$remote_addr - $remote_user [$time_local] '
+                    '"$request" $status $body_bytes_sent '
+                    '"$http_referer" "$http_user_agent" '
+                    'rt=$request_time uct="$upstream_connect_time" '
+                    'uht="$upstream_header_time" urt="$upstream_response_time" '
+                    'host=$host env=${environment}';
+EOF
+
 # API (Spring Boot) - ${env_prefix}api.${domain_name}
 cat > /etc/nginx/sites-available/be << 'EOF'
 server {
     listen 80;
     server_name ${env_prefix}api.${domain_name};
 
-    # 로그 설정
-    access_log /var/log/nginx/be_access.log;
-    error_log /var/log/nginx/be_error.log;
+    # 로그 설정 (상세 로그 포맷 사용)
+    access_log /var/log/nginx/be_access.log detailed;
+    error_log /var/log/nginx/be_error.log warn;
 
     # 숨김 파일 접근 금지 (.env, .git 등)
     location ~ /\. {
@@ -150,9 +160,9 @@ server {
     listen 80;
     server_name ${fe_server_names};
 
-    # 로그 설정
-    access_log /var/log/nginx/fe_access.log;
-    error_log /var/log/nginx/fe_error.log;
+    # 로그 설정 (상세 로그 포맷 사용)
+    access_log /var/log/nginx/fe_access.log detailed;
+    error_log /var/log/nginx/fe_error.log warn;
 
     # 숨김 파일 접근 금지 (.env, .git 등)
     location ~ /\. {
@@ -181,9 +191,9 @@ server {
     listen 80;
     server_name ${env_prefix}ai.${domain_name};
 
-    # 로그 설정
-    access_log /var/log/nginx/ai_access.log;
-    error_log /var/log/nginx/ai_error.log;
+    # 로그 설정 (상세 로그 포맷 사용)
+    access_log /var/log/nginx/ai_access.log detailed;
+    error_log /var/log/nginx/ai_error.log warn;
 
     # 숨김 파일 접근 금지 (.env, .git 등)
     location ~ /\. {
@@ -213,88 +223,70 @@ cat > /var/www/html/maintenance.html << 'EOF'
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Devths - 점검 중</title>
+    <title>Devths - Maintenance</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --primary-green: #00ff88; /* 강조될 초록색 */
+            --bg-dark: #0a0f12;      /* 깊이감 있는 다크 배경 */
         }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: #fff;
+            font-family: 'Pretendard', -apple-system, system-ui, sans-serif;
+            background-color: var(--bg-dark);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; color: #ececec; overflow: hidden;
         }
-
+        /* 배경에 은은한 그린 그라데이션 효과 추가 */
+        body::before {
+            content: ''; position: absolute; width: 300px; height: 300px;
+            background: var(--primary-green); filter: blur(150px);
+            opacity: 0.15; z-index: 0; top: 10%; left: 10%;
+        }
         .container {
-            text-align: center;
-            padding: 2rem;
-            max-width: 600px;
+            position: relative; z-index: 1; text-align: center;
+            padding: 3rem; border: 1px solid rgba(0, 255, 136, 0.2);
+            border-radius: 24px; background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px); max-width: 500px;
         }
-
+        .brand {
+            font-size: 1.2rem; font-weight: 800; letter-spacing: 2px;
+            color: var(--primary-green); margin-bottom: 2rem;
+            text-transform: uppercase; display: block;
+        }
         .icon {
-            font-size: 5rem;
-            margin-bottom: 1rem;
-            animation: pulse 2s ease-in-out infinite;
+            font-size: 4rem; margin-bottom: 1.5rem;
+            filter: drop-shadow(0 0 15px var(--primary-green));
+            animation: float 3s ease-in-out infinite;
         }
-
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.1);
-            }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
         }
-
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            font-weight: 700;
+            font-size: 2rem; margin-bottom: 1rem; font-weight: 700;
+            background: linear-gradient(to right, #fff, var(--primary-green));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-
-        p {
-            font-size: 1.2rem;
-            margin-bottom: 0.5rem;
-            opacity: 0.9;
-        }
-
-        .subtitle {
-            font-size: 1rem;
-            opacity: 0.7;
-            margin-top: 2rem;
-        }
-
+        p { font-size: 1.1rem; line-height: 1.6; opacity: 0.8; margin-bottom: 2rem; }
         .spinner {
-            margin: 2rem auto;
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+            margin: 0 auto; width: 40px; height: 40px;
+            border: 3px solid rgba(0, 255, 136, 0.1);
+            border-top-color: var(--primary-green);
+            border-radius: 50%; animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
         }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .footer { font-size: 0.85rem; opacity: 0.5; margin-top: 2.5rem; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="icon">🚀</div>
-        <h1>배포 중입니다</h1>
-        <p>더 나은 서비스를 위해 업데이트를 진행하고 있습니다.</p>
-        <div class="spinner"></div>
-        <p class="subtitle">잠시만 기다려 주세요. 곧 정상적으로 서비스됩니다.</p>
-    </div>
+<div class="container">
+    <span class="brand">Devths</span>
+    <div class="icon">🖥️</div>
+    <h1>사이트 점검중</h1>
+    <p>더 빠르고 안정적인 <b>Devths</b>를 위해<br>점검 작업을 진행하고 있습니다.</p>
+    <div class="spinner"></div>
+    <div class="footer">잠시 후 다시 접속해 주세요.</div>
+</div>
 </body>
 </html>
 EOF
@@ -328,9 +320,9 @@ server {
     ssl_certificate /etc/letsencrypt/live/${ssl_cert_domain}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/${ssl_cert_domain}/privkey.pem;
 
-    # 로그 설정
-    access_log /var/log/nginx/maintenance_access.log;
-    error_log /var/log/nginx/maintenance_error.log;
+    # 로그 설정 (상세 로그 포맷 사용)
+    access_log /var/log/nginx/maintenance_access.log detailed;
+    error_log /var/log/nginx/maintenance_error.log warn;
 
     root /var/www/html; # 점검 페이지 HTML이 위치한 경로
     error_page 503 /maintenance.html;
@@ -375,7 +367,7 @@ EOF
 cat > /etc/fail2ban/action.d/discord-notify << 'EOF'
 [Definition]
 actionban = curl -H "Content-Type: application/json" -X POST -d '{
-    "content": "⚠️  <@&1462613320942223410> **[개발용 서버] 보안 위협 감지!**",
+    "content": "⚠️  <@&1462613320942223410> **[${server_label}] 보안 위협 감지!**",
     "embeds": [{
       "title": "🚨 실시간 탐지 보고",
       "description": "서버에 비정상적인 접근 시도가 발생했습니다.",
@@ -383,11 +375,12 @@ actionban = curl -H "Content-Type: application/json" -X POST -d '{
       "fields": [
         { "name": "🔒 공격자 IP", "value": "`<ip>`", "inline": true },
         { "name": "📂 감시 항목", "value": "`<name>`", "inline": true },
-        { "name": "📊 시도 횟수", "value": "**<failures>회**", "inline": true }
+        { "name": "📊 시도 횟수", "value": "**<failures>회**", "inline": true },
+        { "name": "🌐 환경", "value": "**${environment}**", "inline": true }
       ],
       "footer": { "text": "Fail2Ban Protection System" }
     }]
-  }' "https://discord.com/api/webhooks/1467676787222773853/YEUKHSOocfIvGqs6BzA5AUsh6AKZfJtehOm18kfz51_csOySHSWqV56ZwV3_Ph7jWTSM"
+  }' "${discord_webhook_url}"
 
 actionunban =
 EOF
@@ -453,8 +446,10 @@ cat <<EOF > /opt/aws/amazon-cloudwatch-agent/bin/config.json
     "run_as_user": "root"
   },
   "metrics": {
+    "namespace": "${cloudwatch_namespace}",
     "append_dimensions": {
-      "InstanceId": "${aws:InstanceId}"
+      "InstanceId": "$${aws:InstanceId}",
+      "Environment": "${environment}"
     },
     "metrics_collected": {
       "mem": { "measurement": ["mem_used_percent"] },

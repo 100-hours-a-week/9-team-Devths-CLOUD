@@ -30,6 +30,12 @@ locals {
 
   # 서버 레이블 (fail2ban 알림용)
   server_label = var.environment == "prod" ? "운영 서버" : var.environment == "stg" ? "스테이징 서버" : "개발 서버"
+
+  # CloudWatch Agent 네임스페이스
+  cloudwatch_namespace = var.environment == "prod" ? "CWAgent/Production" : var.environment == "stg" ? "CWAgent/Staging" : "CWAgent/Dev"
+
+  # SSM Parameter Store용 environment prefix (Dev, Stg, Prod)
+  environment_prefix = var.environment == "prod" ? "Prod" : var.environment == "stg" ? "Stg" : "Dev"
 }
 
 # EC2 인스턴스
@@ -50,21 +56,25 @@ resource "aws_instance" "this" {
     encrypted             = true
   }
 
-  user_data = join("\n", [
+  # user_data를 gzip으로 압축하여 16KB 제한 우회
+  user_data_base64 = base64gzip(join("\n", [
     "#!/bin/bash",
     templatefile("${path.module}/scripts/user_data.sh", {
-      env_prefix          = local.env_prefix
-      domain_name         = var.domain_name
-      fe_server_names     = local.fe_server_names
-      certbot_domains     = local.certbot_domains
-      ssl_cert_domain     = local.ssl_cert_domain
-      environment         = var.environment
-      server_label        = local.server_label
-      discord_webhook_url = var.discord_webhook_url
+      env_prefix           = local.env_prefix
+      domain_name          = var.domain_name
+      fe_server_names      = local.fe_server_names
+      certbot_domains      = local.certbot_domains
+      ssl_cert_domain      = local.ssl_cert_domain
+      environment          = var.environment
+      server_label         = local.server_label
+      discord_webhook_url  = var.discord_webhook_url
+      cloudwatch_namespace = local.cloudwatch_namespace
     }),
-    file("${path.module}/scripts/init_db.sh"),
+    templatefile("${path.module}/scripts/init_db.sh", {
+      environment_prefix = local.environment_prefix
+    }),
     file("${path.module}/scripts/setup_logrotate.sh"),
-  ])
+  ]))
 
   tags = merge(
     var.common_tags,
