@@ -247,6 +247,12 @@ EC2와 CodeDeploy에 필요한 IAM 역할 및 정책을 생성합니다.
 - **자동 롤백**: 활성화
 - **고가용성**: Multi-AZ 구성
 
+### 시작법
+
+```bash
+terraform apply -var-file="secrets.tfvars" -var-file="ssm-params.tfvars"
+```
+
 ## 주요 리소스
 
 ### 네트워크
@@ -258,6 +264,8 @@ EC2와 CodeDeploy에 필요한 IAM 역할 및 정책을 생성합니다.
 | Public Subnet 2 | 10.0.2.0/24 | Multi-AZ 지원 |
 | Private Subnet 1 | 10.0.11.0/24 | DB, 내부 서비스 |
 | Private Subnet 2 | 10.0.12.0/24 | Multi-AZ 지원 |
+
+
 
 ### 리소스 삭제
 
