@@ -99,7 +99,9 @@ resource "aws_iam_policy" "codedeploy_deployment" {
           "codedeploy:GetApplication",
           "codedeploy:GetDeploymentGroup",
           "codedeploy:ListApplications",
-          "codedeploy:ListDeploymentGroups"
+          "codedeploy:ListDeploymentGroups",
+          "codedeploy:ListDeploymentInstances",
+          "codedeploy:GetDeploymentInstance"
         ]
         Resource = "*"
       },
