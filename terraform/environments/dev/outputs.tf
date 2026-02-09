@@ -4,21 +4,36 @@ output "vpc_id" {
   value       = data.terraform_remote_state.vpc.outputs.vpc_id
 }
 
-# EC2 결과
-output "ec2_instance_id" {
-  description = "EC2 instance ID"
-  value       = module.ec2.instance_id
+# EC2 결과 - Frontend
+output "ec2_fe_instance_id" {
+  description = "Frontend EC2 instance ID"
+  value       = module.ec2_fe.instance_id
 }
 
-# 호스팅에 쓰일 IP
-output "ec2_public_ip" {
-  description = "EC2 public IP"
-  value       = module.ec2.instance_public_ip
+output "ec2_fe_public_ip" {
+  description = "Frontend EC2 public IP"
+  value       = module.ec2_fe.instance_public_ip
 }
 
-output "ec2_private_ip" {
-  description = "EC2 private IP"
-  value       = module.ec2.instance_private_ip
+output "ec2_fe_private_ip" {
+  description = "Frontend EC2 private IP"
+  value       = module.ec2_fe.instance_private_ip
+}
+
+# EC2 결과 - Backend
+output "ec2_be_instance_id" {
+  description = "Backend EC2 instance ID"
+  value       = module.ec2_be.instance_id
+}
+
+output "ec2_be_public_ip" {
+  description = "Backend EC2 public IP"
+  value       = module.ec2_be.instance_public_ip
+}
+
+output "ec2_be_private_ip" {
+  description = "Backend EC2 private IP"
+  value       = module.ec2_be.instance_private_ip
 }
 
 # S3 Outputs
@@ -52,9 +67,4 @@ output "codedeploy_fe_group" {
 output "codedeploy_be_group" {
   description = "Backend deployment group name"
   value       = module.codedeploy_be.deployment_group_name
-}
-
-output "codedeploy_ai_group" {
-  description = "AI deployment group name"
-  value       = module.codedeploy_ai.deployment_group_name
 }

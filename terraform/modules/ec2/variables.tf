@@ -68,3 +68,14 @@ variable "discord_webhook_url" {
   type        = string
   sensitive   = true
 }
+
+# 서비스 타입 (fe, be, all)
+variable "service_type" {
+  description = "Service type to deploy (fe, be, all)"
+  type        = string
+  default     = "all"
+  validation {
+    condition     = contains(["fe", "be", "all"], var.service_type)
+    error_message = "service_type must be one of: fe, be, all"
+  }
+}

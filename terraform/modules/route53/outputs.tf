@@ -19,7 +19,7 @@ output "name_servers" {
 # 루트
 output "root_record_fqdn" {
   description = "FQDN of root domain record"
-  value       = aws_route53_record.root.fqdn
+  value       = var.create_root_record ? aws_route53_record.root[0].fqdn : null
 }
 
 # WWW

@@ -13,6 +13,8 @@ locals {
 
 # A 레코드 - 루트 또는 환경별 서브도메인
 resource "aws_route53_record" "root" {
+  count = var.create_root_record ? 1 : 0
+
   zone_id = data.aws_route53_zone.this.zone_id
   name    = local.base_domain
   type    = "A"

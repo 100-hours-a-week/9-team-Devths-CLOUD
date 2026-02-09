@@ -69,18 +69,16 @@ resource "aws_instance" "this" {
       server_label         = local.server_label
       discord_webhook_url  = var.discord_webhook_url
       cloudwatch_namespace = local.cloudwatch_namespace
+      service_type         = var.service_type
     }),
-    templatefile("${path.module}/scripts/init_db.sh", {
-      environment_prefix = local.environment_prefix
-    }),
-    file("${path.module}/scripts/install_nginx_exporter.sh"),
     file("${path.module}/scripts/install_node_exporter.sh"),
   ]))
 
   tags = merge(
     var.common_tags,
     {
-      Name = var.instance_name
+      Name    = var.instance_name
+      Service = var.service_type
     }
   )
 }

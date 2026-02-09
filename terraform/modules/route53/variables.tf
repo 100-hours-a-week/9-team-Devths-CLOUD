@@ -14,6 +14,12 @@ variable "public_ip" {
   type        = string
 }
 
+variable "create_root_record" {
+  description = "Whether to create root/base domain record"
+  type        = bool
+  default     = true
+}
+
 variable "create_www_record" {
   description = "Whether to create www subdomain record"
   type        = bool

@@ -251,7 +251,7 @@ resource "aws_instance" "nat" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.project_name}v2-${var.environment}-nat-instance-${count.index + 1}"
+      Name = "${var.project_name}-v2-${var.environment}-nat-instance-${count.index + 1}"
     }
   )
 
