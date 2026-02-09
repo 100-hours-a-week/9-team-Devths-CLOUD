@@ -207,9 +207,9 @@ EC2와 CodeDeploy에 필요한 IAM 역할 및 정책을 생성합니다.
 환경별 Deployment Group을 생성합니다. CodeDeploy Application(FE/BE/AI)은 `shared/codedeploy`에서 공통으로 생성합니다.
 
 **배포 그룹:**
-- `Devths-V1-FE-Dev-Group`: Frontend 배포
-- `Devths-V1-BE-Dev-Group`: Backend 배포
-- `Devths-V1-AI-Dev-Group`: AI 서비스 배포
+- `Devths-V2-FE-Dev-Group`: Frontend 배포
+- `Devths-V2-BE-Dev-Group`: Backend 배포
+- `Devths-V2-AI-Dev-Group`: AI 서비스 배포
 
 **배포 설정:**
 - In-place 배포 방식

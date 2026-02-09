@@ -35,12 +35,14 @@ log_error() {
 }
 
 ################################################################################
-# 1. 시스템 업데이트
+# 1. 시스템 업데이트 및 필수 패키지 설치
 ################################################################################
 
 log_info "Updating system packages..."
 apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
+apt-get install -y software-properties-common curl wget gnupg2 lsb-release \
+    awscli jq ca-certificates apt-transport-https
 
 ################################################################################
 # 2. Docker 설치
@@ -73,6 +75,30 @@ usermod -aG docker ubuntu
 log_info "Docker installed successfully"
 docker --version
 docker compose version
+
+################################################################################
+# 2.5. Docker 데몬 최적화 설정
+################################################################################
+
+log_info "Configuring Docker daemon for production..."
+
+mkdir -p /etc/docker
+cat > /etc/docker/daemon.json <<'DOCKER_DAEMON_EOF'
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "3"
+  },
+  "storage-driver": "overlay2",
+  "live-restore": true
+}
+DOCKER_DAEMON_EOF
+
+# Docker 재시작하여 설정 적용
+systemctl restart docker
+
+log_info "Docker daemon configured successfully"
 
 ################################################################################
 # 3. Nginx 설치
@@ -497,7 +523,86 @@ nginx -t && systemctl reload nginx
 log_info "Nginx reverse proxy configured"
 
 ################################################################################
-# 10. 디렉토리 권한 설정
+# 9.5. Fail2ban 설치 및 설정 (보안)
+################################################################################
+
+log_info "Installing and configuring Fail2ban..."
+
+apt-get install -y fail2ban
+cd /etc/fail2ban
+
+# Nginx 보안 필터
+cat > /etc/fail2ban/filter.d/nginx-forbidden.conf <<'FAIL2BAN_FILTER_EOF'
+[Definition]
+failregex = ^<HOST> -.*"(GET|POST|HEAD|PROPFIND|CONNECT).*(env|config|php|git|yaml|sql|vendor|jenkins).*".* (404|403|444|405|400|301)
+ignoreregex =
+FAIL2BAN_FILTER_EOF
+
+# Jail 설정
+cp jail.conf jail.local
+
+cat > /etc/fail2ban/jail.local <<'FAIL2BAN_JAIL_EOF'
+[nginx-env-scan]
+enabled = true
+port = http,https
+filter = nginx-forbidden
+logpath = /var/log/nginx/*.log
+maxretry = 5
+findtime = 600
+bantime = 3600
+action = iptables-multiport[name=nginx-env, port="http,https", protocol=tcp]
+FAIL2BAN_JAIL_EOF
+
+# Fail2ban 시작 및 활성화
+systemctl enable fail2ban
+systemctl start fail2ban
+
+log_info "Fail2ban configured successfully"
+
+################################################################################
+# 10. 타임존 및 CloudWatch Agent 설정
+################################################################################
+
+log_info "Setting timezone to Asia/Seoul..."
+timedatectl set-timezone Asia/Seoul
+
+log_info "Installing CloudWatch Agent..."
+wget -q https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+dpkg -i -E ./amazon-cloudwatch-agent.deb
+rm ./amazon-cloudwatch-agent.deb
+
+# 기본 메트릭 설정 파일 생성 (모니터링 서버용)
+cat > /opt/aws/amazon-cloudwatch-agent/bin/config.json <<'CLOUDWATCH_CONFIG_EOF'
+{
+  "agent": {
+    "metrics_collection_interval": 60,
+    "run_as_user": "root"
+  },
+  "metrics": {
+    "namespace": "Devths/Monitoring",
+    "append_dimensions": {
+      "Environment": "${environment}"
+    },
+    "metrics_collected": {
+      "mem": {
+        "measurement": ["mem_used_percent"]
+      },
+      "disk": {
+        "measurement": ["used_percent"],
+        "resources": ["/"]
+      }
+    }
+  }
+}
+CLOUDWATCH_CONFIG_EOF
+
+# CloudWatch Agent 실행
+/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
+
+log_info "Timezone and CloudWatch Agent configured"
+
+################################################################################
+# 11. 디렉토리 권한 설정
 ################################################################################
 
 log_info "Setting directory permissions..."
@@ -505,7 +610,7 @@ log_info "Setting directory permissions..."
 chown -R ubuntu:ubuntu $MONITORING_DIR
 
 ################################################################################
-# 11. Docker Compose 시작
+# 12. Docker Compose 시작
 ################################################################################
 
 log_info "Starting Docker Compose..."
@@ -522,7 +627,7 @@ docker compose ps
 log_info "Docker Compose started successfully"
 
 ################################################################################
-# 12. SSL 인증서 발급 (도메인 DNS 설정 후 수동 실행 필요)
+# 13. SSL 인증서 발급 (도메인 DNS 설정 후 수동 실행 필요)
 ################################################################################
 
 log_info "SSL certificate setup information:"
@@ -536,7 +641,7 @@ if ! certbot --nginx -d ${monitoring_domain} --non-interactive --agree-tos --ema
 fi
 
 ################################################################################
-# 13. 설정 완료 메시지
+# 14. 설정 완료 메시지
 ################################################################################
 
 echo ""

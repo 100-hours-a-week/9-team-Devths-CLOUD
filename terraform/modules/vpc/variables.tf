@@ -28,6 +28,13 @@ variable "private_subnet_cidrs" {
   type        = list(string)
 }
 
+# 데이터베이스 전용 서브넷들의 CIDR 리스트 (3-tier 아키텍처)
+variable "database_subnet_cidrs" {
+  description = "List of database subnet CIDR blocks"
+  type        = list(string)
+  default     = []
+}
+
 # 리소스가 분산 배치될 가용 영역(AZ) 목록
 variable "availability_zones" {
   description = "List of availability zones"
@@ -39,6 +46,51 @@ variable "ssh_allowed_cidr" {
   description = "CIDR blocks allowed to SSH (optional)"
   type        = list(string)
   default     = []
+}
+
+# NAT 설정 - Gateway 또는 Instance 선택
+variable "nat_type" {
+  description = "NAT type: 'gateway' (expensive but managed), 'instance' (cheap but self-managed), or 'none'"
+  type        = string
+  default     = "none"
+  validation {
+    condition     = contains(["gateway", "instance", "none"], var.nat_type)
+    error_message = "nat_type must be 'gateway', 'instance', or 'none'."
+  }
+}
+
+# NAT Gateway/Instance를 각 AZ마다 생성할지 여부 (고가용성)
+variable "single_nat" {
+  description = "Use a single NAT (Gateway or Instance) instead of one per AZ (cost optimization for nonprod)"
+  type        = bool
+  default     = true
+}
+
+# NAT Instance 인스턴스 타입
+variable "nat_instance_type" {
+  description = "Instance type for NAT instance (t3.nano recommended for nonprod)"
+  type        = string
+  default     = "t3.nano"
+}
+
+# NAT Instance SSH 키
+variable "nat_key_name" {
+  description = "EC2 Key Pair name for NAT instance SSH access"
+  type        = string
+  default     = null
+}
+
+# 하위 호환성을 위한 변수들 (deprecated)
+variable "enable_nat_gateway" {
+  description = "[DEPRECATED] Use nat_type='gateway' instead"
+  type        = bool
+  default     = null
+}
+
+variable "single_nat_gateway" {
+  description = "[DEPRECATED] Use single_nat instead"
+  type        = bool
+  default     = null
 }
 
 # 기본 규칙 외에 보안 그룹에 추가로 정의할 인입 규칙들
