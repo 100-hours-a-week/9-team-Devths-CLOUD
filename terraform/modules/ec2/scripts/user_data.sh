@@ -133,6 +133,9 @@ server {
     access_log /var/log/nginx/be_access.log detailed;
     error_log /var/log/nginx/be_error.log warn;
 
+    # 블루그린
+    include /etc/nginx/conf.d/service-url.inc;
+
     # 숨김 파일 접근 금지 (.env, .git 등)
     location ~ /\. {
         deny all;
@@ -141,7 +144,7 @@ server {
     }
 
     location / {
-        proxy_pass http://localhost:8080;
+        proxy_pass $service_url;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -307,6 +310,7 @@ systemctl reload nginx
 # 실패해도 나중에 수동으로 실행 가능: certbot --nginx ${certbot_domains}
 echo "[8.9/13] Requesting SSL certificates with Certbot..."
 sudo certbot --nginx ${certbot_domains} --non-interactive --agree-tos --email ktb_devth@gmail.com --redirect || echo "Certbot failed. You can run it manually later after DNS is configured."
+sudo certbot --nginx -d monitoring.devths.com --non-interactive --agree-tos --email ktb_devth@gmail.com --redirect || echo "Certbot failed. You can run it manually later after DNS is configured."
 
 # 점검중 페이지 서버 블록 작성 (SSL 인증서 발급 후)
 echo "[8.10/13] Creating maintenance server block..."

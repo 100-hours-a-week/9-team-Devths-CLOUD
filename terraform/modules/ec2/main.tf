@@ -73,7 +73,8 @@ resource "aws_instance" "this" {
     templatefile("${path.module}/scripts/init_db.sh", {
       environment_prefix = local.environment_prefix
     }),
-    file("${path.module}/scripts/setup_logrotate.sh"),
+    file("${path.module}/scripts/install_nginx_exporter.sh"),
+    file("${path.module}/scripts/install_node_exporter.sh"),
   ]))
 
   tags = merge(

@@ -4,6 +4,16 @@ output "vpc_id" {
   value       = module.vpc.vpc_id
 }
 
+output "public_subnet_ids" {
+  description = "Public subnet IDs"
+  value       = module.vpc.public_subnet_ids
+}
+
+output "ec2_security_group_id" {
+  description = "EC2 security group ID"
+  value       = module.vpc.ec2_security_group_id
+}
+
 # EC2 Outputs
 output "ec2_instance_id" {
   description = "EC2 instance ID"

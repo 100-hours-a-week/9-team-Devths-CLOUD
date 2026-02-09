@@ -15,15 +15,7 @@ provider "aws" {
   region = var.aws_region
 }
 
-# 공유 VPC 참조 (Prod VPC)
-data "terraform_remote_state" "vpc" {
-  backend = "local"
-  config = {
-    path = "../../shared/vpc-prod/terraform.tfstate"
-  }
-}
-
-# Prod 환경 상태 참조 (Prod EC2 Private IP)
+# Prod 환경 상태 참조 (Prod는 자체 VPC를 생성하므로 prod state에서 가져옴)
 data "terraform_remote_state" "prod" {
   backend = "local"
   config = {
@@ -37,13 +29,18 @@ data "aws_route53_zone" "main" {
   private_zone = false
 }
 
+# VPC CIDR 조회 (Prod state에서 VPC ID 가져와서 조회)
+data "aws_vpc" "prod" {
+  id = data.terraform_remote_state.prod.outputs.vpc_id
+}
+
 # IAM 역할 (기본 EC2 역할 사용 - SSM 접근용)
 data "aws_iam_role" "ec2_role" {
-  name = "devths-v1-prod-ec2-role"
+  name = "Devths-EC2-Prod"
 }
 
 data "aws_iam_instance_profile" "ec2_profile" {
-  name = "devths-v1-prod-ec2-instance-profile"
+  name = "Devths-EC2-Prod"
 }
 
 # 모니터링 서버 모듈
@@ -53,9 +50,9 @@ module "monitoring" {
   instance_name             = "${var.project_name}-v1-monitoring-${var.environment}"
   instance_type             = var.instance_type
   key_name                  = var.key_name
-  subnet_id                 = data.terraform_remote_state.vpc.outputs.public_subnet_ids[0]
-  vpc_id                    = data.terraform_remote_state.vpc.outputs.vpc_id
-  vpc_cidr                  = data.terraform_remote_state.vpc.outputs.vpc_cidr
+  subnet_id                 = data.terraform_remote_state.prod.outputs.public_subnet_ids[0]
+  vpc_id                    = data.terraform_remote_state.prod.outputs.vpc_id
+  vpc_cidr                  = data.aws_vpc.prod.cidr_block
   iam_instance_profile_name = data.aws_iam_instance_profile.ec2_profile.name
   environment               = var.environment
   domain_name               = var.domain_name
@@ -63,7 +60,7 @@ module "monitoring" {
   root_volume_size          = var.root_volume_size
 
   # 모니터링 대상 IP 주소
-  target_prod_ip = data.terraform_remote_state.prod.outputs.instance_private_ip
+  target_prod_ip = data.terraform_remote_state.prod.outputs.ec2_private_ip
 
   common_tags = var.common_tags
 }
@@ -87,7 +84,7 @@ resource "aws_security_group_rule" "prod_node_exporter" {
   to_port                  = 9100
   protocol                 = "tcp"
   source_security_group_id = module.monitoring.security_group_id
-  security_group_id        = data.terraform_remote_state.vpc.outputs.ec2_security_group_id
+  security_group_id        = data.terraform_remote_state.prod.outputs.ec2_security_group_id
   description              = "Node Exporter from monitoring server"
 }
 
@@ -97,6 +94,6 @@ resource "aws_security_group_rule" "prod_nginx_exporter" {
   to_port                  = 9113
   protocol                 = "tcp"
   source_security_group_id = module.monitoring.security_group_id
-  security_group_id        = data.terraform_remote_state.vpc.outputs.ec2_security_group_id
+  security_group_id        = data.terraform_remote_state.prod.outputs.ec2_security_group_id
   description              = "Nginx Exporter from monitoring server"
 }
