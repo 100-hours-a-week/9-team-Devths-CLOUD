@@ -49,17 +49,9 @@ output "access_key_management_policy_arn" {
 output "developer_users" {
   description = "List of developer IAM users"
   value = {
-    yun = {
-      name = aws_iam_user.yun.name
-      arn  = aws_iam_user.yun.arn
-    }
-    neon = {
-      name = aws_iam_user.neon.name
-      arn  = aws_iam_user.neon.arn
-    }
-    estar = {
-      name = aws_iam_user.estar.name
-      arn  = aws_iam_user.estar.arn
+    for key, user in aws_iam_user.developers : key => {
+      name = user.name
+      arn  = user.arn
     }
   }
 }
@@ -69,17 +61,9 @@ output "developer_initial_passwords" {
   description = "Initial passwords for developer users - MUST be changed on first login"
   sensitive   = true
   value = {
-    yun = {
-      password                = aws_iam_user_login_profile.yun.password
-      password_reset_required = aws_iam_user_login_profile.yun.password_reset_required
-    }
-    neon = {
-      password                = aws_iam_user_login_profile.neon.password
-      password_reset_required = aws_iam_user_login_profile.neon.password_reset_required
-    }
-    estar = {
-      password                = aws_iam_user_login_profile.estar.password
-      password_reset_required = aws_iam_user_login_profile.estar.password_reset_required
+    for key, profile in aws_iam_user_login_profile.developers : key => {
+      password                = profile.password
+      password_reset_required = profile.password_reset_required
     }
   }
 }
@@ -88,17 +72,9 @@ output "developer_initial_passwords" {
 output "s3_service_accounts" {
   description = "S3 service accounts for each environment"
   value = {
-    dev = {
-      name = aws_iam_user.s3_service_dev.name
-      arn  = aws_iam_user.s3_service_dev.arn
-    }
-    staging = {
-      name = aws_iam_user.s3_service_staging.name
-      arn  = aws_iam_user.s3_service_staging.arn
-    }
-    prod = {
-      name = aws_iam_user.s3_service_prod.name
-      arn  = aws_iam_user.s3_service_prod.arn
+    for key, user in aws_iam_user.s3_service : key => {
+      name = user.name
+      arn  = user.arn
     }
   }
 }
