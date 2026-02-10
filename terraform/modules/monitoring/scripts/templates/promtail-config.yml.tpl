@@ -1,0 +1,71 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Docker 컨테이너 로그
+  - job_name: docker
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: docker
+          __path__: /var/lib/docker/containers/*/*.log
+
+    pipeline_stages:
+      - json:
+          expressions:
+            output: log
+            stream: stream
+            attrs:
+      - labels:
+          stream:
+      - output:
+          source: output
+
+  # 시스템 로그
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: system
+          __path__: /var/log/*.log
+
+
+  # User data 설치 로그
+  - job_name: userdata
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: userdata
+          __path__: /var/log/user-data.log
+
+%{ if environment == "nonprod" ~}
+  # Dev 환경 애플리케이션 로그
+  - job_name: app-dev
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: application
+          environment: dev
+          __path__: /var/log/app-dev/*.log
+%{ else ~}
+  # Prod 환경 애플리케이션 로그
+  - job_name: app-prod
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: application
+          environment: prod
+          __path__: /var/log/app-prod/*.log
+%{ endif ~}
