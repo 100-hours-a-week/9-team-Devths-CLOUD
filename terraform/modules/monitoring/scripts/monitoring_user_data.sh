@@ -158,6 +158,28 @@ docker compose ps
 
 log_info "Docker Compose started successfully"
 
+# SSM Agent 설치 및 시작 (Ubuntu 22.04 전용)
+echo "SSM Agent 설정 시작..."
+
+# 1. snap을 통해 amazon-ssm-agent 설치 여부 확인 및 설치
+if ! snap list amazon-ssm-agent > /dev/null 2>&1; then
+    echo "SSM Agent 설치 중..."
+    sudo snap install amazon-ssm-agent --classic
+else
+    echo "SSM Agent가 이미 설치되어 있습니다."
+fi
+
+# 2. 서비스 시작 및 활성화
+echo "SSM Agent 서비스 시작 중..."
+sudo snap start amazon-ssm-agent
+sudo snap services amazon-ssm-agent
+
+# 3. 상태 확인
+echo "------------------------------------------"
+snap list amazon-ssm-agent
+echo "✓ SSM Agent 설정 완료"
+echo "------------------------------------------"
+
 ################################################################################
 # 7. 완료 메시지
 ################################################################################

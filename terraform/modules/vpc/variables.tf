@@ -80,6 +80,13 @@ variable "nat_key_name" {
   default     = null
 }
 
+# NAT Instance IAM 인스턴스 프로파일
+variable "nat_iam_instance_profile_name" {
+  description = "IAM instance profile name for NAT instance (for SSM and CloudWatch)"
+  type        = string
+  default     = null
+}
+
 # 하위 호환성을 위한 변수들 (deprecated)
 variable "enable_nat_gateway" {
   description = "[DEPRECATED] Use nat_type='gateway' instead"

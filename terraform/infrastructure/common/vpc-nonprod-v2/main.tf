@@ -47,12 +47,15 @@ module "vpc" {
   availability_zones    = var.availability_zones
 
   # NAT Instance 사용 (비용 절감)
-  nat_type          = var.nat_type
-  single_nat        = var.single_nat
-  nat_instance_type = var.nat_instance_type
-  nat_key_name      = "devths-non-prod"
+  nat_type                      = var.nat_type
+  single_nat                    = var.single_nat
+  nat_instance_type             = var.nat_instance_type
+  nat_key_name                  = "devths-non-prod"
+  nat_iam_instance_profile_name = aws_iam_instance_profile.nat_instance.name
 
   ssh_allowed_cidr         = null # SSH 비활성화
   additional_ingress_rules = []
   common_tags              = var.common_tags
+
+  depends_on = [aws_iam_instance_profile.nat_instance]
 }
