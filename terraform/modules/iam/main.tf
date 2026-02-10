@@ -269,12 +269,23 @@ resource "aws_iam_role_policy_attachment" "ec2_ssm" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+# ECR 읽기 권한 매핑
+resource "aws_iam_role_policy_attachment" "ec2_ecr" {
+  role       = aws_iam_role.ec2.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
 # CodeDeploy 권한
 resource "aws_iam_role_policy_attachment" "ec2_codedeploy" {
   role       = aws_iam_role.ec2.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
 }
 
+# CloudWatch Metrics 권한 연결
+resource "aws_iam_role_policy_attachment" "ec2_cloudwatch_metrics" {
+  role       = aws_iam_role.ec2.name
+  policy_arn = aws_iam_policy.cloudwatch_metrics.arn
+}
 
 # CodeDeploy 권한
 resource "aws_iam_role_policy_attachment" "codedeploy" {
@@ -282,9 +293,3 @@ resource "aws_iam_role_policy_attachment" "codedeploy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
 }
 
-
-# CloudWatch Metrics 권한 연결
-resource "aws_iam_role_policy_attachment" "ec2_cloudwatch_metrics" {
-  role       = aws_iam_role.ec2.name
-  policy_arn = aws_iam_policy.cloudwatch_metrics.arn
-}

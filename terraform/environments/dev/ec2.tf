@@ -10,7 +10,7 @@ module "ec2_fe" {
   instance_type             = var.instance_type
   key_name                  = var.key_name
   subnet_id                 = data.terraform_remote_state.vpc.outputs.private_subnet_ids[0]
-  security_group_id         = data.terraform_remote_state.vpc.outputs.alb_security_group_id
+  security_group_id         = data.terraform_remote_state.vpc.outputs.app_security_group_id
   iam_instance_profile_name = module.iam.ec2_instance_profile_name
   aws_region                = var.aws_region
   enable_eip                = var.enable_eip
@@ -35,7 +35,7 @@ module "ec2_be" {
   instance_type             = var.instance_type
   key_name                  = var.key_name
   subnet_id                 = data.terraform_remote_state.vpc.outputs.private_subnet_ids[0]
-  security_group_id         = data.terraform_remote_state.vpc.outputs.alb_security_group_id
+  security_group_id         = data.terraform_remote_state.vpc.outputs.app_security_group_id
   iam_instance_profile_name = module.iam.ec2_instance_profile_name
   aws_region                = var.aws_region
   enable_eip                = var.enable_eip
@@ -60,7 +60,7 @@ module "ec2_ai" {
   instance_type             = var.instance_type
   key_name                  = var.key_name
   subnet_id                 = data.terraform_remote_state.vpc.outputs.private_subnet_ids[0]
-  security_group_id         = data.terraform_remote_state.vpc.outputs.alb_security_group_id
+  security_group_id         = data.terraform_remote_state.vpc.outputs.app_security_group_id
   iam_instance_profile_name = module.iam.ec2_instance_profile_name
   aws_region                = var.aws_region
   enable_eip                = var.enable_eip
