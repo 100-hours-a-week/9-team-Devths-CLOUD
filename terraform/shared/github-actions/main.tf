@@ -179,5 +179,5 @@ resource "aws_iam_user_policy_attachment" "github_actions_codedeploy" {
 
 resource "aws_iam_user_policy_attachment" "github_actions_ecr" {
   user       = aws_iam_user.github_actions.name
-  policy_arn = aws_iam_policy.codedeploy_deployment.arn
+  policy_arn = aws_iam_policy.ecr_push_policy.arn
 }
