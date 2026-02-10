@@ -4,12 +4,26 @@ resource "aws_codedeploy_deployment_group" "this" {
   deployment_group_name = var.deployment_group_name
   service_role_arn      = var.service_role_arn
 
-  # EC2 인스턴스 타겟팅
+  # EC2 인스턴스 타겟팅 (Service + Environment + Version 태그 조합)
+  # ASG에서 생성된 모든 인스턴스가 이 태그 조합을 가지면 자동으로 배포 대상이 됨
+  # Version 태그로 v1/v2를 분리하여 배포 가능
   ec2_tag_set {
     ec2_tag_filter {
-      key   = var.ec2_tag_key
+      key   = "Service"
       type  = "KEY_AND_VALUE"
-      value = var.ec2_tag_value
+      value = var.service_name
+    }
+
+    ec2_tag_filter {
+      key   = "Environment"
+      type  = "KEY_AND_VALUE"
+      value = var.environment
+    }
+
+    ec2_tag_filter {
+      key   = "Version"
+      type  = "KEY_AND_VALUE"
+      value = var.infra_version
     }
   }
 

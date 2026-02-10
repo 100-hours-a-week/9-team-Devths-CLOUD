@@ -55,6 +55,13 @@ variable "environment" {
   type        = string
 }
 
+# 인프라 버전 (v1, v2)
+variable "infra_version" {
+  description = "Infrastructure version (v1, v2)"
+  type        = string
+  default     = "v2"
+}
+
 # 도메인 이름
 variable "domain_name" {
   description = "Base domain name (e.g., devths.com)"

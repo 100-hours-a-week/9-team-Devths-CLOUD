@@ -7,6 +7,8 @@
 # ============================================================================
 
 # CodeDeploy 모듈 - Frontend
+# Service + Environment + Version 태그 조합으로 타겟팅
+# ASG 확장 시 동일한 태그를 가진 모든 인스턴스가 배포 대상이 됨
 module "codedeploy_fe" {
   source = "../../modules/codedeploy"
 
@@ -14,8 +16,8 @@ module "codedeploy_fe" {
   deployment_group_name  = "Devths-V2-FE-Dev-Group"
   service_role_arn       = module.iam.codedeploy_role_arn
   service_name           = "Frontend"
-  ec2_tag_key            = "Name"
-  ec2_tag_value          = module.ec2_fe.instance_name
+  environment            = var.environment
+  infra_version          = var.infra_version
   deployment_config_name = var.deployment_config_name
   auto_rollback_enabled  = false
 
@@ -25,6 +27,8 @@ module "codedeploy_fe" {
 }
 
 # CodeDeploy 모듈 - Backend
+# Service + Environment + Version 태그 조합으로 타겟팅
+# ASG 확장 시 동일한 태그를 가진 모든 인스턴스가 배포 대상이 됨
 module "codedeploy_be" {
   source = "../../modules/codedeploy"
 
@@ -32,8 +36,8 @@ module "codedeploy_be" {
   deployment_group_name  = "Devths-V2-BE-Dev-Group"
   service_role_arn       = module.iam.codedeploy_role_arn
   service_name           = "Backend"
-  ec2_tag_key            = "Name"
-  ec2_tag_value          = module.ec2_be.instance_name
+  environment            = var.environment
+  infra_version          = var.infra_version
   deployment_config_name = var.deployment_config_name
   auto_rollback_enabled  = false
 
@@ -43,6 +47,8 @@ module "codedeploy_be" {
 }
 
 # CodeDeploy 모듈 - AI
+# Service + Environment + Version 태그 조합으로 타겟팅
+# ASG 확장 시 동일한 태그를 가진 모든 인스턴스가 배포 대상이 됨
 module "codedeploy_ai" {
   source = "../../modules/codedeploy"
 
@@ -50,8 +56,8 @@ module "codedeploy_ai" {
   deployment_group_name  = "Devths-V2-AI-Dev-Group"
   service_role_arn       = module.iam.codedeploy_role_arn
   service_name           = "Ai"
-  ec2_tag_key            = "Name"
-  ec2_tag_value          = module.ec2_ai.instance_name
+  environment            = var.environment
+  infra_version          = var.infra_version
   deployment_config_name = var.deployment_config_name
   auto_rollback_enabled  = false
 

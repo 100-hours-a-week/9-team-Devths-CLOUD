@@ -12,6 +12,13 @@ variable "environment" {
   default     = "dev"
 }
 
+# 인프라 버전
+variable "infra_version" {
+  description = "Infrastructure version (v1, v2)"
+  type        = string
+  default     = "v2"
+}
+
 # AWS 지역
 variable "aws_region" {
   description = "AWS Region"
@@ -86,7 +93,7 @@ variable "common_tags" {
   type        = map(string)
   default = {
     Project     = "devths"
-    Environment = "develop"
+    Environment = "dev"
     ManagedBy   = "Terraform"
   }
 }

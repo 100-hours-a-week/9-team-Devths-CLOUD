@@ -36,6 +36,15 @@ locals {
 
   # SSM Parameter Store용 environment prefix (Dev, Stg, Prod)
   environment_prefix = var.environment == "prod" ? "Prod" : var.environment == "stg" ? "Stg" : "Dev"
+
+  # Service 이름 매핑 (CodeDeploy 태그와 일치시키기 위해)
+  service_name_map = {
+    "fe"  = "Frontend"
+    "be"  = "Backend"
+    "ai"  = "Ai"
+    "all" = "All"
+  }
+  service_name = lookup(local.service_name_map, var.service_type, "Unknown")
 }
 
 # EC2 인스턴스
@@ -78,7 +87,8 @@ resource "aws_instance" "this" {
     var.common_tags,
     {
       Name    = var.instance_name
-      Service = var.service_type
+      Service = local.service_name
+      Version = var.infra_version
     }
   )
 }

@@ -15,6 +15,7 @@ module "ec2_fe" {
   aws_region                = var.aws_region
   enable_eip                = var.enable_eip
   environment               = var.environment
+  infra_version             = var.infra_version
   domain_name               = "devths.com"
   discord_webhook_url       = var.discord_webhook_url
   service_type              = "fe"
@@ -39,6 +40,7 @@ module "ec2_be" {
   aws_region                = var.aws_region
   enable_eip                = var.enable_eip
   environment               = var.environment
+  infra_version             = var.infra_version
   domain_name               = "devths.com"
   discord_webhook_url       = var.discord_webhook_url
   service_type              = "be"
@@ -63,6 +65,7 @@ module "ec2_ai" {
   aws_region                = var.aws_region
   enable_eip                = var.enable_eip
   environment               = var.environment
+  infra_version             = var.infra_version
   domain_name               = "devths.com"
   discord_webhook_url       = var.discord_webhook_url
   service_type              = "ai"

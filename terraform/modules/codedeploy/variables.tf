@@ -16,19 +16,19 @@ variable "service_role_arn" {
 }
 
 variable "service_name" {
-  description = "Service name (e.g., Frontend, Backend, AI)"
+  description = "Service name (e.g., Frontend, Backend, Ai) - must match EC2 Service tag"
   type        = string
 }
 
-variable "ec2_tag_key" {
-  description = "EC2 tag key to target instances"
+variable "environment" {
+  description = "Environment name (e.g., dev, stg, prod) - must match EC2 Environment tag"
   type        = string
-  default     = "Name"
 }
 
-variable "ec2_tag_value" {
-  description = "EC2 tag value to target instances"
+variable "infra_version" {
+  description = "Infrastructure version (e.g., v1, v2) - must match EC2 Version tag"
   type        = string
+  default     = "v2"
 }
 
 variable "deployment_config_name" {
