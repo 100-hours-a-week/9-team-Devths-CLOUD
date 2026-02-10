@@ -62,6 +62,38 @@ resource "aws_iam_policy" "cloudwatch_metrics" {
   )
 }
 
+# EC2 Describe 정책 (Prometheus EC2 Service Discovery용)
+resource "aws_iam_policy" "ec2_describe" {
+  name = "${title(var.project_name)}-EC2-Describe-${title(var.environment)}"
+  description = "Tag policy for EC2"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:DescribeInstances",
+          "ec2:DescribeRegions",
+          "ec2:DescribeTags"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "${title(var.project_name)}-EC2-Describe-${title(var.environment)}"
+    }
+  )
+}
+
+# ===================================
+# EC2 인라인
+# ===================================
+
 # SSM Parameter Store 및 KMS 권한
 resource "aws_iam_role_policy" "ec2_ssm_kms" {
   name = "${title(var.project_name)}-EC2-SSM-KMS-${title(var.environment)}"
@@ -229,4 +261,10 @@ resource "aws_iam_role_policy_attachment" "ec2_codedeploy" {
 resource "aws_iam_role_policy_attachment" "ec2_cloudwatch_metrics" {
   role       = aws_iam_role.ec2.name
   policy_arn = aws_iam_policy.cloudwatch_metrics.arn
+}
+
+# CloudWatch Metrics 권한 연결
+resource "aws_iam_role_policy_attachment" "ec2_ec2_describe" {
+  role       = aws_iam_role.ec2.name
+  policy_arn = aws_iam_policy.ec2_describe.arn
 }

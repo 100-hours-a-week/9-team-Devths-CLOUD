@@ -78,22 +78,10 @@ variable "root_volume_size" {
   default     = 50
 }
 
-variable "target_dev_ip" {
-  description = "Dev EC2 private IP for monitoring target (only for nonprod)"
+variable "aws_region" {
+  description = "AWS region for EC2 service discovery"
   type        = string
-  default     = ""
-}
-
-variable "target_staging_ip" {
-  description = "Staging EC2 private IP for monitoring target (only for nonprod)"
-  type        = string
-  default     = ""
-}
-
-variable "target_prod_ip" {
-  description = "Prod EC2 private IP for monitoring target (only for prod)"
-  type        = string
-  default     = ""
+  default     = "ap-northeast-2"
 }
 
 variable "common_tags" {

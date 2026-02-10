@@ -10,22 +10,6 @@ data "terraform_remote_state" "vpc" {
   }
 }
 
-# Dev 환경 상태 참조 (Dev EC2 Private IP)
-data "terraform_remote_state" "dev" {
-  backend = "local"
-  config = {
-    path = "../dev/terraform.tfstate"
-  }
-}
-
-# Staging 환경 상태 참조 (Staging EC2 Private IP)
-data "terraform_remote_state" "staging" {
-  backend = "local"
-  config = {
-    path = "../staging/terraform.tfstate"
-  }
-}
-
 # 공유 Route53 Hosted Zone 참조
 data "aws_route53_zone" "main" {
   name         = "${var.domain_name}."

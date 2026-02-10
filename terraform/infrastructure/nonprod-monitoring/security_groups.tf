@@ -2,7 +2,7 @@
 # Security Group Rules
 # ============================================================================
 
-# API 서버 Security Group 업데이트
+# Security Group 업데이트
 resource "aws_security_group_rule" "dev_node_exporter" {
   type                     = "ingress"
   from_port                = 9100

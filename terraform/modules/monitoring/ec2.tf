@@ -13,10 +13,8 @@ locals {
 
   # Prometheus 설정
   prometheus_content = templatefile("${path.module}/scripts/templates/prometheus.yml.tpl", {
-    environment       = var.environment
-    target_dev_ip     = var.target_dev_ip
-    target_staging_ip = var.target_staging_ip
-    target_prod_ip    = var.target_prod_ip
+    environment = var.environment
+    aws_region  = var.aws_region
   })
 
   # Alert Rules 설정 (환경별)
