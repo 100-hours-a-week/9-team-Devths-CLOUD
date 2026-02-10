@@ -22,10 +22,10 @@ variable "versioning_enabled" {
 variable "lifecycle_rules" {
   description = "Lifecycle rules for the bucket"
   type = list(object({
-    id               = string
-    status           = string
-    noncurrent_days  = optional(number)
-    expiration_days  = optional(number)
+    id              = string
+    status          = string
+    noncurrent_days = optional(number)
+    expiration_days = optional(number)
   }))
   default = null
 }

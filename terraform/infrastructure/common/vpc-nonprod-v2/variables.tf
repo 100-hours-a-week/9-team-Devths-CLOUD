@@ -69,7 +69,7 @@ variable "nat_instance_type" {
 variable "certificate_arn" {
   description = "Certificate Manager"
   type        = string
-  default = "arn:aws:acm:ap-northeast-2:174678835309:certificate/7ab71742-f7e2-44a8-979c-50b4287ba5e5"
+  default     = "arn:aws:acm:ap-northeast-2:174678835309:certificate/7ab71742-f7e2-44a8-979c-50b4287ba5e5"
 }
 
 # 공통 Tags

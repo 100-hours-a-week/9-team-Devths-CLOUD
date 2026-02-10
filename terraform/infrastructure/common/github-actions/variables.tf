@@ -6,8 +6,8 @@ variable "aws_region" {
 
 variable "account_id" {
   description = "유저 ID"
-  type = string
-  default = "174678835309"
+  type        = string
+  default     = "174678835309"
 }
 
 variable "project_name" {
@@ -25,7 +25,7 @@ variable "github_actions_user_name" {
 variable "common_tags" {
   description = "Common tags for all resources"
   type        = map(string)
-  default     = {
+  default = {
     Project     = "Devths"
     ManagedBy   = "Terraform"
     Environment = "Shared"

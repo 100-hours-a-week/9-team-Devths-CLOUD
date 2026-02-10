@@ -140,8 +140,8 @@ resource "aws_iam_policy" "ecr_push_policy" {
     Statement = [
       {
         # 1. 로그인 권한 (항상 필요)
-        Effect = "Allow"
-        Action = ["ecr:GetAuthorizationToken"]
+        Effect   = "Allow"
+        Action   = ["ecr:GetAuthorizationToken"]
         Resource = "*"
       },
       {
