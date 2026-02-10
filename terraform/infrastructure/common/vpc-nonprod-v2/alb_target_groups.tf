@@ -92,7 +92,7 @@ resource "aws_lb_target_group" "ai" {
 # Target Group - Monitoring (Grafana via Nginx)
 resource "aws_lb_target_group" "monitoring" {
   name     = "${var.project_name}-v2-nonprod-mon-tg"
-  port     = 80
+  port     = 3000
   protocol = "HTTP"
   vpc_id   = module.vpc.vpc_id
 
@@ -102,7 +102,7 @@ resource "aws_lb_target_group" "monitoring" {
     unhealthy_threshold = 3
     timeout             = 5
     interval            = 30
-    path                = "/api/health"
+    path                = "/"
     protocol            = "HTTP"
     matcher             = "200-399"
   }

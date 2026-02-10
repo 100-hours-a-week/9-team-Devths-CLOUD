@@ -122,5 +122,5 @@ resource "aws_lb_target_group_attachment" "monitoring" {
   count            = length(data.aws_instances.monitoring.ids)
   target_group_arn = aws_lb_target_group.monitoring.arn
   target_id        = data.aws_instances.monitoring.ids[count.index]
-  port             = 80
+  port             = 3000
 }

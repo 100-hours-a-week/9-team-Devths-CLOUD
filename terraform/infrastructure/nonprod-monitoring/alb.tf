@@ -6,7 +6,7 @@
 resource "aws_lb_target_group_attachment" "monitoring" {
   target_group_arn = data.aws_lb_target_group.monitoring.arn
   target_id        = module.monitoring.instance_id
-  port             = 80
+  port             = 3000
 
   depends_on = [module.monitoring]
 }
