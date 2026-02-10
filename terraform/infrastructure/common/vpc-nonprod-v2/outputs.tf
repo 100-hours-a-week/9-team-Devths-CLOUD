@@ -100,15 +100,37 @@ output "alb_security_group_name" {
   value       = module.vpc.alb_security_group_name
 }
 
-# 보안 그룹 - App
-output "app_security_group_id" {
+# 보안 그룹 - FE
+output "fe_security_group_id" {
   description = "App security group ID"
-  value       = module.vpc.app_security_group_id
+  value       = module.vpc.fe_security_group_id
 }
 
-output "app_security_group_name" {
+output "fe_security_group_name" {
   description = "App security group name"
-  value       = module.vpc.app_security_group_name
+  value       = module.vpc.fe_security_group_name
+}
+
+# 보안 그룹 - BE
+output "be_security_group_id" {
+  description = "App security group ID"
+  value       = module.vpc.be_security_group_id
+}
+
+output "be_security_group_name" {
+  description = "App security group name"
+  value       = module.vpc.be_security_group_name
+}
+
+# 보안 그룹 - AI
+output "ai_security_group_id" {
+  description = "App security group ID"
+  value       = module.vpc.ai_security_group_id
+}
+
+output "ai_security_group_name" {
+  description = "App security group name"
+  value       = module.vpc.ai_security_group_name
 }
 
 # 보안 그룹 - Database
@@ -121,7 +143,6 @@ output "database_security_group_name" {
   description = "Database security group name"
   value       = module.vpc.database_security_group_name
 }
-
 # 보안 그룹 - EC2 (하위 호환성)
 output "ec2_security_group_id" {
   description = "EC2 security group ID"
@@ -132,6 +153,7 @@ output "ec2_security_group_name" {
   description = "EC2 security group name"
   value       = module.vpc.ec2_security_group_name
 }
+
 
 # ============================================================================
 # ALB 정보

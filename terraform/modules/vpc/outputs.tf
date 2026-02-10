@@ -103,15 +103,37 @@ output "alb_security_group_name" {
   value       = aws_security_group.alb.name
 }
 
-# 보안 그룹 - App
-output "app_security_group_id" {
+# 보안 그룹 - FE
+output "fe_security_group_id" {
   description = "App security group ID"
-  value       = aws_security_group.app.id
+  value       = aws_security_group.be.id
 }
 
-output "app_security_group_name" {
+output "fe_security_group_name" {
   description = "App security group name"
-  value       = aws_security_group.app.name
+  value       = aws_security_group.be.name
+}
+
+# 보안 그룹 - BE
+output "be_security_group_id" {
+  description = "App security group ID"
+  value       = aws_security_group.be.id
+}
+
+output "be_security_group_name" {
+  description = "App security group name"
+  value       = aws_security_group.be.name
+}
+
+# 보안 그룹 - AI
+output "ai_security_group_id" {
+  description = "App security group ID"
+  value       = aws_security_group.ai.id
+}
+
+output "ai_security_group_name" {
+  description = "App security group name"
+  value       = aws_security_group.ai.name
 }
 
 # 보안 그룹 - Database
