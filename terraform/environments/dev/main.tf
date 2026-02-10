@@ -15,6 +15,10 @@ provider "aws" {
   region = var.aws_region
 }
 
+# ============================================================================
+# 참조 내용
+# ============================================================================
+
 # 공유 VPC 참조 (vpc-nonprod-v2 사용)
 data "terraform_remote_state" "vpc" {
   backend = "local"
@@ -39,6 +43,10 @@ data "terraform_remote_state" "ssm" {
   }
 }
 
+# ============================================================================
+# SSM, EC2 역할 IAM
+# ============================================================================
+
 # SSM Parameter Store 모듈
 module "ssm_parameters" {
   source = "../../modules/ssm_parameters"
@@ -58,6 +66,7 @@ module "iam" {
   environment_prefix       = "Dev"
   kms_key_arn              = module.ssm_parameters.kms_key_arn
   artifact_bucket_arn      = data.terraform_remote_state.s3.outputs.artifact_bucket_arn
+  v1_artifact_bucket_arn   = "arn:aws:s3:::devths-v1-artifact-nonprod"
   storage_bucket_arn       = module.s3_storage.bucket_arn
   ssm_log_bucket_arn       = data.terraform_remote_state.ssm.outputs.ssm_log_bucket_arn
   cloudwatch_log_group_arn = data.terraform_remote_state.ssm.outputs.cloudwatch_log_group_arn
@@ -65,6 +74,10 @@ module "iam" {
 
   depends_on = [module.ssm_parameters, module.s3_storage]
 }
+
+# ============================================================================
+# S3
+# ============================================================================
 
 # S3 모듈 - Storage 버킷 (환경별로 분리)
 module "s3_storage" {
@@ -113,6 +126,10 @@ module "s3_storage" {
   common_tags = var.common_tags
 }
 
+# ============================================================================
+# EC2
+# ============================================================================
+
 # EC2 모듈 - Frontend
 module "ec2_fe" {
   source = "../../modules/ec2"
@@ -120,7 +137,7 @@ module "ec2_fe" {
   instance_name             = "${var.project_name}-v2-${var.environment}-fe"
   instance_type             = var.instance_type
   key_name                  = var.key_name
-  subnet_id                 = data.terraform_remote_state.vpc.outputs.public_subnet_ids[0]
+  subnet_id                 = data.terraform_remote_state.vpc.outputs.private_subnet_ids[0]
   security_group_id         = data.terraform_remote_state.vpc.outputs.alb_security_group_id
   iam_instance_profile_name = module.iam.ec2_instance_profile_name
   aws_region                = var.aws_region
@@ -144,7 +161,7 @@ module "ec2_be" {
   instance_name             = "${var.project_name}-v2-${var.environment}-be"
   instance_type             = var.instance_type
   key_name                  = var.key_name
-  subnet_id                 = data.terraform_remote_state.vpc.outputs.public_subnet_ids[1]
+  subnet_id                 = data.terraform_remote_state.vpc.outputs.private_subnet_ids[0]
   security_group_id         = data.terraform_remote_state.vpc.outputs.alb_security_group_id
   iam_instance_profile_name = module.iam.ec2_instance_profile_name
   aws_region                = var.aws_region
@@ -161,12 +178,40 @@ module "ec2_be" {
   depends_on = [module.iam]
 }
 
+# EC2 모듈 - Ai
+module "ec2_ai" {
+  source = "../../modules/ec2"
+
+  instance_name             = "${var.project_name}-v2-${var.environment}-ai"
+  instance_type             = var.instance_type
+  key_name                  = var.key_name
+  subnet_id                 = data.terraform_remote_state.vpc.outputs.private_subnet_ids[0]
+  security_group_id         = data.terraform_remote_state.vpc.outputs.alb_security_group_id
+  iam_instance_profile_name = module.iam.ec2_instance_profile_name
+  aws_region                = var.aws_region
+  enable_eip                = var.enable_eip
+  environment               = var.environment
+  domain_name               = "devths.com"
+  discord_webhook_url       = var.discord_webhook_url
+  service_type              = "ai"
+
+  common_tags = merge(var.common_tags, {
+    Service = "Ai"
+  })
+
+  depends_on = [module.iam]
+}
+
+# ============================================================================
+# Code Deploy
+# ============================================================================
+
 # CodeDeploy Application은 `terraform/shared/codedeploy-v2`에서 공통으로 생성합니다.
 # CodeDeploy 모듈 - Frontend
 module "codedeploy_fe" {
   source = "../../modules/codedeploy"
 
-  app_name               = "Devths-V2-FE"
+  app_name               = "Devths-FE"
   deployment_group_name  = "Devths-V2-FE-Dev-Group"
   service_role_arn       = module.iam.codedeploy_role_arn
   service_name           = "Frontend"
@@ -184,7 +229,7 @@ module "codedeploy_fe" {
 module "codedeploy_be" {
   source = "../../modules/codedeploy"
 
-  app_name               = "Devths-V2-BE"
+  app_name               = "Devths-BE"
   deployment_group_name  = "Devths-V2-BE-Dev-Group"
   service_role_arn       = module.iam.codedeploy_role_arn
   service_name           = "Backend"
@@ -198,12 +243,35 @@ module "codedeploy_be" {
   depends_on = [module.ec2_be, module.iam]
 }
 
-# Route53 모듈 - Frontend (dev.devths.com)
+# CodeDeploy 모듈 - AI
+module "codedeploy_ai" {
+  source = "../../modules/codedeploy"
+
+  app_name               = "Devths-AI"
+  deployment_group_name  = "Devths-V2-AI-Dev-Group"
+  service_role_arn       = module.iam.codedeploy_role_arn
+  service_name           = "Ai"
+  ec2_tag_key            = "Name"
+  ec2_tag_value          = module.ec2_ai.instance_name
+  deployment_config_name = var.deployment_config_name
+  auto_rollback_enabled  = false
+
+  common_tags = var.common_tags
+
+  depends_on = [module.ec2_ai, module.iam]
+}
+
+# ============================================================================
+# Dev 용 Route 53
+# ============================================================================
+
+
+# Route53 모듈 - Frontend (v2.dev.devths.com)
 module "route53_fe" {
   source = "../../modules/route53"
 
   domain_name        = "devths.com"
-  subdomain_prefix   = "dev"
+  subdomain_prefix   = "v2.dev"
   public_ip          = module.ec2_fe.instance_public_ip
   create_root_record = true
   create_www_record  = false
@@ -216,12 +284,12 @@ module "route53_fe" {
   depends_on = [module.ec2_fe]
 }
 
-# Route53 모듈 - Backend (dev.api.devths.com)
+# Route53 모듈 - Backend (v2.dev.api.devths.com)
 module "route53_be" {
   source = "../../modules/route53"
 
   domain_name        = "devths.com"
-  subdomain_prefix   = "dev"
+  subdomain_prefix   = "v2.dev"
   public_ip          = module.ec2_be.instance_public_ip
   create_root_record = false
   create_www_record  = false
@@ -232,4 +300,22 @@ module "route53_be" {
   common_tags = var.common_tags
 
   depends_on = [module.ec2_be]
+}
+
+# Route53 모듈 - AI (v2.dev.ai.devths.com)
+module "route53_ai" {
+  source = "../../modules/route53"
+
+  domain_name        = "devths.com"
+  subdomain_prefix   = "v2.dev"
+  public_ip          = module.ec2_ai.instance_public_ip
+  create_root_record = false
+  create_www_record  = false
+  create_api_record  = false
+  create_ai_record   = true
+  ttl                = 60
+
+  common_tags = var.common_tags
+
+  depends_on = [module.ec2_ai]
 }

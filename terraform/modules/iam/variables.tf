@@ -23,6 +23,12 @@ variable "artifact_bucket_arn" {
   type        = string
 }
 
+variable "v1_artifact_bucket_arn" {
+  description = "V1 S3 artifact bucket ARN for backward compatibility (optional)"
+  type        = string
+  default     = ""
+}
+
 variable "storage_bucket_arn" {
   description = "S3 storage bucket ARN for application data"
   type        = string

@@ -36,6 +36,22 @@ output "ec2_be_private_ip" {
   value       = module.ec2_be.instance_private_ip
 }
 
+# EC2 결과 - AI
+output "ec2_ai_instance_id" {
+  description = "AI EC2 instance ID"
+  value       = module.ec2_ai.instance_id
+}
+
+output "ec2_ai_public_ip" {
+  description = "AI EC2 public IP"
+  value       = module.ec2_ai.instance_public_ip
+}
+
+output "ec2_ai_private_ip" {
+  description = "AI EC2 private IP"
+  value       = module.ec2_ai.instance_private_ip
+}
+
 # S3 Outputs
 output "s3_artifact_bucket" {
   description = "Shared S3 artifact bucket name"
@@ -67,4 +83,9 @@ output "codedeploy_fe_group" {
 output "codedeploy_be_group" {
   description = "Backend deployment group name"
   value       = module.codedeploy_be.deployment_group_name
+}
+
+output "codedeploy_ai_group" {
+  description = "AI deployment group name"
+  value       = module.codedeploy_ai.deployment_group_name
 }

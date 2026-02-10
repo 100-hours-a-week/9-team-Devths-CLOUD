@@ -104,10 +104,12 @@ resource "aws_iam_role_policy" "codedeploy_s3_artifact" {
           "s3:GetObjectVersion",
           "s3:ListBucket"
         ]
-        Resource = [
+        Resource = compact([
           var.artifact_bucket_arn,
-          "${var.artifact_bucket_arn}/*"
-        ]
+          "${var.artifact_bucket_arn}/*",
+          var.v1_artifact_bucket_arn != "" ? var.v1_artifact_bucket_arn : "",
+          var.v1_artifact_bucket_arn != "" ? "${var.v1_artifact_bucket_arn}/*" : ""
+        ])
       }
     ]
   })
@@ -163,10 +165,12 @@ resource "aws_iam_role_policy" "ec2_s3_artifact" {
           "s3:GetObjectVersion",
           "s3:ListBucket"
         ]
-        Resource = [
+        Resource = compact([
           var.artifact_bucket_arn,
-          "${var.artifact_bucket_arn}/*"
-        ]
+          "${var.artifact_bucket_arn}/*",
+          var.v1_artifact_bucket_arn != "" ? var.v1_artifact_bucket_arn : "",
+          var.v1_artifact_bucket_arn != "" ? "${var.v1_artifact_bucket_arn}/*" : ""
+        ])
       }
     ]
   })
