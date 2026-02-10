@@ -34,19 +34,3 @@ output "codedeploy_role_name" {
   description = "CodeDeploy IAM role name"
   value       = aws_iam_role.codedeploy.name
 }
-
-# NAT Instance
-output "nat_instance_role_arn" {
-  description = "NAT Instance IAM role ARN"
-  value       = aws_iam_role.nat_instance.arn
-}
-
-output "nat_instance_role_name" {
-  description = "NAT Instance IAM role name"
-  value       = aws_iam_role.nat_instance.name
-}
-
-output "nat_instance_profile_name" {
-  description = "NAT Instance profile name"
-  value       = aws_iam_instance_profile.nat_instance.name
-}
