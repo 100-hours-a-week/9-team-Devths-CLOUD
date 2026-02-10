@@ -8,11 +8,6 @@ output "instance_name" {
   value       = var.instance_name
 }
 
-output "instance_public_ip" {
-  description = "EC2 instance public IP (EIP)"
-  value       = aws_eip.monitoring.public_ip
-}
-
 output "instance_private_ip" {
   description = "EC2 instance private IP"
   value       = aws_instance.monitoring.private_ip

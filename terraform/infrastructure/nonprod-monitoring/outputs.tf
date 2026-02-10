@@ -8,11 +8,6 @@ output "monitoring_instance_name" {
   value       = module.monitoring.instance_name
 }
 
-output "monitoring_public_ip" {
-  description = "Monitoring server public IP (EIP)"
-  value       = module.monitoring.instance_public_ip
-}
-
 output "monitoring_private_ip" {
   description = "Monitoring server private IP"
   value       = module.monitoring.instance_private_ip

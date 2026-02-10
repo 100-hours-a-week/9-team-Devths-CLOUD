@@ -50,7 +50,7 @@ module "monitoring" {
   instance_name             = "${var.project_name}-v1-monitoring-${var.environment}"
   instance_type             = var.instance_type
   key_name                  = var.key_name
-  subnet_id                 = data.terraform_remote_state.prod.outputs.public_subnet_ids[0]
+  subnet_id                 = data.terraform_remote_state.prod.outputs.private_subnet_ids[0]
   vpc_id                    = data.terraform_remote_state.prod.outputs.vpc_id
   vpc_cidr                  = data.aws_vpc.prod.cidr_block
   iam_instance_profile_name = data.aws_iam_instance_profile.ec2_profile.name
@@ -71,7 +71,7 @@ resource "aws_route53_record" "monitoring" {
   name    = "monitoring.${var.domain_name}"
   type    = "A"
   ttl     = 300
-  records = [module.monitoring.instance_public_ip]
+  records = [module.monitoring.instance_private_ip]
 
   depends_on = [module.monitoring]
 }
