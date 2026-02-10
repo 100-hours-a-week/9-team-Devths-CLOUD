@@ -17,9 +17,6 @@ module "route53_alb" {
   create_ai_record   = true
 
   # ALB Alias 레코드 사용
-  use_alb_alias = true
   alb_dns_name  = data.terraform_remote_state.vpc.outputs.alb_dns_name
   alb_zone_id   = data.terraform_remote_state.vpc.outputs.alb_zone_id
-
-  common_tags = var.common_tags
 }
