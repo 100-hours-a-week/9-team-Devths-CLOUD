@@ -27,7 +27,7 @@ data "terraform_remote_state" "vpc" {
 data "terraform_remote_state" "s3" {
   backend = "local"
   config = {
-    path = "../../shared/s3-nonprod/terraform.tfstate"
+    path = "../../shared/s3-nonprod-v2/terraform.tfstate"
   }
 }
 
@@ -118,7 +118,7 @@ module "ec2_fe" {
   source = "../../modules/ec2"
 
   instance_name             = "${var.project_name}-v2-${var.environment}-fe"
-  instance_type             = "t3.micro"
+  instance_type             = var.instance_type
   key_name                  = var.key_name
   subnet_id                 = data.terraform_remote_state.vpc.outputs.public_subnet_ids[0]
   security_group_id         = data.terraform_remote_state.vpc.outputs.alb_security_group_id
@@ -142,7 +142,7 @@ module "ec2_be" {
   source = "../../modules/ec2"
 
   instance_name             = "${var.project_name}-v2-${var.environment}-be"
-  instance_type             = "t3.micro"
+  instance_type             = var.instance_type
   key_name                  = var.key_name
   subnet_id                 = data.terraform_remote_state.vpc.outputs.public_subnet_ids[1]
   security_group_id         = data.terraform_remote_state.vpc.outputs.alb_security_group_id
@@ -161,7 +161,7 @@ module "ec2_be" {
   depends_on = [module.iam]
 }
 
-# CodeDeploy Application은 `terraform/shared/codedeploy`에서 공통으로 생성합니다.
+# CodeDeploy Application은 `terraform/shared/codedeploy-v2`에서 공통으로 생성합니다.
 # CodeDeploy 모듈 - Frontend
 module "codedeploy_fe" {
   source = "../../modules/codedeploy"
