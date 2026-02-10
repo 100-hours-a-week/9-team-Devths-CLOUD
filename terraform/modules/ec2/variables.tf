@@ -75,7 +75,7 @@ variable "service_type" {
   type        = string
   default     = "all"
   validation {
-    condition     = contains(["fe", "be", "all"], var.service_type)
-    error_message = "service_type must be one of: fe, be, all"
+    condition     = contains(["fe", "be", "ai","all"], var.service_type)
+    error_message = "service_type must be one of: fe, be, ai, all"
   }
 }
