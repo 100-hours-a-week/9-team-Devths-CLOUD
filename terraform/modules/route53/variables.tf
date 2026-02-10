@@ -50,3 +50,9 @@ variable "create_ai_record" {
   type        = bool
   default     = true
 }
+
+variable "create_monitoring_record" {
+  description = "Whether to create monitoring subdomain record"
+  type        = bool
+  default     = false
+}

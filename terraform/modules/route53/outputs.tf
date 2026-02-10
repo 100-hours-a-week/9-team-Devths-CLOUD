@@ -40,3 +40,8 @@ output "ai_record_fqdn" {
   description = "FQDN of ai subdomain record"
   value       = var.create_ai_record ? aws_route53_record.ai[0].fqdn : null
 }
+
+output "monitoring_record_fqdn" {
+  description = "FQDN of monitoring subdomain record"
+  value       = var.create_monitoring_record ? aws_route53_record.monitoring[0].fqdn : null
+}

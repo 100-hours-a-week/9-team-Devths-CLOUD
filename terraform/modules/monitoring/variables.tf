@@ -49,6 +49,23 @@ variable "domain_name" {
   type        = string
 }
 
+variable "monitoring_domain" {
+  description = "Full monitoring domain (e.g., monitoring.dev.devths.com)"
+  type        = string
+}
+
+variable "prometheus_retention" {
+  description = "Prometheus data retention period (e.g., '30d', '90d')"
+  type        = string
+  default     = "30d"
+}
+
+variable "server_label" {
+  description = "Server label for identification"
+  type        = string
+  default     = "모니터링 서버"
+}
+
 variable "grafana_admin_password" {
   description = "Grafana admin password"
   type        = string

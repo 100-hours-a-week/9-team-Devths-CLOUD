@@ -19,11 +19,11 @@ resource "aws_instance" "monitoring" {
   # user_data를 gzip으로 압축하여 16KB 제한 우회
   user_data_base64 = base64gzip(
     templatefile("${path.module}/scripts/monitoring_user_data.sh", {
-      monitoring_domain      = local.monitoring_domain
+      monitoring_domain      = var.monitoring_domain
       environment            = var.environment
       grafana_admin_password = var.grafana_admin_password
-      prometheus_retention   = local.prometheus_retention
-      server_label           = local.server_label
+      prometheus_retention   = var.prometheus_retention
+      server_label           = var.server_label
       target_dev_ip          = var.target_dev_ip
       target_staging_ip      = var.target_staging_ip
       target_prod_ip         = var.target_prod_ip

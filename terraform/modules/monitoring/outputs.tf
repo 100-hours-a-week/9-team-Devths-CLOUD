@@ -15,12 +15,12 @@ output "instance_private_ip" {
 
 output "monitoring_domain" {
   description = "Monitoring domain (Grafana URL)"
-  value       = var.environment == "prod" ? "monitoring.${var.domain_name}" : "monitoring.dev.${var.domain_name}"
+  value       = var.monitoring_domain
 }
 
 output "grafana_url" {
   description = "Grafana URL"
-  value       = "https://${var.environment == "prod" ? "monitoring.${var.domain_name}" : "monitoring.dev.${var.domain_name}"}"
+  value       = "https://${var.monitoring_domain}"
 }
 
 output "prometheus_url" {
