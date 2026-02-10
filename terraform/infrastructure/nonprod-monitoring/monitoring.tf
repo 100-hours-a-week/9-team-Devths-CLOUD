@@ -12,6 +12,7 @@ module "monitoring" {
   subnet_id                 = data.terraform_remote_state.vpc.outputs.private_subnet_ids[0]
   vpc_id                    = data.terraform_remote_state.vpc.outputs.vpc_id
   vpc_cidr                  = data.aws_vpc.nonprod.cidr_block
+  alb_security_group_id     = data.terraform_remote_state.vpc.outputs.alb_security_group_id
   iam_instance_profile_name = data.aws_iam_instance_profile.ec2_profile.name
   environment               = var.environment
   domain_name               = var.domain_name

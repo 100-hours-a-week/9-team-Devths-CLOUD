@@ -29,6 +29,11 @@ variable "vpc_cidr" {
   type        = string
 }
 
+variable "alb_security_group_id" {
+  description = "ALB security group ID for allowing traffic to Grafana"
+  type        = string
+}
+
 variable "iam_instance_profile_name" {
   description = "IAM instance profile name"
   type        = string

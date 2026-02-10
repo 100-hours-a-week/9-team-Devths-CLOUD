@@ -22,6 +22,15 @@ resource "aws_security_group" "monitoring" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Grafana (ALB → Grafana)
+  ingress {
+    description     = "Grafana from ALB"
+    from_port       = 3000
+    to_port         = 3000
+    protocol        = "tcp"
+    security_groups = [var.alb_security_group_id]
+  }
+
   # Prometheus (내부 전용 - VPC 내에서만 접근)
   ingress {
     description = "Prometheus"

@@ -146,14 +146,3 @@ output "database_security_group_name" {
   description = "Database security group name"
   value       = length(aws_security_group.database) > 0 ? aws_security_group.database[0].name : null
 }
-
-# 보안 그룹 - EC2 (하위 호환성)
-output "ec2_security_group_id" {
-  description = "EC2 security group ID"
-  value       = aws_security_group.ec2.id
-}
-
-output "ec2_security_group_name" {
-  description = "EC2 security group name"
-  value       = aws_security_group.ec2.name
-}
