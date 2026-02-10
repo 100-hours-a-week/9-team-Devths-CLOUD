@@ -7,19 +7,19 @@ variable "aws_region" {
 variable "codedeploy_app_name_fe" {
   description = "CodeDeploy application name for Frontend"
   type        = string
-  default     = "Devths-V2-FE"
+  default     = "Devths-FE"
 }
 
 variable "codedeploy_app_name_be" {
   description = "CodeDeploy application name for Backend"
   type        = string
-  default     = "Devths-V2-BE"
+  default     = "Devths-BE"
 }
 
 variable "codedeploy_app_name_ai" {
   description = "CodeDeploy application name for AI"
   type        = string
-  default     = "Devths-V2-AI"
+  default     = "Devths-AI"
 }
 
 variable "common_tags" {
