@@ -19,8 +19,8 @@ resource "aws_iam_policy" "s3_storage_readonly" {
         Resource = [
           "arn:aws:s3:::${var.project_name}-storage-dev",
           "arn:aws:s3:::${var.project_name}-storage-dev/*",
-          "arn:aws:s3:::${var.project_name}-storage-staging",
-          "arn:aws:s3:::${var.project_name}-storage-staging/*",
+          "arn:aws:s3:::${var.project_name}-storage-stg",
+          "arn:aws:s3:::${var.project_name}-storage-stg/*",
           "arn:aws:s3:::${var.project_name}-storage-prod",
           "arn:aws:s3:::${var.project_name}-storage-prod/*"
         ]

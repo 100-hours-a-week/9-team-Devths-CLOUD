@@ -10,7 +10,7 @@ locals {
       description = "Service account for S3 presigned URL generation - dev environment only"
     }
     staging = {
-      environment = "staging"
+      environment = "stg"
       description = "Service account for S3 presigned URL generation - staging environment only"
     }
     prod = {
