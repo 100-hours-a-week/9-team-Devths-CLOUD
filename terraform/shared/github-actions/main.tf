@@ -53,7 +53,9 @@ resource "aws_iam_policy" "s3_artifacts" {
         ]
         Resource = [
           "arn:aws:s3:::${var.project_name}-v1-artifact-*",
-          "arn:aws:s3:::${var.project_name}-v1-artifact-*/*"
+          "arn:aws:s3:::${var.project_name}-v1-artifact-*/*",
+          "arn:aws:s3:::${var.project_name}-v2-artifact-*",
+          "arn:aws:s3:::${var.project_name}-v2-artifact-*/*"
         ]
       },
       {
