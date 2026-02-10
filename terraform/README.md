@@ -31,7 +31,11 @@ Devths 프로젝트의 AWS 인프라를 Terraform으로 관리하는 Infrastruct
 ```
 terraform/
 ├── README.md                    # 이 문서
-├── environments/                # 환경별 설정
+├── infrastructure/              # 배포 가능한 인프라
+│   ├── common/                  # 환경 간 공유 리소스
+│   │   ├── github-actions/      # GitHub Actions IAM 유저
+│   │   ├── route53/             # Route53 Hosted Zone
+│   │   └── ssm/                 # 공유 SSM 파라미터
 │   ├── dev/                     # 개발 환경
 │   │   ├── main.tf              # 메인 설정 파일
 │   │   ├── variables.tf         # 변수 정의
@@ -39,18 +43,14 @@ terraform/
 │   │   └── ssm-params.tfvars    # SSM 파라미터 값
 │   ├── staging/                 # 스테이징 환경
 │   └── prod/                    # 프로덕션 환경
-├── modules/                     # 재사용 가능한 모듈
-│   ├── vpc/                     # VPC 및 네트워크 리소스
-│   ├── ec2/                     # EC2 인스턴스
-│   ├── iam/                     # IAM 역할 및 정책
-│   ├── s3/                      # S3 버킷
-│   ├── route53/                 # Route53 DNS 레코드
-│   ├── codedeploy/              # CodeDeploy 리소스
-│   └── ssm_parameters/          # SSM Parameter Store & KMS
-└── shared/                      # 환경 간 공유 리소스
-    ├── github-actions/          # GitHub Actions IAM 유저
-    ├── route53/                 # Route53 Hosted Zone
-    └── ssm/                     # 공유 SSM 파라미터
+└── modules/                     # 재사용 가능한 모듈
+    ├── vpc/                     # VPC 및 네트워크 리소스
+    ├── ec2/                     # EC2 인스턴스
+    ├── iam/                     # IAM 역할 및 정책
+    ├── s3/                      # S3 버킷
+    ├── route53/                 # Route53 DNS 레코드
+    ├── codedeploy/              # CodeDeploy 리소스
+    └── ssm_parameters/          # SSM Parameter Store & KMS
 ```
 
 ## 사전 요구사항
@@ -81,7 +81,7 @@ terraform/
 도메인(`devths.com`)을 사용할 경우 먼저 Route53 Hosted Zone을 생성합니다:
 
 ```bash
-cd shared/route53
+cd infrastructure/common/route53
 terraform init
 terraform plan
 terraform apply
@@ -97,7 +97,7 @@ terraform output name_servers
 CI/CD를 위한 IAM 유저를 생성합니다:
 
 ```bash
-cd shared/github-actions
+cd infrastructure/common/github-actions
 terraform init
 terraform plan
 terraform apply
@@ -108,7 +108,7 @@ terraform apply
 #### 개발 환경 배포
 
 ```bash
-cd environments/dev
+cd infrastructure/dev
 
 # Terraform 초기화
 terraform init
@@ -126,7 +126,7 @@ terraform output
 #### 스테이징/프로덕션 환경 배포
 
 ```bash
-cd environments/staging  # 또는 prod
+cd infrastructure/staging  # 또는 prod
 terraform init
 terraform plan
 terraform apply
@@ -204,7 +204,7 @@ EC2와 CodeDeploy에 필요한 IAM 역할 및 정책을 생성합니다.
 
 ### CodeDeploy 모듈 (`modules/codedeploy`)
 
-환경별 Deployment Group을 생성합니다. CodeDeploy Application(FE/BE/AI)은 `shared/codedeploy`에서 공통으로 생성합니다.
+환경별 Deployment Group을 생성합니다. CodeDeploy Application(FE/BE/AI)은 `infrastructure/common/codedeploy`에서 공통으로 생성합니다.
 
 **배포 그룹:**
 - `Devths-V2-FE-Dev-Group`: Frontend 배포
