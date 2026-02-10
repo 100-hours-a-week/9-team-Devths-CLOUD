@@ -39,7 +39,7 @@ Prod VPC에 Prometheus + Grafana 모니터링 서버를 배포합니다. Product
 ### 1. 변수 파일 생성
 
 ```bash
-cd terraform/infrastructure/monitoring-prod
+cd terraform/infrastructure/prod-monitoring
 cp terraform.tfvars.example terraform.tfvars
 vim terraform.tfvars
 ```

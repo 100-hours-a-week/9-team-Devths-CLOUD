@@ -40,7 +40,7 @@ Non-Prod VPC에 Prometheus + Grafana 모니터링 서버를 배포합니다. Dev
 ### 1. 변수 파일 생성
 
 ```bash
-cd terraform/infrastructure/monitoring-nonprod
+cd terraform/infrastructure/nonprod-monitoring
 cp terraform.tfvars.example terraform.tfvars
 vim terraform.tfvars
 ```
