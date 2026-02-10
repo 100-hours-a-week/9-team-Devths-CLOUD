@@ -1,0 +1,95 @@
+# ============================================================================
+# Staging SSM Parameter Store Values
+# ============================================================================
+#
+# 이 파일은 Production 환경의 SSM Parameter Store 값을 설정하는 예시 파일입니다.
+# 실제 사용 시:
+#   1. 이 파일을 ssm-params.tfvars로 복사
+#   2. PLACEHOLDER 값을 실제 값으로 변경
+#   3. ssm-params.tfvars를 .gitignore에 추가 (이미 추가됨)
+#
+# 사용법:
+#   terraform apply -var-file="secrets.tfvars" -var-file="ssm-params.tfvars"
+#
+# ============================================================================
+
+# Backend SSM Parameters
+be_parameter_values = {
+  # Database Configuration
+  DB_USERNAME = "PLACEHOLDER_DB_USERNAME"
+  DB_PASSWORD = "PLACEHOLDER_DB_PASSWORD"
+  DB_URL      = "jdbc:postgresql://your-prod-db-host:5432/devths_prod"
+
+  # JWT Configuration
+  JWT_SECRET                   = "PLACEHOLDER_JWT_SECRET"
+  JWT_ACCESS_TOKEN_EXPIRATION  = "3600000"    # 1 hour in ms
+  JWT_REFRESH_TOKEN_EXPIRATION = "604800000"  # 7 days in ms
+  JWT_TEMP_TOKEN_EXPIRATION    = "300000"     # 5 minutes in ms
+
+  # Google OAuth Configuration
+  GOOGLE_CLIENT_ID     = "PLACEHOLDER_GOOGLE_CLIENT_ID"
+  GOOGLE_CLIENT_SECRET = "PLACEHOLDER_GOOGLE_CLIENT_SECRET"
+  GOOGLE_REDIRECT_URI  = "https://devths.com/oauth2/callback/google"
+
+  # Encryption
+  ENCRYPTION_AES_KEY = "PLACEHOLDER_ENCRYPTION_AES_KEY"
+
+  # S3 Configuration
+  S3_ACCESS_KEY = "PLACEHOLDER_S3_ACCESS_KEY"
+  S3_SECRET_KEY = "PLACEHOLDER_S3_SECRET_KEY"
+  S3_BUCKET     = "devths-v1-storage-prod"
+  S3_REGION     = "ap-northeast-2"
+
+  # FastAPI Configuration
+  FASTAPI_BASE_URL = "https://ai.devths.com"
+
+  # CORS Configuration
+  CORS_ALLOWED_ORIGINS = "https://devths.com,https://www.devths.com"
+
+  # Spring JPA Configuration
+  SPRING_JPA_DDL_AUTO = "validate"
+
+  # Database Connection Pool Configuration
+  CONNECTION_TIMEOUT = "30000"  # 30 seconds in ms
+  IDLE_TIMEOUT       = "600000" # 10 minutes in ms
+  MAXIMUM_POOL_SIZE  = "20"
+  MINIMUM_IDLE       = "5"
+
+  # CloudWatch Configuration
+  CW_ENABLED    = "true"
+  CW_NAME_SPACE = "Devths/Production"
+
+  # Logging Configuration
+  LOG_LEVEL = "INFO"
+
+  # Rate Limit Configuration
+  RATELIMIT_GOOGLE_CALENDAR = "10"
+  RATELIMIT_GOOGLE_TASKS    = "10"
+  RATELIMIT_FASTAPI         = "100"
+  RATELIMIT_GOOGLE_OAUTH    = "5"
+}
+
+# AI SSM Parameters
+ai_parameter_values = {
+  # AI Service Configuration
+  API_KEY = "PLACEHOLDER_AI_API_KEY"
+  HOST    = "0.0.0.0"
+  PORT    = "8000"
+
+  # Google API Configuration
+  GOOGLE_API_KEY = "PLACEHOLDER_GOOGLE_API_KEY"
+
+  # VLLM Configuration
+  GCP_VLLM_BASE_URL = "https://your-vllm-endpoint.com"
+  VLLM_VERIFY_SSL   = "true"
+
+  # Clova OCR Configuration
+  CLOVA_OCR_API_URL    = "https://your-clova-ocr-endpoint.com"
+  CLOVA_OCR_SECRET_KEY = "PLACEHOLDER_CLOVA_OCR_SECRET_KEY"
+
+  # Langfuse Configuration
+  LANGFUSE_BASE_URL   = "https://cloud.langfuse.com"
+  LANGFUSE_HOST       = "https://cloud.langfuse.com"
+  LANGFUSE_PUBLIC_KEY = "PLACEHOLDER_LANGFUSE_PUBLIC_KEY"
+  LANGFUSE_SECRET_KEY = "PLACEHOLDER_LANGFUSE_SECRET_KEY"
+}
