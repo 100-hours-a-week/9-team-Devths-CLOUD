@@ -2,9 +2,6 @@
 
 ################################################################################
 # Monitoring Server User Data Script
-# 용도: Prometheus + Grafana 모니터링 서버 초기 설정
-# 환경: ${environment}
-# 도메인: ${monitoring_domain}
 ################################################################################
 
 set -e
@@ -77,44 +74,6 @@ docker --version
 docker compose version
 
 ################################################################################
-# 2.5. Docker 데몬 최적화 설정
-################################################################################
-
-log_info "Configuring Docker daemon for production..."
-
-mkdir -p /etc/docker
-cat > /etc/docker/daemon.json <<'DOCKER_DAEMON_EOF'
-{
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "10m",
-    "max-file": "3"
-  },
-  "storage-driver": "overlay2",
-  "live-restore": true
-}
-DOCKER_DAEMON_EOF
-
-# Docker 재시작하여 설정 적용
-systemctl restart docker
-
-log_info "Docker daemon configured successfully"
-
-################################################################################
-# 3. Nginx 설치
-################################################################################
-
-log_info "Installing Nginx and Certbot..."
-
-apt-get install -y nginx certbot python3-certbot-nginx
-
-# Nginx 시작 및 자동 시작 설정
-systemctl start nginx
-systemctl enable nginx
-
-log_info "Nginx installed successfully"
-
-################################################################################
 # 4. 모니터링 디렉토리 생성
 ################################################################################
 
@@ -126,10 +85,10 @@ cd $MONITORING_DIR
 
 # 환경별 디렉토리 생성
 %{ if environment == "nonprod" ~}
-mkdir -p non-prod/{prometheus/alerts,grafana/provisioning/datasources}
+mkdir -p non-prod/{prometheus/alerts,grafana/provisioning/datasources,loki,promtail}
 ENVIRONMENT_DIR="$MONITORING_DIR/non-prod"
 %{ else ~}
-mkdir -p prod/{prometheus/alerts,grafana/provisioning/datasources}
+mkdir -p prod/{prometheus/alerts,grafana/provisioning/datasources,loki,promtail}
 ENVIRONMENT_DIR="$MONITORING_DIR/prod"
 %{ endif ~}
 
@@ -180,7 +139,7 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=false
 %{ endif ~}
     ports:
-      - "3001:3000"
+      - "3000:3000"
     volumes:
       - grafana-data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
@@ -189,10 +148,39 @@ services:
     depends_on:
       - prometheus
 
+  loki:
+    image: grafana/loki:latest
+    container_name: loki-${environment}
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - monitoring
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail-${environment}
+    restart: unless-stopped
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/log:/var/log:ro
+      - ./promtail/config.yml:/etc/promtail/config.yml:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - monitoring
+    depends_on:
+      - loki
+
 volumes:
   prometheus-data:
     driver: local
   grafana-data:
+    driver: local
+  loki-data:
     driver: local
 
 networks:
@@ -246,15 +234,6 @@ scrape_configs:
         regex: 'node_.*'
         action: keep
 
-  # Dev Environment - Nginx Exporter
-  - job_name: 'nginx-exporter-dev'
-    static_configs:
-      - targets: ['${target_dev_ip}:9113']
-        labels:
-          env: 'dev'
-          service: 'nginx-exporter'
-          instance_name: 'devths-v1-dev'
-
   # Staging Environment - Node Exporter
   - job_name: 'node-exporter-staging'
     static_configs:
@@ -267,15 +246,6 @@ scrape_configs:
       - source_labels: [__name__]
         regex: 'node_.*'
         action: keep
-
-  # Staging Environment - Nginx Exporter
-  - job_name: 'nginx-exporter-staging'
-    static_configs:
-      - targets: ['${target_staging_ip}:9113']
-        labels:
-          env: 'staging'
-          service: 'nginx-exporter'
-          instance_name: 'devths-v1-stg'
 %{ else ~}
   # Production Environment - Node Exporter
   - job_name: 'node-exporter-prod'
@@ -289,15 +259,6 @@ scrape_configs:
       - source_labels: [__name__]
         regex: 'node_.*'
         action: keep
-
-  # Production Environment - Nginx Exporter
-  - job_name: 'nginx-exporter-prod'
-    static_configs:
-      - targets: ['${target_prod_ip}:9113']
-        labels:
-          env: 'prod'
-          service: 'nginx-exporter'
-          instance_name: 'devths-v1-prod'
 %{ endif ~}
 PROMETHEUS_EOF
 
@@ -480,126 +441,183 @@ datasources:
       timeInterval: "15s"
       queryTimeout: "60s"
       httpMethod: POST
+
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    isDefault: false
+    editable: true
+    jsonData:
+      maxLines: 1000
+      derivedFields:
+        - datasourceUid: Prometheus
+          matcherRegex: "traceID=(\\w+)"
+          name: TraceID
+          url: '$${__value.raw}'
 GRAFANA_DATASOURCE_EOF
 
 log_info "Grafana datasource provisioning created"
 
 ################################################################################
-# 9. Nginx 리버스 프록시 설정
+# 9. Loki 설정 파일 생성
 ################################################################################
 
-log_info "Creating Nginx reverse proxy configuration..."
+log_info "Creating Loki configuration..."
 
-cat > /etc/nginx/sites-available/grafana-${environment} <<'NGINX_CONFIG_EOF'
-upstream grafana_${environment} {
-    server 127.0.0.1:3001;
-    keepalive 32;
-}
+cat > $ENVIRONMENT_DIR/loki/loki-config.yml <<'LOKI_CONFIG_EOF'
+auth_enabled: false
 
-server {
-    listen 80;
-    server_name ${monitoring_domain};
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
 
-    location /.well-known/acme-challenge/ {
-        root /var/www/html;
-    }
+common:
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    instance_addr: 127.0.0.1
+    kvstore:
+      store: inmemory
 
-    location / {
-        proxy_pass http://grafana_${environment};
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-NGINX_CONFIG_EOF
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: boltdb-shipper
+      object_store: filesystem
+      schema: v11
+      index:
+        prefix: index_
+        period: 24h
 
-# Nginx 설정 활성화
-ln -sf /etc/nginx/sites-available/grafana-${environment} /etc/nginx/sites-enabled/
+ruler:
+  alertmanager_url: http://localhost:9093
 
-# Nginx 설정 테스트 및 재시작
-nginx -t && systemctl reload nginx
+limits_config:
+  retention_period: ${prometheus_retention}
+  ingestion_rate_mb: 16
+  ingestion_burst_size_mb: 32
+  per_stream_rate_limit: 10MB
+  per_stream_rate_limit_burst: 20MB
 
-log_info "Nginx reverse proxy configured"
+chunk_store_config:
+  max_look_back_period: 0s
 
-################################################################################
-# 9.5. Fail2ban 설치 및 설정 (보안)
-################################################################################
+table_manager:
+  retention_deletes_enabled: true
+  retention_period: ${prometheus_retention}
 
-log_info "Installing and configuring Fail2ban..."
+compactor:
+  working_directory: /loki/compactor
+  shared_store: filesystem
+  compaction_interval: 10m
+  retention_enabled: true
+  retention_delete_delay: 2h
+  retention_delete_worker_count: 150
+LOKI_CONFIG_EOF
 
-apt-get install -y fail2ban
-cd /etc/fail2ban
-
-# Nginx 보안 필터
-cat > /etc/fail2ban/filter.d/nginx-forbidden.conf <<'FAIL2BAN_FILTER_EOF'
-[Definition]
-failregex = ^<HOST> -.*"(GET|POST|HEAD|PROPFIND|CONNECT).*(env|config|php|git|yaml|sql|vendor|jenkins).*".* (404|403|444|405|400|301)
-ignoreregex =
-FAIL2BAN_FILTER_EOF
-
-# Jail 설정
-cp jail.conf jail.local
-
-cat > /etc/fail2ban/jail.local <<'FAIL2BAN_JAIL_EOF'
-[nginx-env-scan]
-enabled = true
-port = http,https
-filter = nginx-forbidden
-logpath = /var/log/nginx/*.log
-maxretry = 5
-findtime = 600
-bantime = 3600
-action = iptables-multiport[name=nginx-env, port="http,https", protocol=tcp]
-FAIL2BAN_JAIL_EOF
-
-# Fail2ban 시작 및 활성화
-systemctl enable fail2ban
-systemctl start fail2ban
-
-log_info "Fail2ban configured successfully"
+log_info "Loki configuration created"
 
 ################################################################################
-# 10. 타임존 및 CloudWatch Agent 설정
+# 10. Promtail 설정 파일 생성
 ################################################################################
 
-log_info "Setting timezone to Asia/Seoul..."
-timedatectl set-timezone Asia/Seoul
+log_info "Creating Promtail configuration..."
 
-log_info "Installing CloudWatch Agent..."
-wget -q https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
-dpkg -i -E ./amazon-cloudwatch-agent.deb
-rm ./amazon-cloudwatch-agent.deb
+cat > $ENVIRONMENT_DIR/promtail/config.yml <<'PROMTAIL_CONFIG_EOF'
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
 
-# 기본 메트릭 설정 파일 생성 (모니터링 서버용)
-cat > /opt/aws/amazon-cloudwatch-agent/bin/config.json <<'CLOUDWATCH_CONFIG_EOF'
-{
-  "agent": {
-    "metrics_collection_interval": 60,
-    "run_as_user": "root"
-  },
-  "metrics": {
-    "namespace": "Devths/Monitoring",
-    "append_dimensions": {
-      "Environment": "${environment}"
-    },
-    "metrics_collected": {
-      "mem": {
-        "measurement": ["mem_used_percent"]
-      },
-      "disk": {
-        "measurement": ["used_percent"],
-        "resources": ["/"]
-      }
-    }
-  }
-}
-CLOUDWATCH_CONFIG_EOF
+positions:
+  filename: /tmp/positions.yaml
 
-# CloudWatch Agent 실행
-/opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json
+clients:
+  - url: http://loki:3100/loki/api/v1/push
 
-log_info "Timezone and CloudWatch Agent configured"
+scrape_configs:
+  # Docker 컨테이너 로그
+  - job_name: docker
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: docker
+          __path__: /var/lib/docker/containers/*/*.log
+
+    pipeline_stages:
+      - json:
+          expressions:
+            output: log
+            stream: stream
+            attrs:
+      - labels:
+          stream:
+      - output:
+          source: output
+
+  # 시스템 로그
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: system
+          __path__: /var/log/*.log
+
+  # Nginx 로그
+  - job_name: nginx
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: nginx
+          __path__: /var/log/nginx/*.log
+
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<remote_addr>[\w\.]+) - (?P<remote_user>[\w]+) \[(?P<time_local>.*?)\] "(?P<method>\w+) (?P<request>.*?) (?P<protocol>.*?)" (?P<status>[\d]+) (?P<body_bytes_sent>[\d]+) "(?P<http_referer>.*?)" "(?P<http_user_agent>.*?)"'
+      - labels:
+          method:
+          status:
+
+  # User data 설치 로그
+  - job_name: userdata
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: userdata
+          __path__: /var/log/user-data.log
+
+%{ if environment == "nonprod" ~}
+  # Dev 환경 애플리케이션 로그
+  - job_name: app-dev
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: application
+          environment: dev
+          __path__: /var/log/app-dev/*.log
+%{ else ~}
+  # Prod 환경 애플리케이션 로그
+  - job_name: app-prod
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: application
+          environment: prod
+          __path__: /var/log/app-prod/*.log
+%{ endif ~}
+PROMTAIL_CONFIG_EOF
+
+log_info "Promtail configuration created"
 
 ################################################################################
 # 11. 디렉토리 권한 설정
@@ -627,41 +645,28 @@ docker compose ps
 log_info "Docker Compose started successfully"
 
 ################################################################################
-# 13. SSL 인증서 발급 (도메인 DNS 설정 후 수동 실행 필요)
-################################################################################
-
-log_info "SSL certificate setup information:"
-log_info "After DNS is configured, run the following command:"
-log_info "sudo certbot --nginx -d ${monitoring_domain} --non-interactive --agree-tos --email admin@devths.com"
-
-# SSL 인증서 발급 시도 (DNS가 설정되어 있을 경우)
-# 실패해도 계속 진행
-if ! certbot --nginx -d ${monitoring_domain} --non-interactive --agree-tos --email admin@devths.com --redirect; then
-    log_warn "SSL certificate provisioning failed. Please run certbot manually after DNS propagation."
-fi
-
-################################################################################
-# 14. 설정 완료 메시지
+# 13. 완료 메시지
 ################################################################################
 
 echo ""
 echo "================================"
-echo "Monitoring server setup completed!"
+echo "Monitoring Server Setup Complete!"
 echo "================================"
-echo "Environment: ${environment}"
-echo "Monitoring Domain: ${monitoring_domain}"
-echo "Grafana URL: https://${monitoring_domain}"
-echo "Prometheus URL: http://$(hostname -I | awk '{print $1}'):9090"
 echo ""
-echo "Default Grafana credentials:"
+echo "Services:"
+echo "  - Grafana:    https://${monitoring_domain}"
+echo "  - Prometheus: http://localhost:9090"
+echo "  - Loki:       http://localhost:3100"
+echo "  - Promtail:   http://localhost:9080"
+echo ""
+echo "Grafana credentials:"
 echo "  Username: admin"
 echo "  Password: ${grafana_admin_password}"
 echo ""
-echo "Next steps:"
-echo "1. Configure Route53 A record: ${monitoring_domain} -> $(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
-echo "2. Wait for DNS propagation"
-echo "3. SSL certificate will be automatically provisioned or run certbot manually"
-echo "4. Install exporters on target servers"
-echo "================================"
-echo "Setup timestamp: $(date)"
-echo "================================"
+echo "Container status:"
+docker compose ps
+echo ""
+echo "Logs location: /var/log/user-data.log"
+echo "Monitoring directory: $MONITORING_DIR"
+echo ""
+log_info "Setup completed successfully at $(date)"
