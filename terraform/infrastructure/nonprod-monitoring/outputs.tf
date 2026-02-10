@@ -30,5 +30,5 @@ output "prometheus_url" {
 
 output "route53_record" {
   description = "Route53 DNS record"
-  value       = aws_route53_record.monitoring.fqdn
+  value       = module.route53_monitoring.monitoring_record_fqdn
 }

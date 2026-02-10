@@ -50,7 +50,7 @@ variable "domain_name" {
 }
 
 variable "monitoring_domain" {
-  description = "Full monitoring domain (e.g., monitoring.dev.devths.com)"
+  description = "Full monitoring domain (e.g., dev.monitoring.devths.com)"
   type        = string
 }
 

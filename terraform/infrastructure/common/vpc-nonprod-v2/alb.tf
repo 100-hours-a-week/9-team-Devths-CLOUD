@@ -113,6 +113,35 @@ resource "aws_lb_target_group" "ai" {
   )
 }
 
+# Target Group - Monitoring (Grafana via Nginx)
+resource "aws_lb_target_group" "monitoring" {
+  name     = "${var.project_name}-v2-nonprod-mon-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = module.vpc.vpc_id
+
+  health_check {
+    enabled             = true
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
+    timeout             = 5
+    interval            = 30
+    path                = "/api/health"
+    protocol            = "HTTP"
+    matcher             = "200-399"
+  }
+
+  deregistration_delay = 30
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name    = "${var.project_name}-v2-nonprod-mon-tg"
+      Service = "Monitoring"
+    }
+  )
+}
+
 # ============================================================================
 # Target Group Attachments (태그 기반 자동 등록)
 # ============================================================================
@@ -185,6 +214,28 @@ data "aws_instances" "ai" {
   }
 }
 
+data "aws_instances" "monitoring" {
+  filter {
+    name   = "tag:Type"
+    values = ["Monitoring"]
+  }
+
+  filter {
+    name   = "tag:Project"
+    values = ["devths"]
+  }
+
+  filter {
+    name   = "tag:Version"
+    values = ["v2"]
+  }
+
+  filter {
+    name   = "instance-state-name"
+    values = ["running"]
+  }
+}
+
 # Target Group Attachment - Frontend
 resource "aws_lb_target_group_attachment" "fe" {
   count            = length(data.aws_instances.fe.ids)
@@ -207,6 +258,14 @@ resource "aws_lb_target_group_attachment" "ai" {
   target_group_arn = aws_lb_target_group.ai.arn
   target_id        = data.aws_instances.ai.ids[count.index]
   port             = 8000
+}
+
+# Target Group Attachment - Monitoring
+resource "aws_lb_target_group_attachment" "monitoring" {
+  count            = length(data.aws_instances.monitoring.ids)
+  target_group_arn = aws_lb_target_group.monitoring.arn
+  target_id        = data.aws_instances.monitoring.ids[count.index]
+  port             = 80
 }
 
 # ============================================================================
@@ -285,6 +344,25 @@ resource "aws_lb_listener_rule" "ai_https" {
   condition {
     host_header {
       values = ["*.ai.devths.com", "ai.devths.com"]
+    }
+  }
+
+  tags = var.common_tags
+}
+
+# Monitoring 라우팅 규칙 (dev.monitoring.devths.com → Monitoring)
+resource "aws_lb_listener_rule" "monitoring_https" {
+  listener_arn = aws_lb_listener.https.arn
+  priority     = 300
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.monitoring.arn
+  }
+
+  condition {
+    host_header {
+      values = ["dev.monitoring.devths.com"]
     }
   }
 

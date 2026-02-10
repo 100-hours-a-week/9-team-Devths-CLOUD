@@ -9,7 +9,7 @@ locals {
   base_domain       = var.subdomain_prefix != "" ? "${var.subdomain_prefix}.${var.domain_name}" : var.domain_name
   api_domain        = var.subdomain_prefix != "" ? "${var.subdomain_prefix}.api.${var.domain_name}" : "api.${var.domain_name}"
   ai_domain         = var.subdomain_prefix != "" ? "${var.subdomain_prefix}.ai.${var.domain_name}" : "ai.${var.domain_name}"
-  monitoring_domain = var.subdomain_prefix != "" ? "monitoring.${var.subdomain_prefix}.${var.domain_name}" : "monitoring.${var.domain_name}"
+  monitoring_domain = var.subdomain_prefix != "" ? "${var.subdomain_prefix}.monitoring.${var.domain_name}" : "monitoring.${var.domain_name}"
 }
 
 # ========================================
