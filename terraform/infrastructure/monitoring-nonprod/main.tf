@@ -19,7 +19,7 @@ provider "aws" {
 data "terraform_remote_state" "vpc" {
   backend = "local"
   config = {
-    path = "../../shared/vpc-nonprod/terraform.tfstate"
+    path = "../common/vpc-nonprod-v2/terraform.tfstate"
   }
 }
 
@@ -63,7 +63,7 @@ data "aws_iam_instance_profile" "ec2_profile" {
 module "monitoring" {
   source = "../../modules/monitoring"
 
-  instance_name             = "${var.project_name}-v1-monitoring-${var.environment}"
+  instance_name             = "${var.project_name}-v2-monitoring-${var.environment}"
   instance_type             = var.instance_type
   key_name                  = var.key_name
   subnet_id                 = data.terraform_remote_state.vpc.outputs.public_subnet_ids[0]

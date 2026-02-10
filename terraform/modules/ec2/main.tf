@@ -1,4 +1,4 @@
-# 최신 Ubuntu 22.04
+# Ubuntu 22.04
 data "aws_ami" "ubuntu_22_04" {
   most_recent = true
   owners      = ["099720109477"] # Canonical
@@ -19,23 +19,11 @@ locals {
   # 환경별 prefix (dev., stg., 또는 빈 문자열)
   env_prefix = var.environment == "prod" ? "" : "${var.environment}."
 
-  # Frontend server names (production만 www 별칭 추가)
-  fe_server_names = var.environment == "prod" ? "${var.domain_name} www.${var.domain_name}" : "${local.env_prefix}${var.domain_name}"
-
-  # Certbot 도메인 리스트
-  certbot_domains = var.environment == "prod" ? "-d ${var.domain_name} -d www.${var.domain_name} -d api.${var.domain_name} -d ai.${var.domain_name}" : "-d ${local.env_prefix}${var.domain_name} -d ${local.env_prefix}api.${var.domain_name} -d ${local.env_prefix}ai.${var.domain_name}"
-
-  # SSL 인증서 경로에 사용될 도메인 (Certbot이 첫 번째 도메인으로 디렉토리 생성)
-  ssl_cert_domain = var.environment == "prod" ? var.domain_name : "${local.env_prefix}${var.domain_name}"
-
   # 서버 레이블 (fail2ban 알림용)
   server_label = var.environment == "prod" ? "운영 서버" : var.environment == "stg" ? "스테이징 서버" : "개발 서버"
 
   # CloudWatch Agent 네임스페이스
   cloudwatch_namespace = var.environment == "prod" ? "CWAgent/Production" : var.environment == "stg" ? "CWAgent/Staging" : "CWAgent/Dev"
-
-  # SSM Parameter Store용 environment prefix (Dev, Stg, Prod)
-  environment_prefix = var.environment == "prod" ? "Prod" : var.environment == "stg" ? "Stg" : "Dev"
 
   # Service 이름 매핑 (CodeDeploy 태그와 일치시키기 위해)
   service_name_map = {
@@ -71,9 +59,6 @@ resource "aws_instance" "this" {
     templatefile("${path.module}/scripts/user_data.sh", {
       env_prefix           = local.env_prefix
       domain_name          = var.domain_name
-      fe_server_names      = local.fe_server_names
-      certbot_domains      = local.certbot_domains
-      ssl_cert_domain      = local.ssl_cert_domain
       environment          = var.environment
       server_label         = local.server_label
       discord_webhook_url  = var.discord_webhook_url
@@ -81,6 +66,7 @@ resource "aws_instance" "this" {
       service_type         = var.service_type
     }),
     file("${path.module}/scripts/install_node_exporter.sh"),
+    file("${path.module}/scripts/setup_logrotate.sh"),
   ]))
 
   tags = merge(
@@ -93,7 +79,7 @@ resource "aws_instance" "this" {
   )
 }
 
-# 공인 IP (선택적)
+# 공인 IP
 resource "aws_eip" "this" {
   count    = var.enable_eip ? 1 : 0
   instance = aws_instance.this.id

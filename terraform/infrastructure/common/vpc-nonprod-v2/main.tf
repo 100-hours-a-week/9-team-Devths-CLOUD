@@ -15,7 +15,7 @@ provider "aws" {
 
 # 3-tier VPC 모듈 - Docker 기반 아키텍처
 module "vpc" {
-  source = "../../modules/vpc"
+  source = "../../../modules/vpc"
 
   project_name          = var.project_name
   environment           = "nonprod"

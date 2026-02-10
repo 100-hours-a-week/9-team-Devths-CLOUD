@@ -15,7 +15,7 @@ provider "aws" {
 
 # 공유 S3 Artifact 버킷 - Dev와 Staging이 공유
 module "s3_artifact" {
-  source = "../../modules/s3"
+  source = "../../../modules/s3"
 
   bucket_name        = "${var.project_name}-v2-artifact-nonprod"
   purpose            = "CodeDeploy artifacts for Dev and Staging"

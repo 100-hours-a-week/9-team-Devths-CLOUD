@@ -24,7 +24,7 @@ moved {
 data "terraform_remote_state" "ssm" {
   backend = "local"
   config = {
-    path = "../../shared/ssm/terraform.tfstate"
+    path = "../common/ssm/terraform.tfstate"
   }
 }
 
@@ -158,7 +158,7 @@ module "ec2" {
   depends_on = [module.iam]
 }
 
-# CodeDeploy Application은 `terraform/shared/codedeploy`에서 공통으로 생성합니다.
+# CodeDeploy Application은 `terraform/shared/codedeploy-v2`에서 공통으로 생성합니다.
 # CodeDeploy 모듈 - Frontend
 module "codedeploy_fe" {
   source = "../../modules/codedeploy"
