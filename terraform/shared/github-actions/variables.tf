@@ -4,8 +4,14 @@ variable "aws_region" {
   default     = "ap-northeast-2"
 }
 
+variable "account_id" {
+  description = "유저 ID"
+  type = string
+  default = "174678835309"
+}
+
 variable "project_name" {
-  description = "Project name"
+  description = "프로젝트 이름"
   type        = string
   default     = "devths"
 }

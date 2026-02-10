@@ -16,8 +16,9 @@ provider "aws" {
 }
 
 # ===================================
-# IAM User for GitHub Actions
+# IAM 유저
 # ===================================
+
 # IAM 유저 생성
 resource "aws_iam_user" "github_actions" {
   name = var.github_actions_user_name
@@ -33,7 +34,7 @@ resource "aws_iam_user" "github_actions" {
 }
 
 # ===================================
-# S3 Artifact Access Policy
+# S3 아티팩트 정책 연결
 # ===================================
 
 resource "aws_iam_policy" "s3_artifacts" {
@@ -78,7 +79,7 @@ resource "aws_iam_policy" "s3_artifacts" {
 }
 
 # ===================================
-# CodeDeploy Deployment Policy
+# CodeDeploy 관련 정책
 # ===================================
 
 resource "aws_iam_policy" "codedeploy_deployment" {
@@ -127,7 +128,43 @@ resource "aws_iam_policy" "codedeploy_deployment" {
 }
 
 # ===================================
-# Attach Policies to GitHub Actions User
+# ECR 관련 정책
+# ===================================
+
+resource "aws_iam_policy" "ecr_push_policy" {
+  name        = "${var.project_name}-ECR-Push-Policy"
+  description = "Allow pushing images to all devths/* repositories"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        # 1. 로그인 권한 (항상 필요)
+        Effect = "Allow"
+        Action = ["ecr:GetAuthorizationToken"]
+        Resource = "*"
+      },
+      {
+        # 2. 푸시 권한 (와일드카드 사용)
+        Effect = "Allow"
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "ecr:InitiateLayerUpload",
+          "ecr:UploadLayerPart",
+          "ecr:CompleteLayerUpload",
+          "ecr:PutImage"
+        ]
+        # devths/ 폴더 아래에 있는 모든 리포지토리를 허용
+        Resource = "arn:aws:ecr:${var.aws_region}:${var.account_id}:repository/devths/*"
+      }
+    ]
+  })
+}
+
+# ===================================
+# 정책 연결하기
 # ===================================
 
 resource "aws_iam_user_policy_attachment" "github_actions_s3" {
@@ -136,6 +173,11 @@ resource "aws_iam_user_policy_attachment" "github_actions_s3" {
 }
 
 resource "aws_iam_user_policy_attachment" "github_actions_codedeploy" {
+  user       = aws_iam_user.github_actions.name
+  policy_arn = aws_iam_policy.codedeploy_deployment.arn
+}
+
+resource "aws_iam_user_policy_attachment" "github_actions_ecr" {
   user       = aws_iam_user.github_actions.name
   policy_arn = aws_iam_policy.codedeploy_deployment.arn
 }
