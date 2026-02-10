@@ -66,14 +66,20 @@ variable "nat_instance_type" {
   default     = "t3.nano"
 }
 
+variable "certificate_arn" {
+  description = "Certificate Manager"
+  type        = string
+  default = "arn:aws:acm:ap-northeast-2:174678835309:certificate/7ab71742-f7e2-44a8-979c-50b4287ba5e5"
+}
+
 # 공통 Tags
 variable "common_tags" {
   description = "Common tags for all resources"
   type        = map(string)
   default = {
-    Project     = "devths"
-    Environment = "non-prod"
-    ManagedBy   = "Terraform"
+    Project      = "devths"
+    Environment  = "non-prod"
+    ManagedBy    = "Terraform"
     Architecture = "3-tier"
   }
 }

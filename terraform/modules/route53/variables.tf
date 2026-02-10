@@ -12,6 +12,25 @@ variable "subdomain_prefix" {
 variable "public_ip" {
   description = "Public IP address to point records to (EIP if enabled, otherwise instance public IP)"
   type        = string
+  default     = null
+}
+
+variable "use_alb_alias" {
+  description = "Whether to use ALB alias record instead of A record with IP"
+  type        = bool
+  default     = false
+}
+
+variable "alb_dns_name" {
+  description = "ALB DNS name (required when use_alb_alias is true)"
+  type        = string
+  default     = null
+}
+
+variable "alb_zone_id" {
+  description = "ALB hosted zone ID (required when use_alb_alias is true)"
+  type        = string
+  default     = null
 }
 
 variable "create_root_record" {

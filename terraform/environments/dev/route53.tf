@@ -1,57 +1,25 @@
 # ============================================================================
 # Route 53 (Frontend, Backend, AI)
 # ============================================================================
+#
+# ALB를 통한 트래픽 라우팅:
+# ============================================================================
 
-# Route53 모듈 - Frontend (v2.dev.devths.com)
-module "route53_fe" {
+# Route53 모듈 - 모든 서브도메인을 ALB로 라우팅
+module "route53_alb" {
   source = "../../modules/route53"
 
   domain_name        = "devths.com"
   subdomain_prefix   = "v2.dev"
-  public_ip          = module.ec2_fe.instance_public_ip
   create_root_record = true
   create_www_record  = false
-  create_api_record  = false
-  create_ai_record   = false
-  ttl                = 60
-
-  common_tags = var.common_tags
-
-  depends_on = [module.ec2_fe]
-}
-
-# Route53 모듈 - Backend (v2.dev.api.devths.com)
-module "route53_be" {
-  source = "../../modules/route53"
-
-  domain_name        = "devths.com"
-  subdomain_prefix   = "v2.dev"
-  public_ip          = module.ec2_be.instance_public_ip
-  create_root_record = false
-  create_www_record  = false
   create_api_record  = true
-  create_ai_record   = false
-  ttl                = 60
-
-  common_tags = var.common_tags
-
-  depends_on = [module.ec2_be]
-}
-
-# Route53 모듈 - AI (v2.dev.ai.devths.com)
-module "route53_ai" {
-  source = "../../modules/route53"
-
-  domain_name        = "devths.com"
-  subdomain_prefix   = "v2.dev"
-  public_ip          = module.ec2_ai.instance_public_ip
-  create_root_record = false
-  create_www_record  = false
-  create_api_record  = false
   create_ai_record   = true
-  ttl                = 60
+
+  # ALB Alias 레코드 사용
+  use_alb_alias = true
+  alb_dns_name  = data.terraform_remote_state.vpc.outputs.alb_dns_name
+  alb_zone_id   = data.terraform_remote_state.vpc.outputs.alb_zone_id
 
   common_tags = var.common_tags
-
-  depends_on = [module.ec2_ai]
 }

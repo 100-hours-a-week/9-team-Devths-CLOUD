@@ -132,3 +132,43 @@ output "ec2_security_group_name" {
   description = "EC2 security group name"
   value       = module.vpc.ec2_security_group_name
 }
+
+# ============================================================================
+# ALB 정보
+# ============================================================================
+
+output "alb_id" {
+  description = "ALB ID"
+  value       = aws_lb.this.id
+}
+
+output "alb_arn" {
+  description = "ALB ARN"
+  value       = aws_lb.this.arn
+}
+
+output "alb_dns_name" {
+  description = "ALB DNS name"
+  value       = aws_lb.this.dns_name
+}
+
+output "alb_zone_id" {
+  description = "ALB hosted zone ID (for Route53 alias records)"
+  value       = aws_lb.this.zone_id
+}
+
+# Target Group ARNs
+output "fe_target_group_arn" {
+  description = "Frontend target group ARN"
+  value       = aws_lb_target_group.fe.arn
+}
+
+output "be_target_group_arn" {
+  description = "Backend target group ARN"
+  value       = aws_lb_target_group.be.arn
+}
+
+output "ai_target_group_arn" {
+  description = "AI target group ARN"
+  value       = aws_lb_target_group.ai.arn
+}
