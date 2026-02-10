@@ -118,6 +118,7 @@ resource "aws_lb_target_group" "ai" {
 # ============================================================================
 
 # EC2 인스턴스를 태그 기반으로 자동 등록하는 데이터 소스
+# Service, Project, Version 태그로 v2 인스턴스만 필터링
 data "aws_instances" "fe" {
   filter {
     name   = "tag:Service"
@@ -127,6 +128,11 @@ data "aws_instances" "fe" {
   filter {
     name   = "tag:Project"
     values = ["devths"]
+  }
+
+  filter {
+    name   = "tag:Version"
+    values = ["v2"]
   }
 
   filter {
@@ -147,6 +153,11 @@ data "aws_instances" "be" {
   }
 
   filter {
+    name   = "tag:Version"
+    values = ["v2"]
+  }
+
+  filter {
     name   = "instance-state-name"
     values = ["running"]
   }
@@ -161,6 +172,11 @@ data "aws_instances" "ai" {
   filter {
     name   = "tag:Project"
     values = ["devths"]
+  }
+
+  filter {
+    name   = "tag:Version"
+    values = ["v2"]
   }
 
   filter {
@@ -197,16 +213,21 @@ resource "aws_lb_target_group_attachment" "ai" {
 # ALB Listeners
 # ============================================================================
 
-# HTTP 리스너 (포트 80)
+# HTTP 리스너 (포트 80) - HTTPS로 리다이렉트
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.this.arn
   port              = 80
   protocol          = "HTTP"
 
-  # 기본 액션: Frontend로 포워딩
+  # 기본 액션: HTTPS로 리다이렉트
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.fe.arn
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
   }
 
   tags = var.common_tags
@@ -229,12 +250,12 @@ resource "aws_lb_listener" "https" {
 }
 
 # ============================================================================
-# Listener Rules (호스트 기반 라우팅)
+# HTTPS Listener Rules (호스트 기반 라우팅)
 # ============================================================================
 
 # Backend API 라우팅 규칙 (*.api.devths.com → Backend)
-resource "aws_lb_listener_rule" "be" {
-  listener_arn = aws_lb_listener.http.arn
+resource "aws_lb_listener_rule" "be_https" {
+  listener_arn = aws_lb_listener.https.arn
   priority     = 100
 
   action {
@@ -252,8 +273,8 @@ resource "aws_lb_listener_rule" "be" {
 }
 
 # AI 라우팅 규칙 (*.ai.devths.com → AI)
-resource "aws_lb_listener_rule" "ai" {
-  listener_arn = aws_lb_listener.http.arn
+resource "aws_lb_listener_rule" "ai_https" {
+  listener_arn = aws_lb_listener.https.arn
   priority     = 200
 
   action {
