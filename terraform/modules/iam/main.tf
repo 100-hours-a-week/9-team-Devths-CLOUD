@@ -1,7 +1,8 @@
 # ===================================
-# EC2 IAM Role
+# 역할
 # ===================================
 
+# EC2 역할
 resource "aws_iam_role" "ec2" {
   name = "${title(var.project_name)}-EC2-${title(var.environment)}"
 
@@ -31,17 +32,35 @@ resource "aws_iam_instance_profile" "ec2" {
   role = aws_iam_role.ec2.name
 }
 
-# SSM 권한
-resource "aws_iam_role_policy_attachment" "ec2_ssm" {
-  role       = aws_iam_role.ec2.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+
+# 코드 디플로이 역할
+resource "aws_iam_role" "codedeploy" {
+  name = "${title(var.project_name)}-CodeDeploy-${title(var.environment)}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "codedeploy.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "${title(var.project_name)}-CodeDeploy-${title(var.environment)}"
+    }
+  )
 }
 
-# CodeDeploy 권한
-resource "aws_iam_role_policy_attachment" "ec2_codedeploy" {
-  role       = aws_iam_role.ec2.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
-}
+# ===================================
+# 정책
+# ===================================
 
 # CloudWatch Metrics 정책
 resource "aws_iam_policy" "cloudwatch_metrics" {
@@ -69,11 +88,32 @@ resource "aws_iam_policy" "cloudwatch_metrics" {
   )
 }
 
-# CloudWatch Metrics 권한 연결
-resource "aws_iam_role_policy_attachment" "ec2_cloudwatch_metrics" {
-  role       = aws_iam_role.ec2.name
-  policy_arn = aws_iam_policy.cloudwatch_metrics.arn
+
+# CodeDeploy S3 Artifact 버킷 권한
+resource "aws_iam_role_policy" "codedeploy_s3_artifact" {
+  name = "${title(var.project_name)}-CodeDeploy-S3-Artifact-${title(var.environment)}"
+  role = aws_iam_role.codedeploy.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:GetObjectVersion",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          var.artifact_bucket_arn,
+          "${var.artifact_bucket_arn}/*"
+        ]
+      }
+    ]
+  })
 }
+
+
 
 # SSM Parameter Store 및 KMS 권한
 resource "aws_iam_role_policy" "ec2_ssm_kms" {
@@ -213,33 +253,24 @@ resource "aws_iam_role_policy" "ec2_ssm_s3_logs" {
   })
 }
 
+
+
 # ===================================
-# CodeDeploy IAM Role
+# 정책 연결
 # ===================================
 
-resource "aws_iam_role" "codedeploy" {
-  name = "${title(var.project_name)}-CodeDeploy-${title(var.environment)}"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "codedeploy.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  tags = merge(
-    var.common_tags,
-    {
-      Name = "${title(var.project_name)}-CodeDeploy-${title(var.environment)}"
-    }
-  )
+# SSM 권한
+resource "aws_iam_role_policy_attachment" "ec2_ssm" {
+  role       = aws_iam_role.ec2.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
+
+# CodeDeploy 권한
+resource "aws_iam_role_policy_attachment" "ec2_codedeploy" {
+  role       = aws_iam_role.ec2.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforAWSCodeDeploy"
+}
+
 
 # CodeDeploy 권한
 resource "aws_iam_role_policy_attachment" "codedeploy" {
@@ -247,26 +278,9 @@ resource "aws_iam_role_policy_attachment" "codedeploy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole"
 }
 
-# CodeDeploy S3 Artifact 버킷 권한
-resource "aws_iam_role_policy" "codedeploy_s3_artifact" {
-  name = "${title(var.project_name)}-CodeDeploy-S3-Artifact-${title(var.environment)}"
-  role = aws_iam_role.codedeploy.id
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:GetObjectVersion",
-          "s3:ListBucket"
-        ]
-        Resource = [
-          var.artifact_bucket_arn,
-          "${var.artifact_bucket_arn}/*"
-        ]
-      }
-    ]
-  })
+# CloudWatch Metrics 권한 연결
+resource "aws_iam_role_policy_attachment" "ec2_cloudwatch_metrics" {
+  role       = aws_iam_role.ec2.name
+  policy_arn = aws_iam_policy.cloudwatch_metrics.arn
 }
