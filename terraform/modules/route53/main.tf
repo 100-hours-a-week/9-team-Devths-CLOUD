@@ -11,20 +11,13 @@ locals {
   ai_domain   = var.subdomain_prefix != "" ? "${var.subdomain_prefix}.ai.${var.domain_name}" : "ai.${var.domain_name}"
 }
 
-# A 레코드 - 루트 또는 환경별 서브도메인 (IP 기반)
-resource "aws_route53_record" "root" {
-  count = var.create_root_record && !var.use_alb_alias ? 1 : 0
-
-  zone_id = data.aws_route53_zone.this.zone_id
-  name    = local.base_domain
-  type    = "A"
-  ttl     = var.ttl
-  records = [var.public_ip]
-}
+# ========================================
+# ALB Alias 레코드
+# ========================================
 
 # A 레코드 - 루트 또는 환경별 서브도메인 (ALB Alias)
-resource "aws_route53_record" "root_alias" {
-  count = var.create_root_record && var.use_alb_alias ? 1 : 0
+resource "aws_route53_record" "root" {
+  count = var.create_root_record ? 1 : 0
 
   zone_id = data.aws_route53_zone.this.zone_id
   name    = local.base_domain
@@ -35,22 +28,11 @@ resource "aws_route53_record" "root_alias" {
     zone_id                = var.alb_zone_id
     evaluate_target_health = true
   }
-}
-
-# A 레코드 - www 서브도메인 (prod only, IP 기반)
-resource "aws_route53_record" "www" {
-  count = var.create_www_record && var.subdomain_prefix == "" && !var.use_alb_alias ? 1 : 0
-
-  zone_id = data.aws_route53_zone.this.zone_id
-  name    = "www.${var.domain_name}"
-  type    = "A"
-  ttl     = var.ttl
-  records = [var.public_ip]
 }
 
 # A 레코드 - www 서브도메인 (prod only, ALB Alias)
-resource "aws_route53_record" "www_alias" {
-  count = var.create_www_record && var.subdomain_prefix == "" && var.use_alb_alias ? 1 : 0
+resource "aws_route53_record" "www" {
+  count = var.create_www_record && var.subdomain_prefix == "" ? 1 : 0
 
   zone_id = data.aws_route53_zone.this.zone_id
   name    = "www.${var.domain_name}"
@@ -63,20 +45,9 @@ resource "aws_route53_record" "www_alias" {
   }
 }
 
-# A 레코드 - api 서브도메인 (백엔드, IP 기반)
-resource "aws_route53_record" "api" {
-  count = var.create_api_record && !var.use_alb_alias ? 1 : 0
-
-  zone_id = data.aws_route53_zone.this.zone_id
-  name    = local.api_domain
-  type    = "A"
-  ttl     = var.ttl
-  records = [var.public_ip]
-}
-
 # A 레코드 - api 서브도메인 (백엔드, ALB Alias)
-resource "aws_route53_record" "api_alias" {
-  count = var.create_api_record && var.use_alb_alias ? 1 : 0
+resource "aws_route53_record" "api" {
+  count = var.create_api_record ? 1 : 0
 
   zone_id = data.aws_route53_zone.this.zone_id
   name    = local.api_domain
@@ -89,20 +60,9 @@ resource "aws_route53_record" "api_alias" {
   }
 }
 
-# A 레코드 - ai 서브도메인 (IP 기반)
-resource "aws_route53_record" "ai" {
-  count = var.create_ai_record && !var.use_alb_alias ? 1 : 0
-
-  zone_id = data.aws_route53_zone.this.zone_id
-  name    = local.ai_domain
-  type    = "A"
-  ttl     = var.ttl
-  records = [var.public_ip]
-}
-
 # A 레코드 - ai 서브도메인 (ALB Alias)
-resource "aws_route53_record" "ai_alias" {
-  count = var.create_ai_record && var.use_alb_alias ? 1 : 0
+resource "aws_route53_record" "ai" {
+  count = var.create_ai_record ? 1 : 0
 
   zone_id = data.aws_route53_zone.this.zone_id
   name    = local.ai_domain
