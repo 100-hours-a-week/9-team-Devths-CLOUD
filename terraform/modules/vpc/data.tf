@@ -1,3 +1,6 @@
+# Current AWS Region
+data "aws_region" "current" {}
+
 # Amazon Linux 2023 AMI
 data "aws_ami" "amazon_linux_nat" {
   count       = local.actual_nat_type == "instance" ? 1 : 0

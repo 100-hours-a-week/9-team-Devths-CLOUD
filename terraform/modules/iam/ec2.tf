@@ -64,7 +64,7 @@ resource "aws_iam_policy" "cloudwatch_metrics" {
 
 # EC2 Describe 정책 (Prometheus EC2 Service Discovery용)
 resource "aws_iam_policy" "ec2_describe" {
-  name = "${title(var.project_name)}-EC2-Describe-${title(var.environment)}"
+  name        = "${title(var.project_name)}-EC2-Describe-${title(var.environment)}"
   description = "Tag policy for EC2"
 
   policy = jsonencode({
