@@ -106,12 +106,12 @@ output "alb_security_group_name" {
 # 보안 그룹 - FE
 output "fe_security_group_id" {
   description = "App security group ID"
-  value       = aws_security_group.be.id
+  value       = aws_security_group.fe.id
 }
 
 output "fe_security_group_name" {
   description = "App security group name"
-  value       = aws_security_group.be.name
+  value       = aws_security_group.fe.name
 }
 
 # 보안 그룹 - BE
