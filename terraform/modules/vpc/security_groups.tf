@@ -166,3 +166,41 @@ resource "aws_security_group" "database" {
     create_before_destroy = true
   }
 }
+
+# ============================================================================
+# VPC Endpoints (Interface Endpoints용)
+# ============================================================================
+resource "aws_security_group" "vpc_endpoints" {
+  name        = "${var.project_name}-v2-${var.environment}-vpc-interface-endpoints-sg"
+  description = "Security group for VPC Interface Endpoints (ECR, etc.)"
+  vpc_id      = aws_vpc.this.id
+
+  # HTTPS from VPC
+  ingress {
+    description = "HTTPS from VPC"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = [aws_vpc.this.cidr_block]
+  }
+
+  # 모든 outbound traffic
+  egress {
+    description = "All outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name = "${var.project_name}-v2-${var.environment}-vpc-interface-endpoints-sg"
+    }
+  )
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}

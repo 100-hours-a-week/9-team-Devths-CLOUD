@@ -157,3 +157,18 @@ output "s3_vpc_endpoint_state" {
   description = "S3 VPC Gateway Endpoint state"
   value       = aws_vpc_endpoint.s3.state
 }
+
+output "ecr_api_vpc_endpoint_id" {
+  description = "ECR API VPC Interface Endpoint ID"
+  value       = aws_vpc_endpoint.ecr_api.id
+}
+
+output "ecr_dkr_vpc_endpoint_id" {
+  description = "ECR DKR VPC Interface Endpoint ID"
+  value       = aws_vpc_endpoint.ecr_dkr.id
+}
+
+output "vpc_endpoints_security_group_id" {
+  description = "VPC Endpoints security group ID"
+  value       = aws_security_group.vpc_endpoints.id
+}
