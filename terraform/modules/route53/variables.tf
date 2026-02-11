@@ -56,15 +56,3 @@ variable "create_monitoring_record" {
   type        = bool
   default     = false
 }
-
-variable "create_grafana_record" {
-  description = "Whether to create grafana subdomain record"
-  type        = bool
-  default     = false
-}
-
-variable "create_prometheus_record" {
-  description = "Whether to create prometheus subdomain record"
-  type        = bool
-  default     = false
-}

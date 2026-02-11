@@ -117,32 +117,3 @@ resource "aws_lb_target_group" "grafana" {
     }
   )
 }
-
-# Target Group - Prometheus
-resource "aws_lb_target_group" "prometheus" {
-  name     = "${var.project_name}-v2-nonprod-prometheus-tg"
-  port     = 9090
-  protocol = "HTTP"
-  vpc_id   = module.vpc.vpc_id
-
-  health_check {
-    enabled             = true
-    healthy_threshold   = 2
-    unhealthy_threshold = 3
-    timeout             = 5
-    interval            = 30
-    path                = "/-/healthy"
-    protocol            = "HTTP"
-    matcher             = "200-399"
-  }
-
-  deregistration_delay = 30
-
-  tags = merge(
-    var.common_tags,
-    {
-      Name    = "${var.project_name}-v2-nonprod-prometheus-tg"
-      Service = "Prometheus"
-    }
-  )
-}

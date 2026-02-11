@@ -6,7 +6,7 @@
 #
 # 구성 파일:
 # - main.tf                    : Terraform 설정, Provider, VPC 모듈
-# - alb.tf                     : Application Load Balancer
+# - alb_target_attachments.tf                     : Application Load Balancer
 # - alb_target_groups.tf       : ALB Target Groups (FE, BE, AI, Monitoring)
 # - alb_target_attachments.tf  : Target Group Attachments (태그 기반 자동 등록)
 # - alb_listeners.tf           : HTTP/HTTPS Listeners
