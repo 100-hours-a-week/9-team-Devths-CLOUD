@@ -40,19 +40,38 @@ resource "aws_lb_listener_rule" "ai_https" {
   tags = var.common_tags
 }
 
-# Monitoring 라우팅 규칙 (monitoring.dev.devths.com → Monitoring)
-resource "aws_lb_listener_rule" "monitoring_https" {
+# Grafana 라우팅 규칙 (dev.grafana.devths.com → Grafana)
+resource "aws_lb_listener_rule" "grafana_https" {
   listener_arn = aws_lb_listener.https.arn
   priority     = 300
 
   action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.monitoring.arn
+    target_group_arn = aws_lb_target_group.grafana.arn
   }
 
   condition {
     host_header {
-      values = ["dev.monitoring.devths.com"]
+      values = ["dev.grafana.devths.com"]
+    }
+  }
+
+  tags = var.common_tags
+}
+
+# Prometheus 라우팅 규칙 (dev.prometheus.devths.com → Prometheus)
+resource "aws_lb_listener_rule" "prometheus_https" {
+  listener_arn = aws_lb_listener.https.arn
+  priority     = 400
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.prometheus.arn
+  }
+
+  condition {
+    host_header {
+      values = ["dev.prometheus.devths.com"]
     }
   }
 

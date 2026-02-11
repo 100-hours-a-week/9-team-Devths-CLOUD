@@ -143,17 +143,6 @@ output "database_security_group_name" {
   description = "Database security group name"
   value       = module.vpc.database_security_group_name
 }
-# 보안 그룹 - EC2 (하위 호환성)
-output "ec2_security_group_id" {
-  description = "EC2 security group ID"
-  value       = module.vpc.ec2_security_group_id
-}
-
-output "ec2_security_group_name" {
-  description = "EC2 security group name"
-  value       = module.vpc.ec2_security_group_name
-}
-
 
 # ============================================================================
 # ALB 정보
@@ -193,4 +182,14 @@ output "be_target_group_arn" {
 output "ai_target_group_arn" {
   description = "AI target group ARN"
   value       = aws_lb_target_group.ai.arn
+}
+
+output "grafana_target_group_arn" {
+  description = "Grafana target group ARN"
+  value       = aws_lb_target_group.grafana.arn
+}
+
+output "prometheus_target_group_arn" {
+  description = "Prometheus target group ARN"
+  value       = aws_lb_target_group.prometheus.arn
 }

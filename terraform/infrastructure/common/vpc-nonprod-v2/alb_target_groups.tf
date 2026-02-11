@@ -89,9 +89,9 @@ resource "aws_lb_target_group" "ai" {
   )
 }
 
-# Target Group - Monitoring (Grafana via Nginx)
-resource "aws_lb_target_group" "monitoring" {
-  name     = "${var.project_name}-v2-nonprod-mon-tg"
+# Target Group - Grafana
+resource "aws_lb_target_group" "grafana" {
+  name     = "${var.project_name}-v2-nonprod-grafana-tg"
   port     = 3000
   protocol = "HTTP"
   vpc_id   = module.vpc.vpc_id
@@ -102,7 +102,7 @@ resource "aws_lb_target_group" "monitoring" {
     unhealthy_threshold = 3
     timeout             = 5
     interval            = 30
-    path                = "/"
+    path                = "/api/health"
     protocol            = "HTTP"
     matcher             = "200-399"
   }
@@ -112,8 +112,37 @@ resource "aws_lb_target_group" "monitoring" {
   tags = merge(
     var.common_tags,
     {
-      Name    = "${var.project_name}-v2-nonprod-mon-tg"
-      Service = "Monitoring"
+      Name    = "${var.project_name}-v2-nonprod-grafana-tg"
+      Service = "Grafana"
+    }
+  )
+}
+
+# Target Group - Prometheus
+resource "aws_lb_target_group" "prometheus" {
+  name     = "${var.project_name}-v2-nonprod-prometheus-tg"
+  port     = 9090
+  protocol = "HTTP"
+  vpc_id   = module.vpc.vpc_id
+
+  health_check {
+    enabled             = true
+    healthy_threshold   = 2
+    unhealthy_threshold = 3
+    timeout             = 5
+    interval            = 30
+    path                = "/-/healthy"
+    protocol            = "HTTP"
+    matcher             = "200-399"
+  }
+
+  deregistration_delay = 30
+
+  tags = merge(
+    var.common_tags,
+    {
+      Name    = "${var.project_name}-v2-nonprod-prometheus-tg"
+      Service = "Prometheus"
     }
   )
 }

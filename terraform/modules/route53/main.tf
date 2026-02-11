@@ -10,6 +10,8 @@ locals {
   api_domain        = var.subdomain_prefix != "" ? "${var.subdomain_prefix}.api.${var.domain_name}" : "api.${var.domain_name}"
   ai_domain         = var.subdomain_prefix != "" ? "${var.subdomain_prefix}.ai.${var.domain_name}" : "ai.${var.domain_name}"
   monitoring_domain = var.subdomain_prefix != "" ? "${var.subdomain_prefix}.monitoring.${var.domain_name}" : "monitoring.${var.domain_name}"
+  grafana_domain    = var.subdomain_prefix != "" ? "${var.subdomain_prefix}.grafana.${var.domain_name}" : "grafana.${var.domain_name}"
+  prometheus_domain = var.subdomain_prefix != "" ? "${var.subdomain_prefix}.prometheus.${var.domain_name}" : "prometheus.${var.domain_name}"
 }
 
 # ========================================
@@ -82,6 +84,36 @@ resource "aws_route53_record" "monitoring" {
 
   zone_id = data.aws_route53_zone.this.zone_id
   name    = local.monitoring_domain
+  type    = "A"
+
+  alias {
+    name                   = var.alb_dns_name
+    zone_id                = var.alb_zone_id
+    evaluate_target_health = true
+  }
+}
+
+# A 레코드 - grafana 서브도메인 (ALB Alias)
+resource "aws_route53_record" "grafana" {
+  count = var.create_grafana_record ? 1 : 0
+
+  zone_id = data.aws_route53_zone.this.zone_id
+  name    = local.grafana_domain
+  type    = "A"
+
+  alias {
+    name                   = var.alb_dns_name
+    zone_id                = var.alb_zone_id
+    evaluate_target_health = true
+  }
+}
+
+# A 레코드 - prometheus 서브도메인 (ALB Alias)
+resource "aws_route53_record" "prometheus" {
+  count = var.create_prometheus_record ? 1 : 0
+
+  zone_id = data.aws_route53_zone.this.zone_id
+  name    = local.prometheus_domain
   type    = "A"
 
   alias {

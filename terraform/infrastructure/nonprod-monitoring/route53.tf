@@ -2,7 +2,7 @@
 # Route53 DNS Records
 # ============================================================================
 
-# Route53 모듈 - 모니터링 도메인을 ALB로 라우팅
+# Route53 모듈 - Grafana/Prometheus 도메인을 ALB로 라우팅
 module "route53_monitoring" {
   source = "../../modules/route53"
 
@@ -12,7 +12,9 @@ module "route53_monitoring" {
   create_www_record        = false
   create_api_record        = false
   create_ai_record         = false
-  create_monitoring_record = true
+  create_monitoring_record = false
+  create_grafana_record    = true
+  create_prometheus_record = true
 
   # ALB Alias 레코드 사용
   alb_dns_name = data.terraform_remote_state.vpc.outputs.alb_dns_name

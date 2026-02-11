@@ -117,10 +117,18 @@ resource "aws_lb_target_group_attachment" "ai" {
   port             = 8000
 }
 
-# Target Group Attachment - Monitoring
-resource "aws_lb_target_group_attachment" "monitoring" {
+# Target Group Attachment - Grafana
+resource "aws_lb_target_group_attachment" "grafana" {
   count            = length(data.aws_instances.monitoring.ids)
-  target_group_arn = aws_lb_target_group.monitoring.arn
+  target_group_arn = aws_lb_target_group.grafana.arn
   target_id        = data.aws_instances.monitoring.ids[count.index]
   port             = 3000
+}
+
+# Target Group Attachment - Prometheus
+resource "aws_lb_target_group_attachment" "prometheus" {
+  count            = length(data.aws_instances.monitoring.ids)
+  target_group_arn = aws_lb_target_group.prometheus.arn
+  target_id        = data.aws_instances.monitoring.ids[count.index]
+  port             = 9090
 }

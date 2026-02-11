@@ -31,6 +31,10 @@ data "aws_iam_instance_profile" "ec2_profile" {
 }
 
 # ALB 타겟 그룹 참조
-data "aws_lb_target_group" "monitoring" {
-  name = "${var.project_name}-v2-nonprod-mon-tg"
+data "aws_lb_target_group" "grafana" {
+  name = "${var.project_name}-v2-nonprod-grafana-tg"
+}
+
+data "aws_lb_target_group" "prometheus" {
+  name = "${var.project_name}-v2-nonprod-prometheus-tg"
 }
