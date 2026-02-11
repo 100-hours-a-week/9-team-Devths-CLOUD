@@ -146,3 +146,14 @@ output "database_security_group_name" {
   description = "Database security group name"
   value       = length(aws_security_group.database) > 0 ? aws_security_group.database[0].name : null
 }
+
+# VPC Endpoints
+output "s3_vpc_endpoint_id" {
+  description = "S3 VPC Gateway Endpoint ID"
+  value       = aws_vpc_endpoint.s3.id
+}
+
+output "s3_vpc_endpoint_state" {
+  description = "S3 VPC Gateway Endpoint state"
+  value       = aws_vpc_endpoint.s3.state
+}
