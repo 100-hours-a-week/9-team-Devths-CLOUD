@@ -10,7 +10,7 @@
 # - monitoring.tf       : 모니터링 서버 모듈
 # - alb_target_attachments.tf              : ALB 타겟 그룹 연결
 # - route53.tf          : Route53 DNS 레코드
-# - security_groups.tf  : Security Group 규칙 (Exporter 포트)
+# - security_groups_attachment.tf  : Security Group 규칙 (Exporter 포트)
 # - variables.tf        : 입력 변수
 # - outputs.tf          : 출력 값
 #

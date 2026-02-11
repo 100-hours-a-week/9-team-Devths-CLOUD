@@ -6,7 +6,8 @@
 module "monitoring" {
   source = "../../modules/monitoring"
 
-  instance_name             = "${var.project_name}-v2-monitoring-${var.environment}"
+  project_name              = var.project_name
+  instance_name             = "${var.project_name}-v2-${var.environment}-monitoring"
   instance_type             = var.instance_type
   key_name                  = var.key_name
   subnet_id                 = data.terraform_remote_state.vpc.outputs.private_subnet_ids[0]

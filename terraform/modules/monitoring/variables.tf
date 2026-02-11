@@ -1,3 +1,10 @@
+# 프로젝트 전체에서 사용할 고유 이름
+variable "project_name" {
+  description = "Project name"
+  type        = string
+}
+
+
 variable "instance_name" {
   description = "EC2 instance name"
   type        = string
