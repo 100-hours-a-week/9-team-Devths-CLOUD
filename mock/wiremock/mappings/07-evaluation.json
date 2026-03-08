@@ -1,0 +1,67 @@
+{
+  "mappings": [
+    {
+      "name": "Evaluation Analyze - Streaming (면접 평가 리포트)",
+      "priority": 5,
+      "request": {
+        "method": "POST",
+        "urlPath": "/ai/evaluation/analyze",
+        "headers": {
+          "Content-Type": {
+            "matches": "application/json.*"
+          }
+        },
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$.room_id"
+          },
+          {
+            "matchesJsonPath": "$.user_id"
+          },
+          {
+            "matchesJsonPath": "$.session_id"
+          },
+          {
+            "matchesJsonPath": "$.context"
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "text/event-stream; charset=utf-8",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+          "X-Accel-Buffering": "no"
+        },
+        "bodyFileName": "evaluation-streaming.txt",
+        "fixedDelayMilliseconds": 200
+      }
+    },
+    {
+      "name": "Evaluation - Empty Context (400)",
+      "priority": 1,
+      "request": {
+        "method": "POST",
+        "urlPath": "/ai/evaluation/analyze",
+        "queryParameters": {
+          "error": {
+            "equalTo": "empty_context"
+          }
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "detail": {
+            "code": "EMPTY_CONTEXT",
+            "message": "평가할 Q&A 데이터가 없습니다."
+          }
+        }
+      }
+    }
+  ]
+}

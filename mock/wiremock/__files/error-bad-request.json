@@ -1,0 +1,8 @@
+{
+  "error": {
+    "message": "Invalid request parameters. Please check your request body.",
+    "type": "invalid_request_error",
+    "code": "invalid_parameters",
+    "param": "messages"
+  }
+}

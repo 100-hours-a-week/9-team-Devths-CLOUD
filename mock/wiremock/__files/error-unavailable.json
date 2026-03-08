@@ -1,0 +1,8 @@
+{
+  "error": {
+    "message": "Service temporarily unavailable. Please try again later.",
+    "type": "service_unavailable_error",
+    "code": "service_unavailable",
+    "param": null
+  }
+}

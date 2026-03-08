@@ -1,0 +1,8 @@
+{
+  "error": {
+    "message": "Request timeout. The server took too long to respond.",
+    "type": "timeout_error",
+    "code": "request_timeout",
+    "param": null
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "mappings": [
+    {
+      "name": "Calendar Parse - Success",
+      "priority": 5,
+      "request": {
+        "method": "POST",
+        "urlPath": "/ai/calendar/parse",
+        "headers": {
+          "Content-Type": {
+            "matches": "application/json.*"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "bodyFileName": "calendar-parse-response.json",
+        "fixedDelayMilliseconds": 500
+      }
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "mappings": [
+    {
+      "name": "Text Extract - Success (비동기 시작)",
+      "priority": 5,
+      "request": {
+        "method": "POST",
+        "urlPath": "/ai/text/extract",
+        "headers": {
+          "Content-Type": {
+            "matches": "application/json.*"
+          }
+        },
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$.task_id"
+          },
+          {
+            "matchesJsonPath": "$.room_id"
+          },
+          {
+            "matchesJsonPath": "$.user_id"
+          },
+          {
+            "matchesJsonPath": "$.resume"
+          },
+          {
+            "matchesJsonPath": "$.job_posting"
+          }
+        ]
+      },
+      "response": {
+        "status": 202,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "task_id": "{{jsonPath request.body '$.task_id'}}",
+          "status": "processing",
+          "message": "텍스트 추출 작업이 시작되었습니다."
+        },
+        "fixedDelayMilliseconds": 500,
+        "transformers": ["response-template"]
+      }
+    },
+    {
+      "name": "Text Extract - File Not Found (404)",
+      "priority": 1,
+      "request": {
+        "method": "POST",
+        "urlPath": "/ai/text/extract",
+        "queryParameters": {
+          "error": {
+            "equalTo": "file_not_found"
+          }
+        }
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "detail": {
+            "code": "FILE_NOT_FOUND",
+            "message": "파일을 찾을 수 없습니다: users/12/resume/abc123.pdf"
+          }
+        }
+      }
+    },
+    {
+      "name": "Text Extract - Invalid Request (400)",
+      "priority": 1,
+      "request": {
+        "method": "POST",
+        "urlPath": "/ai/text/extract",
+        "queryParameters": {
+          "error": {
+            "equalTo": "invalid_request"
+          }
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "detail": {
+            "code": "INVALID_REQUEST",
+            "message": "resume과 job_posting 는 필수 입력해야합니다"
+          }
+        }
+      }
+    }
+  ]
+}
