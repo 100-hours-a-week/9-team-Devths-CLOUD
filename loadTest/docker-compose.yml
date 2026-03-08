@@ -1,0 +1,48 @@
+services:
+  k6:
+    image: grafana/k6:latest
+    container_name: devths-k6
+    env_file:
+      - .env
+    environment:
+      - K6_PROMETHEUS_RW_SERVER_URL=${K6_PROMETHEUS_RW_SERVER_URL}
+      - K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM=${K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM}
+    volumes:
+      - ./scenarios:/scripts/scenarios:ro
+      - ./api:/scripts/api:ro
+      - ./lib:/scripts/lib:ro
+      - ./fixtures:/scripts/fixtures:ro
+      - ./results:/scripts/results
+    working_dir: /scripts
+    networks:
+      - loadtest-network
+    profiles:
+      - manual
+
+  # 스모크 테스트
+  k6-register:
+    extends: k6
+    container_name: devths-k6-register
+    command: run --quiet --out experimental-prometheus-rw scenarios/register.js
+    profiles:
+      - register
+
+  # 통합 테스트 (회원가입 + 게시글/댓글 + AI채팅 부하)
+  k6-loadtest:
+    extends: k6
+    container_name: devths-k6-loadtest
+    command: run --quiet --out experimental-prometheus-rw scenarios/loadTest.js
+    profiles:
+      - loadtest
+
+  # WebSocket 채팅 부하 테스트
+  k6-websocket:
+    extends: k6
+    container_name: devths-k6-websocket
+    command: run --quiet --out experimental-prometheus-rw scenarios/websocket-chat.js
+    profiles:
+      - websocket
+
+networks:
+  loadtest-network:
+    driver: bridge

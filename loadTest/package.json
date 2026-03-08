@@ -1,0 +1,16 @@
+{
+  "name": "devths-loadtest",
+  "version": "1.0.0",
+  "description": "Devths Backend Load Testing with K6",
+  "scripts": {
+    "test:health": "node scripts/run-k6.js scenarios/health-only.js",
+    "test:smoke": "node scripts/run-k6.js scenarios/smoke.js",
+    "test:load": "node scripts/run-k6.js scenarios/load.js",
+    "test:stress": "node scripts/run-k6.js scenarios/stress.js",
+    "test:spike": "node scripts/run-k6.js scenarios/spike.js",
+    "test:soak": "node scripts/run-k6.js scenarios/soak.js"
+  },
+  "keywords": ["k6", "load-test", "performance"],
+  "author": "",
+  "license": "ISC"
+}
