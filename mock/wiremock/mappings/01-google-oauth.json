@@ -1,0 +1,64 @@
+{
+  "mappings": [
+    {
+      "name": "Google OAuth2 - Token Endpoint",
+      "priority": 5,
+      "request": {
+        "method": "POST",
+        "urlPathPattern": "/token|/oauth2/v4/token",
+        "headers": {
+          "Content-Type": {
+            "matches": "application/x-www-form-urlencoded.*"
+          }
+        },
+        "bodyPatterns": [
+          {
+            "matches": ".*grant_type=authorization_code.*"
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "bodyFileName": "google-token-response.json",
+        "fixedDelayMilliseconds": 100
+      }
+    },
+    {
+      "name": "Google OAuth2 - UserInfo Endpoint (v2/v3 호환)",
+      "priority": 5,
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/oauth2/(v2|v3)/userinfo|/userinfo"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "transformers": ["response-template"],
+        "body": "{\"sub\":\"{{randomValue type='UUID'}}\",\"email\":\"loadtest{{randomValue type='NUMERIC' length=5}}@example.com\",\"email_verified\":true,\"name\":\"LoadTest User {{randomValue type='NUMERIC' length=3}}\",\"given_name\":\"LoadTest\",\"family_name\":\"User\",\"picture\":\"https://lh3.googleusercontent.com/mock-avatar\",\"locale\":\"ko\"}",
+        "fixedDelayMilliseconds": 100
+      }
+    },
+    {
+      "name": "Google OAuth2 - TokenInfo Endpoint (토큰 검증)",
+      "priority": 5,
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/oauth2/v3/tokeninfo"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "transformers": ["response-template"],
+        "body": "{\"azp\":\"mock-client-id\",\"aud\":\"mock-client-id\",\"sub\":\"{{randomValue type='UUID'}}\",\"scope\":\"openid email profile\",\"exp\":\"{{now offset='1 hours'}}\",\"expires_in\":\"3599\",\"email\":\"loadtest{{randomValue type='NUMERIC' length=5}}@example.com\",\"email_verified\":\"true\",\"access_type\":\"online\"}",
+        "fixedDelayMilliseconds": 100
+      }
+    }
+  ]
+}

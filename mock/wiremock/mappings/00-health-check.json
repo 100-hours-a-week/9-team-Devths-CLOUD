@@ -1,0 +1,20 @@
+{
+  "mappings": [
+    {
+      "name": "ALB - Healthcheck",
+      "priority": 1,
+      "request": {
+        "method": "GET",
+        "urlPath": "/health"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "text/plain"
+        },
+        "body": "ok",
+        "fixedDelayMilliseconds": 0
+      }
+    }
+  ]
+}

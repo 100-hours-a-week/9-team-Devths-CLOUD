@@ -1,0 +1,184 @@
+{
+  "mappings": [
+    {
+      "name": "Global - Rate Limit (429)",
+      "priority": 1,
+      "request": {
+        "method": "ANY",
+        "urlPathPattern": "/ai/.*",
+        "queryParameters": {
+          "error": {
+            "equalTo": "rate_limit"
+          }
+        }
+      },
+      "response": {
+        "status": 429,
+        "headers": {
+          "Content-Type": "application/json",
+          "Retry-After": "60",
+          "X-RateLimit-Limit": "100",
+          "X-RateLimit-Remaining": "0",
+          "X-RateLimit-Reset": "{{now offset='+60 seconds'}}"
+        },
+        "jsonBody": {
+          "detail": {
+            "code": "RATE_LIMIT_EXCEEDED",
+            "message": "요청 한도 초과. 1분 후 재시도하세요"
+          }
+        },
+        "transformers": ["response-template"]
+      }
+    },
+    {
+      "name": "Global - Internal Server Error (500)",
+      "priority": 1,
+      "request": {
+        "method": "ANY",
+        "urlPathPattern": "/ai/.*",
+        "queryParameters": {
+          "error": {
+            "equalTo": "server_error"
+          }
+        }
+      },
+      "response": {
+        "status": 500,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "detail": {
+            "code": "INTERNAL_ERROR",
+            "message": "내부 서버 오류가 발생했습니다"
+          }
+        },
+        "fixedDelayMilliseconds": 100
+      }
+    },
+    {
+      "name": "Global - Service Unavailable (503)",
+      "priority": 1,
+      "request": {
+        "method": "ANY",
+        "urlPathPattern": "/ai/.*",
+        "queryParameters": {
+          "error": {
+            "equalTo": "service_unavailable"
+          }
+        }
+      },
+      "response": {
+        "status": 503,
+        "headers": {
+          "Content-Type": "application/json",
+          "Retry-After": "120"
+        },
+        "jsonBody": {
+          "detail": {
+            "code": "LLM_UNAVAILABLE",
+            "message": "AI 서비스에 연결할 수 없습니다"
+          }
+        }
+      }
+    },
+    {
+      "name": "Global - Request Timeout (408)",
+      "priority": 1,
+      "request": {
+        "method": "ANY",
+        "urlPathPattern": "/ai/.*",
+        "queryParameters": {
+          "error": {
+            "equalTo": "timeout"
+          }
+        }
+      },
+      "response": {
+        "status": 408,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "detail": {
+            "code": "REQUEST_TIMEOUT",
+            "message": "요청 시간이 초과되었습니다"
+          }
+        },
+        "fixedDelayMilliseconds": 30000
+      }
+    },
+    {
+      "name": "Global - Slow Response (지연 1초)",
+      "priority": 2,
+      "request": {
+        "method": "ANY",
+        "urlPathPattern": "/ai/.*",
+        "queryParameters": {
+          "delay": {
+            "equalTo": "1000"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "success": true,
+          "message": "1초 지연된 응답"
+        },
+        "fixedDelayMilliseconds": 1000
+      }
+    },
+    {
+      "name": "Global - Slow Response (지연 3초)",
+      "priority": 2,
+      "request": {
+        "method": "ANY",
+        "urlPathPattern": "/ai/.*",
+        "queryParameters": {
+          "delay": {
+            "equalTo": "3000"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "success": true,
+          "message": "3초 지연된 응답"
+        },
+        "fixedDelayMilliseconds": 3000
+      }
+    },
+    {
+      "name": "Global - Slow Response (지연 5초)",
+      "priority": 2,
+      "request": {
+        "method": "ANY",
+        "urlPathPattern": "/ai/.*",
+        "queryParameters": {
+          "delay": {
+            "equalTo": "5000"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "success": true,
+          "message": "5초 지연된 응답"
+        },
+        "fixedDelayMilliseconds": 5000
+      }
+    }
+  ]
+}

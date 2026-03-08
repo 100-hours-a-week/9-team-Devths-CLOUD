@@ -1,0 +1,87 @@
+{
+  "mappings": [
+    {
+      "name": "Chat - Streaming (일반 모드)",
+      "priority": 5,
+      "request": {
+        "method": "POST",
+        "urlPath": "/ai/chat",
+        "headers": {
+          "Content-Type": {
+            "matches": "application/json.*"
+          }
+        },
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$.room_id"
+          },
+          {
+            "matchesJsonPath": "$.user_id"
+          }
+        ]
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "text/event-stream; charset=utf-8",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+          "X-Accel-Buffering": "no"
+        },
+        "bodyFileName": "chat-streaming.txt",
+        "fixedDelayMilliseconds": 500
+      }
+    },
+    {
+      "name": "Chat - Invalid Request (400)",
+      "priority": 1,
+      "request": {
+        "method": "POST",
+        "urlPath": "/ai/chat",
+        "queryParameters": {
+          "error": {
+            "equalTo": "invalid_request"
+          }
+        }
+      },
+      "response": {
+        "status": 400,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "detail": {
+            "code": "INVALID_REQUEST",
+            "message": "room_id는 필수입니다",
+            "field": "room_id"
+          }
+        }
+      }
+    },
+    {
+      "name": "Chat - Service Unavailable (503)",
+      "priority": 1,
+      "request": {
+        "method": "POST",
+        "urlPath": "/ai/chat",
+        "queryParameters": {
+          "error": {
+            "equalTo": "unavailable"
+          }
+        }
+      },
+      "response": {
+        "status": 503,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "detail": {
+            "code": "LLM_UNAVAILABLE",
+            "message": "AI 서비스에 연결할 수 없습니다"
+          }
+        }
+      }
+    }
+  ]
+}
