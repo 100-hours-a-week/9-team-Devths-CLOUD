@@ -1,8 +1,10 @@
 # ============================================================================
-# VPC Gateway Endpoints
+# VPC 엔드포인트
 # ============================================================================
 
-# S3 VPC Gateway Endpoint (프라이빗 서브넷에서 S3 접근용)
+# ============================================================================
+# S3 VPC 엔드포인트 - 게이트웨이
+# ============================================================================
 resource "aws_vpc_endpoint" "s3" {
   vpc_id            = aws_vpc.this.id
   service_name      = "com.amazonaws.${data.aws_region.current.name}.s3"
@@ -14,17 +16,16 @@ resource "aws_vpc_endpoint" "s3" {
     aws_route_table.database[*].id
   )
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.project_name}-V2-${var.environment}-s3-endpoint"
+      Name = "${var.project_name}-${var.infra_version}-${var.environment}-s3-endpoint"
     }
   )
 }
 
 # S3 VPC Endpoint Policy
-# Note: ECR도 S3를 사용하므로 모든 S3 버킷 접근 허용
-# 특정 버킷으로 제한 시 ECR 이미지 레이어 다운로드 실패 가능
 resource "aws_vpc_endpoint_policy" "s3" {
   vpc_endpoint_id = aws_vpc_endpoint.s3.id
 
@@ -49,7 +50,7 @@ resource "aws_vpc_endpoint_policy" "s3" {
 }
 
 # ============================================================================
-# ECR VPC Interface Endpoints (프라이빗 서브넷에서 ECR 접근용)
+# ECR VPC 인터페이스 (프라이빗 서브넷에서 ECR 접근용)
 # ============================================================================
 
 # ECR API Endpoint - ECR API 호출용 (레지스트리 인증, 이미지 메타데이터 등)
@@ -65,10 +66,11 @@ resource "aws_vpc_endpoint" "ecr_api" {
   # VPC Endpoint 보안 그룹 (443 포트 허용)
   security_group_ids = [aws_security_group.vpc_endpoints.id]
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.project_name}-V2-${var.environment}-ecr-api-endpoint"
+      Name = "${var.project_name}-${var.infra_version}-${var.environment}-ecr-api-endpoint"
     }
   )
 }
@@ -86,10 +88,11 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
   # VPC Endpoint 보안 그룹 (443 포트 허용)
   security_group_ids = [aws_security_group.vpc_endpoints.id]
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.project_name}-V2-${var.environment}-ecr-dkr-endpoint"
+      Name = "${var.project_name}-${var.infra_version}-${var.environment}-ecr-dkr-endpoint"
     }
   )
 }

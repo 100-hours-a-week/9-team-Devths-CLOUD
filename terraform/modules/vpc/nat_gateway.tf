@@ -1,16 +1,17 @@
 # ============================================================================
-# NAT Gateway 리소스
+# NAT Gateway
 # ============================================================================
 
-# NAT Gateway를 위한 Elastic IP
+# 공인 IP 할당
 resource "aws_eip" "nat_gateway" {
   count  = local.actual_nat_type == "gateway" ? local.nat_count : 0
   domain = "vpc"
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.project_name}-V2-${var.environment}-nat-gw-eip-${count.index + 1}"
+      Name = "${var.project_name}-${var.infra_version}-${var.environment}-nat-gw-eip-${count.index + 1}"
     }
   )
 
@@ -23,10 +24,11 @@ resource "aws_nat_gateway" "this" {
   allocation_id = aws_eip.nat_gateway[count.index].id
   subnet_id     = aws_subnet.public[count.index].id
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.project_name}-V2-${var.environment}-nat-gw-${count.index + 1}"
+      Name = "${var.project_name}-${var.infra_version}-${var.environment}-nat-gw-${count.index + 1}"
     }
   )
 

@@ -1,14 +1,28 @@
+# ============================================================================
+# 프로젝트 공통
+# ============================================================================
+
 # 프로젝트 전체에서 사용할 고유 이름
 variable "project_name" {
   description = "Project name"
   type        = string
 }
 
-# 배포 대상 환경 (prod, staging, dev 등으로 구분하여 정책 제어)
+# 배포 대상 환경
 variable "environment" {
   description = "Environment name (prod, staging, dev)"
   type        = string
 }
+
+variable "infra_version" {
+  description = "Infrastructure version (v1, v2)"
+  type        = string
+  default     = "V2"
+}
+
+# ============================================================================
+# 네트워크 대역
+# ============================================================================
 
 # VPC의 전체 네트워크 대역 설정
 variable "vpc_cidr" {
@@ -47,6 +61,10 @@ variable "ssh_allowed_cidr" {
   type        = list(string)
   default     = []
 }
+
+# ============================================================================
+# NAT 관련
+# ============================================================================
 
 # NAT 설정 - Gateway 또는 Instance 선택
 variable "nat_type" {
@@ -113,7 +131,7 @@ variable "additional_ingress_rules" {
   default = []
 }
 
-# 모든 리소스에 공통적으로 적용할 관리용 태그 (Cost Center, Owner 등)
+# 공통 태그
 variable "common_tags" {
   description = "Common tags for all resources"
   type        = map(string)

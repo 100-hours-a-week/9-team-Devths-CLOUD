@@ -35,6 +35,7 @@ resource "aws_security_group" "alb" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
@@ -71,6 +72,7 @@ resource "aws_security_group" "fe" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # 태그
   tags = merge(var.common_tags, { Name = "${var.project_name}-v2-${var.environment}-fe-sg" })
 }
 
@@ -98,6 +100,7 @@ resource "aws_security_group" "be" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # 태그
   tags = merge(var.common_tags, { Name = "${var.project_name}-v2-${var.environment}-be-sg" })
 }
 
@@ -125,6 +128,7 @@ resource "aws_security_group" "ai" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # 태그
   tags = merge(var.common_tags, { Name = "${var.project_name}-v2-${var.environment}-ai-sg" })
 }
 
@@ -155,6 +159,7 @@ resource "aws_security_group" "database" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
@@ -175,6 +180,14 @@ resource "aws_security_group" "mock" {
   description = "Security group for Mock servers (Keycloak, WireMock)"
   vpc_id      = aws_vpc.this.id
 
+  # WireMock from ALB (port 8082)
+  ingress {
+    description     = "WireMock from ALB"
+    from_port       = 8082
+    to_port         = 8082
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb.id]
+  }
 
   # WireMock from AI/BE (port 8082)
   ingress {
@@ -200,6 +213,7 @@ resource "aws_security_group" "mock" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # 태그
   tags = merge(var.common_tags, { Name = "${var.project_name}-v2-${var.environment}-mock-sg" })
 
   lifecycle {
@@ -233,6 +247,7 @@ resource "aws_security_group" "vpc_endpoints" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # 태그
   tags = merge(
     var.common_tags,
     {

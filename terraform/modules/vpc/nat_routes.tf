@@ -1,8 +1,10 @@
 # ============================================================================
-# Private/Database 서브넷 라우트 테이블
+# 라우트 테이블
 # ============================================================================
 
-# 프라이빗 라우트 테이블
+# ============================================================================
+# Private 서브넷 라우트 테이블
+# ============================================================================
 resource "aws_route_table" "private" {
   count  = local.actual_nat_type != "none" ? local.nat_count : 0
   vpc_id = aws_vpc.this.id
@@ -25,13 +27,15 @@ resource "aws_route_table" "private" {
     }
   }
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.project_name}-V2-${var.environment}-private-rt${local.actual_single_nat ? "" : "-${count.index + 1}"}"
+      Name = "${var.project_name}-${var.infra_version}-${var.environment}-private-rt${local.actual_single_nat ? "" : "-${count.index + 1}"}"
     }
   )
 
+  # 라우트는 무시
   lifecycle {
     ignore_changes = [route]
   }
@@ -45,7 +49,9 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private[local.actual_single_nat ? 0 : count.index].id
 }
 
-# 데이터베이스 라우트 테이블
+# ============================================================================
+# Database 서브넷 라우트 테이블
+# ============================================================================
 resource "aws_route_table" "database" {
   count  = local.actual_nat_type != "none" && length(var.database_subnet_cidrs) > 0 ? local.nat_count : 0
   vpc_id = aws_vpc.this.id
@@ -68,13 +74,15 @@ resource "aws_route_table" "database" {
     }
   }
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.project_name}-V2-${var.environment}-db-rt${local.actual_single_nat ? "" : "-${count.index + 1}"}"
+      Name = "${var.project_name}-${var.infra_version}-${var.environment}-db-rt${local.actual_single_nat ? "" : "-${count.index + 1}"}"
     }
   )
 
+  # 라우트는 무시
   lifecycle {
     ignore_changes = [route]
   }

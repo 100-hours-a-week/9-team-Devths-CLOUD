@@ -2,15 +2,16 @@
 # NAT Instance 리소스
 # ============================================================================
 
-# NAT Instance를 위한 Elastic IP
+# 공인 IP 할당
 resource "aws_eip" "nat_instance" {
   count  = local.actual_nat_type == "instance" ? local.nat_count : 0
   domain = "vpc"
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.project_name}-v2-${var.environment}-nat-instance-eip-${count.index + 1}"
+      Name = "${var.project_name}-${var.infra_version}-${var.environment}-nat-instance-eip-${count.index + 1}"
     }
   )
 
@@ -20,11 +21,11 @@ resource "aws_eip" "nat_instance" {
 # NAT Instance 보안 그룹
 resource "aws_security_group" "nat_instance" {
   count       = local.actual_nat_type == "instance" ? 1 : 0
-  name        = "${var.project_name}-v2-${var.environment}-nat-instance-sg"
+  name        = "${var.project_name}-${var.infra_version}-${var.environment}-nat-instance-sg"
   description = "Security group for NAT instance"
   vpc_id      = aws_vpc.this.id
 
-  # Private/DB 서브넷에서의 모든 트래픽 허용
+  # 프라이빗 서브넷에서의 모든 트래픽 허용
   ingress {
     description = "All traffic from Private subnets"
     from_port   = 0
@@ -42,19 +43,21 @@ resource "aws_security_group" "nat_instance" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.project_name}-v2-${var.environment}-nat-instance-sg"
+      Name = "${var.project_name}-${var.infra_version}-${var.environment}-nat-instance-sg"
     }
   )
 
+  # 새것을 먼저 만들고, 삭제됨
   lifecycle {
     create_before_destroy = true
   }
 }
 
-# NAT Instance
+# NAT 인스턴스
 resource "aws_instance" "nat" {
   count                       = local.actual_nat_type == "instance" ? local.nat_count : 0
   ami                         = data.aws_ami.amazon_linux_nat[0].id
@@ -72,13 +75,15 @@ resource "aws_instance" "nat" {
     file("${path.module}/scripts/user_data.sh"),
   ])
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.project_name}-v2-${var.environment}-nat-instance-${count.index + 1}"
+      Name = "${var.project_name}-${var.infra_version}-${var.environment}-nat-instance-${count.index + 1}"
     }
   )
 
+  # AMI 업데이트로 인해서 새로 만들어지지않음.
   lifecycle {
     ignore_changes = [ami]
   }
