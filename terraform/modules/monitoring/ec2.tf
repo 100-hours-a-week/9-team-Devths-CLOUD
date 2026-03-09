@@ -36,6 +36,7 @@ locals {
 
   # Tempo 설정
   tempo_content = templatefile("${path.module}/scripts/templates/tempo-config.yml.tpl", {
+    environment          = var.environment
     aws_region           = var.aws_region
     tempo_s3_bucket_name = var.tempo_s3_bucket_name
   })
@@ -47,6 +48,7 @@ locals {
 
   # Alertmanager 설정
   alertmanager_content = templatefile("${path.module}/scripts/templates/alertmanager.yml.tpl", {
+    environment             = var.environment
     discord_webhook_nonprod = var.alertmanager_discord_webhook_nonprod
     discord_webhook_prod    = var.alertmanager_discord_webhook_prod
   })
@@ -97,6 +99,7 @@ resource "aws_instance" "monitoring" {
     })
   )
 
+  # 태그
   tags = merge(
     var.common_tags,
     {

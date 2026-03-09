@@ -7,6 +7,7 @@ resource "aws_security_group" "rds" {
   description = "Security group for RDS ${var.engine} database"
   vpc_id      = var.vpc_id
 
+  # 태그
   tags = merge(
     var.common_tags,
     {

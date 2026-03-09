@@ -8,6 +8,7 @@ resource "aws_db_subnet_group" "this" {
   description = "Database subnet group for ${var.project_name} ${var.infra_version} ${var.environment}"
   subnet_ids  = var.database_subnet_ids
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
@@ -77,6 +78,7 @@ resource "aws_db_instance" "this" {
   deletion_protection        = var.deletion_protection
   apply_immediately          = var.environment != "prod" ? true : false
 
+  # 태그
   tags = merge(
     var.common_tags,
     {

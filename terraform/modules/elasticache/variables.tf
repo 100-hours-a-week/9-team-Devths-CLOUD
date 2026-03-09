@@ -1,30 +1,32 @@
 # ============================================================================
-# ElastiCache Module - Variables
+# 프로젝트 공통
 # ============================================================================
-
-# Project metadata
 variable "project_name" {
   description = "Project name"
   type        = string
+  default     = "devths"
 }
 
+# 환경 정의
 variable "environment" {
   description = "Environment name (dev, stg, prod)"
   type        = string
 }
 
+# 인프라 버전
 variable "infra_version" {
   description = "Infrastructure version (v1, v2)"
   type        = string
   default     = "v2"
 }
 
-# Network settings
+# VPC 설정
 variable "vpc_id" {
   description = "VPC ID where ElastiCache will be deployed"
   type        = string
 }
 
+# 서브넷
 variable "cache_subnet_ids" {
   description = "List of subnet IDs for ElastiCache subnet group"
   type        = list(string)
@@ -42,7 +44,7 @@ variable "allowed_cidr_blocks" {
   default     = []
 }
 
-# Engine settings
+# 엔진 설정
 variable "engine" {
   description = "Cache engine (redis or valkey)"
   type        = string
@@ -60,6 +62,7 @@ variable "engine_version" {
   default     = "7.1"
 }
 
+# 파라미터 그룹
 variable "parameter_group_family" {
   description = "ElastiCache parameter group family (optional, defaults by engine)"
   type        = string
@@ -75,7 +78,7 @@ variable "parameters" {
   default = []
 }
 
-# Replication group settings
+# 노드 설정
 variable "node_type" {
   description = "ElastiCache node type"
   type        = string
@@ -116,13 +119,14 @@ variable "automatic_failover_enabled" {
   default     = false
 }
 
+# 다중 AZ
 variable "multi_az_enabled" {
   description = "Enable Multi-AZ deployment (requires automatic failover)"
   type        = bool
   default     = false
 }
 
-# Encryption and auth
+# 암호화
 variable "at_rest_encryption_enabled" {
   description = "Enable encryption at rest"
   type        = bool
@@ -135,6 +139,7 @@ variable "kms_key_id" {
   default     = ""
 }
 
+# 전송 암호화
 variable "transit_encryption_enabled" {
   description = "Enable encryption in transit (TLS)"
   type        = bool
@@ -153,7 +158,7 @@ variable "auth_token" {
   }
 }
 
-# Operations
+# 마이너 버전 업데이트
 variable "auto_minor_version_upgrade" {
   description = "Enable automatic minor version upgrades"
   type        = bool
@@ -201,7 +206,10 @@ variable "final_snapshot_identifier" {
   default     = ""
 }
 
-# Tags
+# ============================================================================
+# 공통 태그
+# ============================================================================
+
 variable "common_tags" {
   description = "Common tags to apply to all resources"
   type        = map(string)

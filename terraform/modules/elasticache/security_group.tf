@@ -7,6 +7,7 @@ resource "aws_security_group" "elasticache" {
   description = "Security group for ElastiCache ${var.engine}"
   vpc_id      = var.vpc_id
 
+  # 태그
   tags = merge(
     var.common_tags,
     {

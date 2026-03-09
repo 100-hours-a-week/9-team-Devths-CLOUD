@@ -17,6 +17,7 @@ resource "aws_db_parameter_group" "this" {
     }
   }
 
+  # 태그
   tags = merge(
     var.common_tags,
     {

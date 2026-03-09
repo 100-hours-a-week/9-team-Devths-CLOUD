@@ -33,6 +33,7 @@ resource "aws_elasticache_subnet_group" "this" {
   description = "ElastiCache subnet group for ${var.project_name} ${var.environment}"
   subnet_ids  = var.cache_subnet_ids
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
@@ -56,6 +57,7 @@ resource "aws_elasticache_parameter_group" "this" {
     }
   }
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
@@ -97,6 +99,7 @@ resource "aws_elasticache_replication_group" "this" {
   apply_immediately         = var.environment != "prod" ? true : var.apply_immediately
   final_snapshot_identifier = var.final_snapshot_identifier != "" ? var.final_snapshot_identifier : null
 
+  # 태그
   tags = merge(
     var.common_tags,
     {

@@ -1,4 +1,6 @@
-# VPC 아이디
+# ============================================================================
+# VPC
+# ============================================================================
 output "vpc_id" {
   description = "VPC ID"
   value       = aws_vpc.this.id
@@ -10,7 +12,9 @@ output "vpc_cidr" {
   value       = aws_vpc.this.cidr_block
 }
 
-# 퍼블릭 서브넷
+# ============================================================================
+# 서브넷
+# ============================================================================
 output "public_subnet_ids" {
   description = "List of public subnet IDs"
   value       = aws_subnet.public[*].id
@@ -19,12 +23,6 @@ output "public_subnet_ids" {
 output "public_subnet_cidrs" {
   description = "List of public subnet CIDR blocks"
   value       = aws_subnet.public[*].cidr_block
-}
-
-## 퍼블릭 라우팅 테이블
-output "public_route_table_id" {
-  description = "Public route table ID"
-  value       = aws_route_table.public.id
 }
 
 # 프라이빗 서브넷
@@ -49,13 +47,39 @@ output "database_subnet_cidrs" {
   value       = aws_subnet.database[*].cidr_block
 }
 
+# ============================================================================
+# 라우팅 테이블
+# ============================================================================
+
+## 퍼블릭 라우팅 테이블
+output "public_route_table_id" {
+  description = "Public route table ID"
+  value       = aws_route_table.public.id
+}
+
+# 프라이빗 라우트 테이블
+output "private_route_table_ids" {
+  description = "List of private route table IDs"
+  value       = aws_route_table.private[*].id
+}
+
+# DB 라우트 테이블
+output "database_route_table_ids" {
+  description = "List of database route table IDs"
+  value       = aws_route_table.database[*].id
+}
+
+# ============================================================================
 # 인터넷 게이트웨이
+# ============================================================================
 output "internet_gateway_id" {
   description = "Internet Gateway ID"
   value       = aws_internet_gateway.this.id
 }
 
-# NAT 정보
+# ============================================================================
+# NAT
+# ============================================================================
 output "nat_type" {
   description = "NAT type being used (gateway, instance, or none)"
   value       = local.actual_nat_type
@@ -81,18 +105,9 @@ output "nat_eip_public_ips" {
   value       = concat(aws_eip.nat_gateway[*].public_ip, aws_eip.nat_instance[*].public_ip)
 }
 
-# 라우트 테이블
-output "private_route_table_ids" {
-  description = "List of private route table IDs"
-  value       = aws_route_table.private[*].id
-}
-
-output "database_route_table_ids" {
-  description = "List of database route table IDs"
-  value       = aws_route_table.database[*].id
-}
-
-# 보안 그룹 - ALB
+# ============================================================================
+# ALB
+# ============================================================================
 output "alb_security_group_id" {
   description = "ALB security group ID"
   value       = aws_security_group.alb.id
@@ -158,7 +173,10 @@ output "mock_security_group_name" {
   value       = aws_security_group.mock.name
 }
 
-# VPC Endpoints
+# ============================================================================
+# VPC 엔드포인트
+# ============================================================================
+
 output "s3_vpc_endpoint_id" {
   description = "S3 VPC Gateway Endpoint ID"
   value       = aws_vpc_endpoint.s3.id

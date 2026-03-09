@@ -22,6 +22,7 @@ resource "aws_codedeploy_deployment_group" "this" {
     deployment_type   = "IN_PLACE"
   }
 
+  # 태그
   tags = merge(
     var.common_tags,
     {

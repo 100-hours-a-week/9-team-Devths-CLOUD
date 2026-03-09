@@ -1,6 +1,6 @@
 # 모니터링 서버 전용 Security Group
 resource "aws_security_group" "monitoring" {
-  name        = "${var.project_name}-v2-${var.environment}-monitor-sg"
+  name        = "${var.project_name}-${var.infra_version}-${var.environment}-monitor-sg"
   description = "Security group for monitoring server (Prometheus + Grafana)"
   vpc_id      = var.vpc_id
 
@@ -48,10 +48,11 @@ resource "aws_security_group" "monitoring" {
     ]
   }
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.project_name}-v2-${var.environment}-monitor-sg"
+      Name = "${var.project_name}-${var.infra_version}-${var.environment}-monitor-sg"
       Type = "Monitoring"
     }
   )

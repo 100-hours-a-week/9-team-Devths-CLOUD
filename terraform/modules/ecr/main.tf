@@ -13,6 +13,7 @@ resource "aws_ecr_repository" "this" {
     kms_key         = var.kms_key_arn
   }
 
+  # 태그
   tags = merge(
     var.common_tags,
     {

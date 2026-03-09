@@ -4,6 +4,12 @@ variable "project_name" {
   type        = string
 }
 
+# 인프라 버전
+variable "infra_version" {
+  description = "Infrastructure version (v1, v2)"
+  type        = string
+  default     = "v2"
+}
 
 variable "instance_name" {
   description = "EC2 instance name"
