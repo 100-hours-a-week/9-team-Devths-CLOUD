@@ -1,5 +1,15 @@
+# ============================================================================
+# ECR
+# ============================================================================
 terraform {
   required_version = ">= 1.0"
+
+  backend "s3" {
+    bucket = "devths-state-terraform"
+    key    = "common/ecr/terraform.tfstate"
+    region = "ap-northeast-2"
+    encrypt        = true
+  }
 
   required_providers {
     aws = {
@@ -13,7 +23,9 @@ provider "aws" {
   region = var.aws_region
 }
 
-# ECR 레포지토리 생성
+# ============================================================================
+# 레포지토리 생성
+# ============================================================================
 module "ecr" {
   source = "../../../modules/ecr"
 
@@ -40,5 +52,6 @@ module "ecr" {
     ]
   })
 
+  # 태그
   common_tags = var.common_tags
 }

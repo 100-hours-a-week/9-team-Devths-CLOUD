@@ -1,40 +1,36 @@
 # ============================================================================
-# 공통
+# 공통 변수
 # ============================================================================
 variable "aws_region" {
-  description = "AWS Region"
+  description = "AWS region"
   type        = string
   default     = "ap-northeast-2"
 }
 
-
 # ============================================================================
-# 프런트 엔드
+# 계정 ID
 # ============================================================================
-variable "codedeploy_app_name_fe" {
-  description = "CodeDeploy application name for Frontend"
+variable "account_id" {
+  description = "유저 ID"
   type        = string
-  default     = "Devths-FE"
+  default     = "174678835309"
+}
+
+variable "project_name" {
+  description = "프로젝트 이름"
+  type        = string
+  default     = "devths"
 }
 
 # ============================================================================
-# 백엔드
+# 이름
 # ============================================================================
-variable "codedeploy_app_name_be" {
-  description = "CodeDeploy application name for Backend"
+variable "github_actions_user_name" {
+  description = "GitHub Actions IAM user name"
   type        = string
-  default     = "Devths-BE"
+  default     = "devths-github-actions"
 }
 
-
-# ============================================================================
-# 인공지능
-# ============================================================================
-variable "codedeploy_app_name_ai" {
-  description = "CodeDeploy application name for AI"
-  type        = string
-  default     = "Devths-AI"
-}
 
 # ============================================================================
 # 공통 태그
@@ -43,8 +39,8 @@ variable "common_tags" {
   description = "Common tags for all resources"
   type        = map(string)
   default = {
-    Project     = "devths"
-    Environment = "shared"
+    Project     = "Devths"
     ManagedBy   = "Terraform"
+    Environment = "Shared"
   }
 }

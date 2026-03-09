@@ -1,5 +1,16 @@
+# ============================================================================
+# Code Deploy
+# ============================================================================
+
 terraform {
   required_version = ">= 1.0"
+
+  backend "s3" {
+    bucket = "devths-state-terraform"
+    key    = "common/codedeploy/terraform.tfstate"
+    region = "ap-northeast-2"
+    encrypt        = true
+  }
 
   required_providers {
     aws = {
@@ -13,11 +24,14 @@ provider "aws" {
   region = var.aws_region
 }
 
-# CodeDeploy Application은 환경(dev/staging/prod)과 무관하게 공통으로 관리합니다.
+# ============================================================================
+# 프런트 엔드
+# ============================================================================
 resource "aws_codedeploy_app" "fe" {
   name             = var.codedeploy_app_name_fe
   compute_platform = "Server"
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
@@ -27,10 +41,14 @@ resource "aws_codedeploy_app" "fe" {
   )
 }
 
+# ============================================================================
+# 백엔드
+# ============================================================================
 resource "aws_codedeploy_app" "be" {
   name             = var.codedeploy_app_name_be
   compute_platform = "Server"
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
@@ -40,10 +58,14 @@ resource "aws_codedeploy_app" "be" {
   )
 }
 
+# ============================================================================
+# 인공지능
+# ============================================================================
 resource "aws_codedeploy_app" "ai" {
   name             = var.codedeploy_app_name_ai
   compute_platform = "Server"
 
+  # 태그
   tags = merge(
     var.common_tags,
     {
