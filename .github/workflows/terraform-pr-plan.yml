@@ -1,0 +1,320 @@
+name: Devths-Terraform PR 파이프라인
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+    paths:
+      - "terraform/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  # AWS 자격 증명
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_DEFAULT_REGION: ap-northeast-2
+  AWS_REGION: ap-northeast-2
+
+  # Terraform 자동화 플래그
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+
+  # 환경별 변수 파일 (Secrets로 관리)
+  TFVARS_NONPROD_DEV: ${{ secrets.TFVARS_NONPROD_DEV }}
+  TFVARS_NONPROD_MONITORING: ${{ secrets.TFVARS_NONPROD_MONITORING }}
+  TFVARS_NONPROD_STAGING: ${{ secrets.TFVARS_NONPROD_STAGING }}
+  TFVARS_PROD_APP: ${{ secrets.TFVARS_PROD_APP }}
+  TFVARS_PROD_MONITORING: ${{ secrets.TFVARS_PROD_MONITORING }}
+
+jobs:
+  resolve-target:
+    runs-on: ubuntu-22.04
+    outputs:
+      stack_json: ${{ steps.resolve.outputs.stack_json }}
+      target_name: ${{ steps.resolve.outputs.target_name }}
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Git diff로 변경된 파일 목록 추출
+        id: changed_files
+        shell: bash
+        run: |
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          head_sha="${{ github.event.pull_request.head.sha }}"
+
+          echo "Analyzing changed files between ${base_sha} and ${head_sha}"
+
+          # 변경된 파일을 JSON 배열로 저장 (개행 문자 처리)
+          changed_files=$(git diff --name-only "${base_sha}" "${head_sha}" -- terraform | jq -R -s -c 'split("\n") | map(select(length > 0))')
+
+          echo "changed_files=${changed_files}" >> "${GITHUB_OUTPUT}"
+          echo "Changed files: ${changed_files}"
+
+      - name: 변경된 파일 분석 및 영향받는 스택 결정
+        id: analyze_stacks
+        shell: bash
+        env:
+          CHANGED_FILES: ${{ steps.changed_files.outputs.changed_files }}
+        run: |
+          declare -A stacks_map=()
+          plan_all=false
+
+          echo "Analyzing impact of changed files..."
+
+          # JSON 배열을 bash 배열로 변환
+          readarray -t files < <(echo "${CHANGED_FILES}" | jq -r '.[]')
+
+          for file in "${files[@]}"; do
+            [[ -z "${file}" ]] && continue
+            echo "  Checking: ${file}"
+
+            case "${file}" in
+              # 모듈이나 공통 파일 변경 → 모든 스택 plan
+              terraform/modules/*|terraform/infrastructure/common/*|terraform/*.tf|terraform/*.tfvars|terraform/.terraform.lock.hcl)
+                echo "    → Module or common file - will plan all stacks"
+                plan_all=true
+                break
+                ;;
+              # 각 스택별 파일 변경
+              terraform/infrastructure/nonprod/dev/*)
+                stacks_map["nonprod/dev"]=1
+                echo "    → Affects: nonprod/dev"
+                ;;
+              terraform/infrastructure/nonprod/staging/*)
+                stacks_map["nonprod/staging"]=1
+                echo "    → Affects: nonprod/staging"
+                ;;
+              terraform/infrastructure/nonprod/network/*)
+                stacks_map["nonprod/network"]=1
+                echo "    → Affects: nonprod/network"
+                ;;
+              terraform/infrastructure/nonprod/monitoring/*)
+                stacks_map["nonprod/monitoring"]=1
+                echo "    → Affects: nonprod/monitoring"
+                ;;
+              terraform/infrastructure/nonprod-k8s/network/*)
+                stacks_map["nonprod-k8s/network"]=1
+                echo "    → Affects: nonprod-k8s/network"
+                ;;
+              terraform/infrastructure/prod/app/*)
+                stacks_map["prod/app"]=1
+                echo "    → Affects: prod/app"
+                ;;
+              terraform/infrastructure/prod/network/*)
+                stacks_map["prod/network"]=1
+                echo "    → Affects: prod/network"
+                ;;
+              terraform/infrastructure/prod/monitoring/*)
+                stacks_map["prod/monitoring"]=1
+                echo "    → Affects: prod/monitoring"
+                ;;
+            esac
+          done
+
+          # 모듈 변경 시 모든 스택 추가
+          if [[ "${plan_all}" == "true" ]]; then
+            echo ""
+            echo "Module/common changes detected - adding all stacks"
+            stacks_map=(
+              ["nonprod/dev"]=1
+              ["nonprod/staging"]=1
+              ["nonprod/network"]=1
+              ["nonprod/monitoring"]=1
+              ["nonprod-k8s/network"]=1
+              ["prod/app"]=1
+              ["prod/network"]=1
+              ["prod/monitoring"]=1
+            )
+          fi
+
+          # 스택 목록을 JSON 배열로 변환
+          stacks_json="["
+          first=true
+          for stack in "${!stacks_map[@]}"; do
+            if [[ "${first}" == "true" ]]; then
+              first=false
+            else
+              stacks_json+=","
+            fi
+            stacks_json+="\"${stack}\""
+          done
+          stacks_json+="]"
+
+          echo "affected_stacks=${stacks_json}" >> "${GITHUB_OUTPUT}"
+          echo ""
+          echo "Affected stacks: ${stacks_json}"
+
+      - name: Terraform 스택 경로 생성
+        id: resolve
+        shell: bash
+        env:
+          AFFECTED_STACKS: ${{ steps.analyze_stacks.outputs.affected_stacks }}
+        run: |
+          # 스택이 없으면 빈 배열 반환
+          if [[ "${AFFECTED_STACKS}" == "[]" ]]; then
+            echo "✅ No terraform infrastructure changes detected"
+            echo 'stack_json=[]' >> "${GITHUB_OUTPUT}"
+            echo 'target_name=none' >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          # 전체 경로로 변환
+          stack_json="["
+          first=true
+
+          readarray -t stacks < <(echo "${AFFECTED_STACKS}" | jq -r '.[]')
+
+          for stack in "${stacks[@]}"; do
+            if [[ "${first}" == "true" ]]; then
+              first=false
+            else
+              stack_json+=","
+            fi
+            stack_json+="\"terraform/infrastructure/${stack}\""
+          done
+          stack_json+="]"
+
+          echo "stack_json=${stack_json}" >> "${GITHUB_OUTPUT}"
+          echo "target_name=${stacks[0]}" >> "${GITHUB_OUTPUT}"
+
+          echo ""
+          echo "📋 Will plan the following stacks:"
+          echo "${AFFECTED_STACKS}" | jq -r '.[]' | sed 's/^/  - /'
+
+  terraform-plan:
+    name: Plan (${{ matrix.stack }})
+    needs: resolve-target
+    if: ${{ needs.resolve-target.outputs.stack_json != '[]' }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: ${{ fromJson(needs.resolve-target.outputs.stack_json) }}
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Terraform 설치
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+          terraform_wrapper: false
+
+      - name: AWS 자격 증명 확인
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${AWS_ACCESS_KEY_ID:-}" || { echo "Missing AWS_ACCESS_KEY_ID secret." >&2; exit 1; }
+          test -n "${AWS_SECRET_ACCESS_KEY:-}" || { echo "Missing AWS_SECRET_ACCESS_KEY secret." >&2; exit 1; }
+
+      - name: Terraform plan 실행
+        id: plan
+        shell: bash
+        run: |
+          set +e  # terraform plan이 변경사항이 있으면 exit code 2를 반환하므로 계속 진행
+
+          # Plan 실행 및 출력 저장
+          bash .github/scripts/run-terraform-plan.sh "${{ matrix.stack }}" > plan_output.txt 2>&1
+          exit_code=$?
+
+          # 출력을 화면에 표시
+          cat plan_output.txt
+
+          # plan 결과를 artifact로 저장
+          mkdir -p plan-results
+          cp plan_output.txt plan-results/plan.txt
+
+          # Exit code 처리 (0=변경없음, 2=변경있음, 그외=실패)
+          if [[ ${exit_code} -eq 0 || ${exit_code} -eq 2 ]]; then
+            echo "plan_status=success" >> "${GITHUB_OUTPUT}"
+            exit 0
+          else
+            echo "plan_status=failure" >> "${GITHUB_OUTPUT}"
+            exit ${exit_code}
+          fi
+
+      - name: Plan 결과 아티팩트 업로드
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan-${{ matrix.stack }}-${{ github.run_number }}
+          path: plan-results/
+          retention-days: 5
+
+      - name: PR에 Plan 결과 댓글 달기
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const stackName = '${{ matrix.stack }}';
+            const planStatus = '${{ steps.plan.outputs.plan_status }}';
+
+            let planOutput = '';
+            try {
+              planOutput = fs.readFileSync('plan_output.txt', 'utf8');
+            } catch (error) {
+              planOutput = 'Plan output file not found';
+            }
+
+            const maxLength = 60000;
+            if (planOutput.length > maxLength) {
+              planOutput = planOutput.substring(0, maxLength) + '\n\n... (output truncated)';
+            }
+
+            const statusEmoji = planStatus === 'success' ? '✅' : '❌';
+
+            const body = [
+              `## ${statusEmoji} Terraform Plan: \`${stackName}\``,
+              '',
+              `**Status:** ${planStatus}`,
+              `**Commit:** ${context.sha.substring(0, 7)}`,
+              `**Workflow Run:** [#${context.runNumber}](${context.payload.repository.html_url}/actions/runs/${context.runId})`,
+              '',
+              '<details>',
+              '<summary>📋 Show Plan Output</summary>',
+              '',
+              '```terraform',
+              planOutput,
+              '```',
+              '',
+              '</details>',
+              '',
+              '---',
+              `*Triggered by @${context.actor} on ${new Date().toISOString()}*`
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes(`Terraform Plan: \`${stackName}\``)
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
