@@ -1,0 +1,304 @@
+name: Devths-Terraform K8s PR 파이프라인
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+    paths:
+      - "terraform/infrastructure/nonprod-k8s/**"
+      - "terraform/infrastructure/prod-k8s/**"
+      - "terraform/modules/**"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  # AWS 자격 증명
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_DEFAULT_REGION: ap-northeast-2
+  AWS_REGION: ap-northeast-2
+
+  # Terraform 자동화 플래그
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+
+jobs:
+  resolve-target:
+    runs-on: ubuntu-22.04
+    outputs:
+      stack_json: ${{ steps.resolve.outputs.stack_json }}
+      target_name: ${{ steps.resolve.outputs.target_name }}
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Git diff로 변경된 파일 목록 추출
+        id: changed_files
+        shell: bash
+        run: |
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          head_sha="${{ github.event.pull_request.head.sha }}"
+
+          echo "Analyzing K8s infrastructure changes between ${base_sha} and ${head_sha}"
+
+          # K8s 관련 파일만 필터링
+          changed_files=$(git diff --name-only "${base_sha}" "${head_sha}" -- \
+            'terraform/infrastructure/nonprod-k8s/**' \
+            'terraform/infrastructure/prod-k8s/**' \
+            'terraform/modules/**' \
+            | jq -R -s -c 'split("\n") | map(select(length > 0))')
+
+          echo "changed_files=${changed_files}" >> "${GITHUB_OUTPUT}"
+          echo "Changed K8s files: ${changed_files}"
+
+      - name: 변경된 파일 분석 및 영향받는 스택 결정
+        id: analyze_stacks
+        shell: bash
+        env:
+          CHANGED_FILES: ${{ steps.changed_files.outputs.changed_files }}
+        run: |
+          declare -A stacks_map=()
+          plan_all=false
+
+          echo "Analyzing impact of K8s infrastructure changes..."
+
+          # JSON 배열을 bash 배열로 변환
+          readarray -t files < <(echo "${CHANGED_FILES}" | jq -r '.[]')
+
+          for file in "${files[@]}"; do
+            [[ -z "${file}" ]] && continue
+            echo "  Checking: ${file}"
+
+            case "${file}" in
+              # 모듈 변경 → 모든 K8s 스택 plan
+              terraform/modules/*)
+                echo "    → Module changed - will plan all K8s stacks"
+                plan_all=true
+                break
+                ;;
+              # NonProd K8s 스택
+              terraform/infrastructure/nonprod-k8s/network/*)
+                stacks_map["nonprod-k8s/network"]=1
+                echo "    → Affects: nonprod-k8s/network"
+                ;;
+              terraform/infrastructure/nonprod-k8s/app/*)
+                stacks_map["nonprod-k8s/app"]=1
+                echo "    → Affects: nonprod-k8s/app"
+                ;;
+              # Prod K8s 스택
+              terraform/infrastructure/prod-k8s/network/*)
+                stacks_map["prod-k8s/network"]=1
+                echo "    → Affects: prod-k8s/network"
+                ;;
+              terraform/infrastructure/prod-k8s/app/*)
+                stacks_map["prod-k8s/app"]=1
+                echo "    → Affects: prod-k8s/app"
+                ;;
+            esac
+          done
+
+          # 모듈 변경 시 모든 K8s 스택 추가
+          if [[ "${plan_all}" == "true" ]]; then
+            echo ""
+            echo "Module changes detected - adding all K8s stacks"
+            stacks_map=(
+              ["nonprod-k8s/network"]=1
+              ["nonprod-k8s/app"]=1
+              ["prod-k8s/network"]=1
+              ["prod-k8s/app"]=1
+            )
+          fi
+
+          # 스택 목록을 JSON 배열로 변환
+          stacks_json="["
+          first=true
+          for stack in "${!stacks_map[@]}"; do
+            if [[ "${first}" == "true" ]]; then
+              first=false
+            else
+              stacks_json+=","
+            fi
+            stacks_json+="\"${stack}\""
+          done
+          stacks_json+="]"
+
+          echo "affected_stacks=${stacks_json}" >> "${GITHUB_OUTPUT}"
+          echo ""
+          echo "Affected K8s stacks: ${stacks_json}"
+
+      - name: Terraform 스택 경로 생성
+        id: resolve
+        shell: bash
+        env:
+          AFFECTED_STACKS: ${{ steps.analyze_stacks.outputs.affected_stacks }}
+        run: |
+          # 스택이 없으면 빈 배열 반환
+          if [[ "${AFFECTED_STACKS}" == "[]" ]]; then
+            echo "✅ No K8s infrastructure changes detected"
+            echo 'stack_json=[]' >> "${GITHUB_OUTPUT}"
+            echo 'target_name=none' >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          # 전체 경로로 변환
+          stack_json="["
+          first=true
+
+          readarray -t stacks < <(echo "${AFFECTED_STACKS}" | jq -r '.[]')
+
+          for stack in "${stacks[@]}"; do
+            if [[ "${first}" == "true" ]]; then
+              first=false
+            else
+              stack_json+=","
+            fi
+            stack_json+="\"terraform/infrastructure/${stack}\""
+          done
+          stack_json+="]"
+
+          echo "stack_json=${stack_json}" >> "${GITHUB_OUTPUT}"
+          echo "target_name=${stacks[0]}" >> "${GITHUB_OUTPUT}"
+
+          echo ""
+          echo "📋 Will plan the following K8s stacks:"
+          echo "${AFFECTED_STACKS}" | jq -r '.[]' | sed 's/^/  - /'
+
+  terraform-plan:
+    name: K8s Plan (${{ matrix.stack }})
+    needs: resolve-target
+    if: ${{ needs.resolve-target.outputs.stack_json != '[]' }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: ${{ fromJson(needs.resolve-target.outputs.stack_json) }}
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Terraform 설치
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+          terraform_wrapper: false
+
+      - name: AWS 자격 증명 확인
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${AWS_ACCESS_KEY_ID:-}" || { echo "Missing AWS_ACCESS_KEY_ID secret." >&2; exit 1; }
+          test -n "${AWS_SECRET_ACCESS_KEY:-}" || { echo "Missing AWS_SECRET_ACCESS_KEY secret." >&2; exit 1; }
+
+      - name: Terraform plan 실행
+        id: plan
+        shell: bash
+        run: |
+          set +e  # terraform plan이 변경사항이 있으면 exit code 2를 반환하므로 계속 진행
+
+          # Plan 실행 및 출력 저장
+          bash .github/scripts/run-terraform-k8s-plan.sh "${{ matrix.stack }}" > plan_output.txt 2>&1
+          exit_code=$?
+
+          # 출력을 화면에 표시
+          cat plan_output.txt
+
+          # plan 결과를 artifact로 저장
+          mkdir -p plan-results
+          cp plan_output.txt plan-results/plan.txt
+
+          # Artifact 이름 생성 (슬래시를 하이픈으로 변환)
+          artifact_name=$(echo "${{ matrix.stack }}" | sed 's/\//-/g')
+          echo "artifact_name=${artifact_name}" >> "${GITHUB_OUTPUT}"
+
+          # Exit code 처리 (0=변경없음, 2=변경있음, 그외=실패)
+          if [[ ${exit_code} -eq 0 || ${exit_code} -eq 2 ]]; then
+            echo "plan_status=success" >> "${GITHUB_OUTPUT}"
+            exit 0
+          else
+            echo "plan_status=failure" >> "${GITHUB_OUTPUT}"
+            exit ${exit_code}
+          fi
+
+      - name: Plan 결과 아티팩트 업로드
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k8s-plan-${{ steps.plan.outputs.artifact_name }}-${{ github.run_number }}
+          path: plan-results/
+          retention-days: 5
+
+      - name: PR에 Plan 결과 댓글 달기
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const stackName = '${{ matrix.stack }}';
+            const planStatus = '${{ steps.plan.outputs.plan_status }}';
+
+            let planOutput = '';
+            try {
+              planOutput = fs.readFileSync('plan_output.txt', 'utf8');
+            } catch (error) {
+              planOutput = 'Plan output file not found';
+            }
+
+            const maxLength = 60000;
+            if (planOutput.length > maxLength) {
+              planOutput = planOutput.substring(0, maxLength) + '\n\n... (output truncated)';
+            }
+
+            const statusEmoji = planStatus === 'success' ? '✅' : '❌';
+
+            const body = [
+              `## ${statusEmoji} Terraform K8s Plan: \`${stackName}\``,
+              '',
+              `**Status:** ${planStatus}`,
+              `**Commit:** ${context.sha.substring(0, 7)}`,
+              `**Workflow Run:** [#${context.runNumber}](${context.payload.repository.html_url}/actions/runs/${context.runId})`,
+              '',
+              '<details>',
+              '<summary>📋 Show K8s Plan Output</summary>',
+              '',
+              '```terraform',
+              planOutput,
+              '```',
+              '',
+              '</details>',
+              '',
+              '---',
+              `*Triggered by @${context.actor} on ${new Date().toISOString()}*`
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes(`Terraform K8s Plan: \`${stackName}\``)
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }

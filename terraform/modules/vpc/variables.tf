@@ -17,7 +17,7 @@ variable "environment" {
 variable "infra_version" {
   description = "Infrastructure version (v1, v2)"
   type        = string
-  default     = "V2"
+  default     = "V3"
 }
 
 # ============================================================================
