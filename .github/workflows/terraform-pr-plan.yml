@@ -231,6 +231,10 @@ jobs:
           mkdir -p plan-results
           cp plan_output.txt plan-results/plan.txt
 
+          # Artifact 이름 생성 (슬래시를 하이픈으로 변환)
+          artifact_name=$(echo "${{ matrix.stack }}" | sed 's/\//-/g')
+          echo "artifact_name=${artifact_name}" >> "${GITHUB_OUTPUT}"
+
           # Exit code 처리 (0=변경없음, 2=변경있음, 그외=실패)
           if [[ ${exit_code} -eq 0 || ${exit_code} -eq 2 ]]; then
             echo "plan_status=success" >> "${GITHUB_OUTPUT}"
@@ -244,7 +248,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: terraform-plan-${{ matrix.stack }}-${{ github.run_number }}
+          name: terraform-plan-${{ steps.plan.outputs.artifact_name }}-${{ github.run_number }}
           path: plan-results/
           retention-days: 5
 
