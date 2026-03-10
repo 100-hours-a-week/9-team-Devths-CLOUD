@@ -4,7 +4,6 @@ set -euo pipefail
 
 stack_dir="${1:?stack directory is required}"
 stack_key="${stack_dir#terraform/infrastructure/}"
-backend_key="${stack_key}/terraform.tfstate"
 workspace_root="${GITHUB_WORKSPACE:-$(pwd)}"
 workdir="${workspace_root}/${stack_dir}"
 temp_root="${RUNNER_TEMP:-/tmp}"
@@ -32,6 +31,10 @@ case "${stack_key}" in
     ;;
   nonprod/staging)
     secret_tfvars="${TFVARS_NONPROD_STAGING:-}"
+    ;;
+  nonprod-k8s/network)
+    # nonprod-k8s/network는 secrets.tfvars 불필요 (모든 설정이 코드에 있음)
+    secret_tfvars=""
     ;;
   prod/app)
     secret_tfvars="${TFVARS_PROD_APP:-}"
@@ -85,9 +88,16 @@ terraform -chdir="${workdir}" init \
 echo "::endgroup::"
 
 echo "::group::terraform plan (${stack_key})"
-terraform -chdir="${workdir}" plan \
-  -input=false \
-  -lock-timeout=5m \
-  -no-color \
-  "${var_file_args[@]}"
+if [[ ${#var_file_args[@]} -gt 0 ]]; then
+  terraform -chdir="${workdir}" plan \
+    -input=false \
+    -lock-timeout=5m \
+    -no-color \
+    "${var_file_args[@]}"
+else
+  terraform -chdir="${workdir}" plan \
+    -input=false \
+    -lock-timeout=5m \
+    -no-color
+fi
 echo "::endgroup::"
