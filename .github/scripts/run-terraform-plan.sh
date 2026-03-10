@@ -32,10 +32,6 @@ case "${stack_key}" in
   nonprod/staging)
     secret_tfvars="${TFVARS_NONPROD_STAGING:-}"
     ;;
-  nonprod-k8s/network)
-    # nonprod-k8s/network는 secrets.tfvars 불필요 (모든 설정이 코드에 있음)
-    secret_tfvars=""
-    ;;
   prod/app)
     secret_tfvars="${TFVARS_PROD_APP:-}"
     ;;

@@ -1,4 +1,4 @@
-name: Devths-Terraform PR 파이프라인
+name: Devths-Terraform K8s PR 파이프라인
 
 on:
   pull_request:
@@ -6,7 +6,9 @@ on:
       - develop
       - main
     paths:
-      - "terraform/**"
+      - "terraform/infrastructure/nonprod-k8s/**"
+      - "terraform/infrastructure/prod-k8s/**"
+      - "terraform/modules/**"
 
 permissions:
   contents: read
@@ -22,13 +24,6 @@ env:
   # Terraform 자동화 플래그
   TF_IN_AUTOMATION: "true"
   TF_INPUT: "false"
-
-  # 환경별 변수 파일 (Secrets로 관리)
-  TFVARS_NONPROD_DEV: ${{ secrets.TFVARS_NONPROD_DEV }}
-  TFVARS_NONPROD_MONITORING: ${{ secrets.TFVARS_NONPROD_MONITORING }}
-  TFVARS_NONPROD_STAGING: ${{ secrets.TFVARS_NONPROD_STAGING }}
-  TFVARS_PROD_APP: ${{ secrets.TFVARS_PROD_APP }}
-  TFVARS_PROD_MONITORING: ${{ secrets.TFVARS_PROD_MONITORING }}
 
 jobs:
   resolve-target:
@@ -49,13 +44,17 @@ jobs:
           base_sha="${{ github.event.pull_request.base.sha }}"
           head_sha="${{ github.event.pull_request.head.sha }}"
 
-          echo "Analyzing changed files between ${base_sha} and ${head_sha}"
+          echo "Analyzing K8s infrastructure changes between ${base_sha} and ${head_sha}"
 
-          # 변경된 파일을 JSON 배열로 저장 (개행 문자 처리)
-          changed_files=$(git diff --name-only "${base_sha}" "${head_sha}" -- terraform | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          # K8s 관련 파일만 필터링
+          changed_files=$(git diff --name-only "${base_sha}" "${head_sha}" -- \
+            'terraform/infrastructure/nonprod-k8s/**' \
+            'terraform/infrastructure/prod-k8s/**' \
+            'terraform/modules/**' \
+            | jq -R -s -c 'split("\n") | map(select(length > 0))')
 
           echo "changed_files=${changed_files}" >> "${GITHUB_OUTPUT}"
-          echo "Changed files: ${changed_files}"
+          echo "Changed K8s files: ${changed_files}"
 
       - name: 변경된 파일 분석 및 영향받는 스택 결정
         id: analyze_stacks
@@ -66,7 +65,7 @@ jobs:
           declare -A stacks_map=()
           plan_all=false
 
-          echo "Analyzing impact of changed files..."
+          echo "Analyzing impact of K8s infrastructure changes..."
 
           # JSON 배열을 bash 배열로 변환
           readarray -t files < <(echo "${CHANGED_FILES}" | jq -r '.[]')
@@ -76,61 +75,42 @@ jobs:
             echo "  Checking: ${file}"
 
             case "${file}" in
-              # 모듈이나 공통 파일 변경 → 모든 스택 plan
-              terraform/modules/*|terraform/infrastructure/common/*|terraform/*.tf|terraform/*.tfvars|terraform/.terraform.lock.hcl)
-                echo "    → Module or common file - will plan all stacks"
+              # 모듈 변경 → 모든 K8s 스택 plan
+              terraform/modules/*)
+                echo "    → Module changed - will plan all K8s stacks"
                 plan_all=true
                 break
                 ;;
-              # 각 스택별 파일 변경
-              terraform/infrastructure/nonprod/dev/*)
-                stacks_map["nonprod/dev"]=1
-                echo "    → Affects: nonprod/dev"
-                ;;
-              terraform/infrastructure/nonprod/staging/*)
-                stacks_map["nonprod/staging"]=1
-                echo "    → Affects: nonprod/staging"
-                ;;
-              terraform/infrastructure/nonprod/network/*)
-                stacks_map["nonprod/network"]=1
-                echo "    → Affects: nonprod/network"
-                ;;
-              terraform/infrastructure/nonprod/monitoring/*)
-                stacks_map["nonprod/monitoring"]=1
-                echo "    → Affects: nonprod/monitoring"
-                ;;
+              # NonProd K8s 스택
               terraform/infrastructure/nonprod-k8s/network/*)
                 stacks_map["nonprod-k8s/network"]=1
                 echo "    → Affects: nonprod-k8s/network"
                 ;;
-              terraform/infrastructure/prod/app/*)
-                stacks_map["prod/app"]=1
-                echo "    → Affects: prod/app"
+              terraform/infrastructure/nonprod-k8s/app/*)
+                stacks_map["nonprod-k8s/app"]=1
+                echo "    → Affects: nonprod-k8s/app"
                 ;;
-              terraform/infrastructure/prod/network/*)
-                stacks_map["prod/network"]=1
-                echo "    → Affects: prod/network"
+              # Prod K8s 스택
+              terraform/infrastructure/prod-k8s/network/*)
+                stacks_map["prod-k8s/network"]=1
+                echo "    → Affects: prod-k8s/network"
                 ;;
-              terraform/infrastructure/prod/monitoring/*)
-                stacks_map["prod/monitoring"]=1
-                echo "    → Affects: prod/monitoring"
+              terraform/infrastructure/prod-k8s/app/*)
+                stacks_map["prod-k8s/app"]=1
+                echo "    → Affects: prod-k8s/app"
                 ;;
             esac
           done
 
-          # 모듈 변경 시 모든 스택 추가
+          # 모듈 변경 시 모든 K8s 스택 추가
           if [[ "${plan_all}" == "true" ]]; then
             echo ""
-            echo "Module/common changes detected - adding all stacks"
+            echo "Module changes detected - adding all K8s stacks"
             stacks_map=(
-              ["nonprod/dev"]=1
-              ["nonprod/staging"]=1
-              ["nonprod/network"]=1
-              ["nonprod/monitoring"]=1
               ["nonprod-k8s/network"]=1
-              ["prod/app"]=1
-              ["prod/network"]=1
-              ["prod/monitoring"]=1
+              ["nonprod-k8s/app"]=1
+              ["prod-k8s/network"]=1
+              ["prod-k8s/app"]=1
             )
           fi
 
@@ -149,7 +129,7 @@ jobs:
 
           echo "affected_stacks=${stacks_json}" >> "${GITHUB_OUTPUT}"
           echo ""
-          echo "Affected stacks: ${stacks_json}"
+          echo "Affected K8s stacks: ${stacks_json}"
 
       - name: Terraform 스택 경로 생성
         id: resolve
@@ -159,7 +139,7 @@ jobs:
         run: |
           # 스택이 없으면 빈 배열 반환
           if [[ "${AFFECTED_STACKS}" == "[]" ]]; then
-            echo "✅ No terraform infrastructure changes detected"
+            echo "✅ No K8s infrastructure changes detected"
             echo 'stack_json=[]' >> "${GITHUB_OUTPUT}"
             echo 'target_name=none' >> "${GITHUB_OUTPUT}"
             exit 0
@@ -185,11 +165,11 @@ jobs:
           echo "target_name=${stacks[0]}" >> "${GITHUB_OUTPUT}"
 
           echo ""
-          echo "📋 Will plan the following stacks:"
+          echo "📋 Will plan the following K8s stacks:"
           echo "${AFFECTED_STACKS}" | jq -r '.[]' | sed 's/^/  - /'
 
   terraform-plan:
-    name: Plan (${{ matrix.stack }})
+    name: K8s Plan (${{ matrix.stack }})
     needs: resolve-target
     if: ${{ needs.resolve-target.outputs.stack_json != '[]' }}
     runs-on: ubuntu-22.04
@@ -221,7 +201,7 @@ jobs:
           set +e  # terraform plan이 변경사항이 있으면 exit code 2를 반환하므로 계속 진행
 
           # Plan 실행 및 출력 저장
-          bash .github/scripts/run-terraform-plan.sh "${{ matrix.stack }}" > plan_output.txt 2>&1
+          bash .github/scripts/run-terraform-k8s-plan.sh "${{ matrix.stack }}" > plan_output.txt 2>&1
           exit_code=$?
 
           # 출력을 화면에 표시
@@ -248,7 +228,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: terraform-plan-${{ steps.plan.outputs.artifact_name }}-${{ github.run_number }}
+          name: k8s-plan-${{ steps.plan.outputs.artifact_name }}-${{ github.run_number }}
           path: plan-results/
           retention-days: 5
 
@@ -277,14 +257,14 @@ jobs:
             const statusEmoji = planStatus === 'success' ? '✅' : '❌';
 
             const body = [
-              `## ${statusEmoji} Terraform Plan: \`${stackName}\``,
+              `## ${statusEmoji} Terraform K8s Plan: \`${stackName}\``,
               '',
               `**Status:** ${planStatus}`,
               `**Commit:** ${context.sha.substring(0, 7)}`,
               `**Workflow Run:** [#${context.runNumber}](${context.payload.repository.html_url}/actions/runs/${context.runId})`,
               '',
               '<details>',
-              '<summary>📋 Show Plan Output</summary>',
+              '<summary>📋 Show K8s Plan Output</summary>',
               '',
               '```terraform',
               planOutput,
@@ -304,7 +284,7 @@ jobs:
 
             const botComment = comments.find(comment =>
               comment.user.type === 'Bot' &&
-              comment.body.includes(`Terraform Plan: \`${stackName}\``)
+              comment.body.includes(`Terraform K8s Plan: \`${stackName}\``)
             );
 
             if (botComment) {
