@@ -4,7 +4,7 @@
 
 # ALB 보안그룹 (Public tier)
 resource "aws_security_group" "alb" {
-  name        = "${var.project_name}-v2-${var.environment}-alb-sg"
+  name        = "${var.project_name}-${var.infra_version}-${var.environment}-alb-sg"
   description = "Security group for Application Load Balancer"
   vpc_id      = aws_vpc.this.id
 
@@ -39,7 +39,7 @@ resource "aws_security_group" "alb" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.project_name}-v2-${var.environment}-alb-sg"
+      Name = "${var.project_name}-${var.infra_version}-${var.environment}-alb-sg"
     }
   )
 
@@ -53,7 +53,7 @@ resource "aws_security_group" "alb" {
 # ============================================================================
 
 resource "aws_security_group" "fe" {
-  name        = "${var.project_name}-v2-${var.environment}-fe-sg"
+  name        = "${var.project_name}-${var.infra_version}-${var.environment}-fe-sg"
   description = "Security group for Frontend (Next.js)"
   vpc_id      = aws_vpc.this.id
 
@@ -73,14 +73,14 @@ resource "aws_security_group" "fe" {
   }
 
   # 태그
-  tags = merge(var.common_tags, { Name = "${var.project_name}-v2-${var.environment}-fe-sg" })
+  tags = merge(var.common_tags, { Name = "${var.project_name}-${var.infra_version}-${var.environment}-fe-sg" })
 }
 
 # ============================================================================
 # 백엔드
 # ============================================================================
 resource "aws_security_group" "be" {
-  name        = "${var.project_name}-v2-${var.environment}-be-sg"
+  name        = "${var.project_name}-${var.infra_version}-${var.environment}-be-sg"
   description = "Security group for Backend (Spring Boot)"
   vpc_id      = aws_vpc.this.id
 
@@ -101,14 +101,14 @@ resource "aws_security_group" "be" {
   }
 
   # 태그
-  tags = merge(var.common_tags, { Name = "${var.project_name}-v2-${var.environment}-be-sg" })
+  tags = merge(var.common_tags, { Name = "${var.project_name}-${var.infra_version}-${var.environment}-be-sg" })
 }
 
 # ============================================================================
 # AI
 # ============================================================================
 resource "aws_security_group" "ai" {
-  name        = "${var.project_name}-v2-${var.environment}-ai-sg"
+  name        = "${var.project_name}-${var.infra_version}-${var.environment}-ai-sg"
   description = "Security group for AI service (FastAPI)"
   vpc_id      = aws_vpc.this.id
 
@@ -129,7 +129,7 @@ resource "aws_security_group" "ai" {
   }
 
   # 태그
-  tags = merge(var.common_tags, { Name = "${var.project_name}-v2-${var.environment}-ai-sg" })
+  tags = merge(var.common_tags, { Name = "${var.project_name}-${var.infra_version}-${var.environment}-ai-sg" })
 }
 
 # ============================================================================
@@ -137,7 +137,7 @@ resource "aws_security_group" "ai" {
 # ============================================================================
 resource "aws_security_group" "database" {
   count       = length(var.database_subnet_cidrs) > 0 ? 1 : 0
-  name        = "${var.project_name}-v2-${var.environment}-db-sg"
+  name        = "${var.project_name}-${var.infra_version}-${var.environment}-db-sg"
   description = "Security group for database tier"
   vpc_id      = aws_vpc.this.id
 
@@ -163,7 +163,7 @@ resource "aws_security_group" "database" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.project_name}-v2-${var.environment}-db-sg"
+      Name = "${var.project_name}-${var.infra_version}-${var.environment}-db-sg"
     }
   )
 
@@ -176,7 +176,7 @@ resource "aws_security_group" "database" {
 # Mock 서버 (Keycloak + WireMock)
 # ============================================================================
 resource "aws_security_group" "mock" {
-  name        = "${var.project_name}-v2-${var.environment}-mock-sg"
+  name        = "${var.project_name}-${var.infra_version}-${var.environment}-mock-sg"
   description = "Security group for Mock servers (Keycloak, WireMock)"
   vpc_id      = aws_vpc.this.id
 
@@ -225,7 +225,7 @@ resource "aws_security_group" "mock" {
 # VPC Endpoints (Interface Endpoints용)
 # ============================================================================
 resource "aws_security_group" "vpc_endpoints" {
-  name        = "${var.project_name}-v2-${var.environment}-vpc-interface-endpoints-sg"
+  name        = "${var.project_name}-${var.infra_version}-${var.environment}-vpc-interface-endpoints-sg"
   description = "Security group for VPC Interface Endpoints (ECR, etc.)"
   vpc_id      = aws_vpc.this.id
 
@@ -251,7 +251,7 @@ resource "aws_security_group" "vpc_endpoints" {
   tags = merge(
     var.common_tags,
     {
-      Name = "${var.project_name}-v2-${var.environment}-vpc-interface-endpoints-sg"
+      Name = "${var.project_name}-${var.infra_version}-${var.environment}-vpc-interface-endpoints-sg"
     }
   )
 
