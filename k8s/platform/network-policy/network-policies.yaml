@@ -153,13 +153,13 @@ spec:
           protocol: TCP
     - to:
         - ipBlock:
-            cidr: 172.16.20.0/24   # DB 서브넷
+            cidr: 172.16.10.81/32  # DB EC2 (PostgreSQL)
       ports:
         - port: 5432
           protocol: TCP
     - to:
         - ipBlock:
-            cidr: 172.16.0.0/16    # Redis (VPC 내부)
+            cidr: 172.16.10.81/32  # DB EC2 (Redis)
       ports:
         - port: 6379
           protocol: TCP
@@ -206,7 +206,7 @@ spec:
   egress:
     - to:
         - ipBlock:
-            cidr: 172.16.20.0/24   # DB 서브넷
+            cidr: 172.16.10.81/32  # DB EC2 (PostgreSQL)
       ports:
         - port: 5432
           protocol: TCP
@@ -314,13 +314,13 @@ spec:
           protocol: TCP
     - to:
         - ipBlock:
-            cidr: 172.16.20.0/24
+            cidr: 172.16.10.81/32  # DB EC2 (PostgreSQL)
       ports:
         - port: 5432
           protocol: TCP
     - to:
         - ipBlock:
-            cidr: 172.16.0.0/16
+            cidr: 172.16.10.81/32  # DB EC2 (Redis)
       ports:
         - port: 6379
           protocol: TCP
@@ -364,7 +364,7 @@ spec:
   egress:
     - to:
         - ipBlock:
-            cidr: 172.16.20.0/24
+            cidr: 172.16.10.81/32  # DB EC2 (PostgreSQL)
       ports:
         - port: 5432
           protocol: TCP
