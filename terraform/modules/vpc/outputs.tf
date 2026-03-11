@@ -118,60 +118,6 @@ output "alb_security_group_name" {
   value       = aws_security_group.alb.name
 }
 
-# 보안 그룹 - FE
-output "fe_security_group_id" {
-  description = "App security group ID"
-  value       = aws_security_group.fe.id
-}
-
-output "fe_security_group_name" {
-  description = "App security group name"
-  value       = aws_security_group.fe.name
-}
-
-# 보안 그룹 - BE
-output "be_security_group_id" {
-  description = "App security group ID"
-  value       = aws_security_group.be.id
-}
-
-output "be_security_group_name" {
-  description = "App security group name"
-  value       = aws_security_group.be.name
-}
-
-# 보안 그룹 - AI
-output "ai_security_group_id" {
-  description = "App security group ID"
-  value       = aws_security_group.ai.id
-}
-
-output "ai_security_group_name" {
-  description = "App security group name"
-  value       = aws_security_group.ai.name
-}
-
-# 보안 그룹 - Database
-output "database_security_group_id" {
-  description = "Database security group ID"
-  value       = length(aws_security_group.database) > 0 ? aws_security_group.database[0].id : null
-}
-
-output "database_security_group_name" {
-  description = "Database security group name"
-  value       = length(aws_security_group.database) > 0 ? aws_security_group.database[0].name : null
-}
-
-# 보안 그룹 - Mock
-output "mock_security_group_id" {
-  description = "Mock server security group ID"
-  value       = aws_security_group.mock.id
-}
-
-output "mock_security_group_name" {
-  description = "Mock server security group name"
-  value       = aws_security_group.mock.name
-}
 
 # ============================================================================
 # VPC 엔드포인트
