@@ -1,0 +1,385 @@
+---
+# Devths V3 nonprod NetworkPolicy
+# 네임스페이스: dev-app (FE+BE+AI 공존), stg-app (동일 구조)
+# Pod 레이블 기준: app: frontend / app: backend / app: ai
+#
+# 트래픽 흐름:
+#   인터넷 → NLB → nginx-gateway → frontend/backend/ai Pod
+#   frontend → backend (8080)
+#   backend  → ai (8000), DB(5432), Redis(6379)
+#   ai       → DB(5432), 외부 AI API(443)
+
+# ══════════════════════════════════════════
+# nginx-gateway 네임스페이스
+# ══════════════════════════════════════════
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: nginx-gateway
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-nginx-gateway
+  namespace: nginx-gateway
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - ports:
+        - port: 80
+          protocol: TCP
+        - port: 443
+          protocol: TCP
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: cert-manager
+  egress:
+    - to:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - dev-app
+                  - stg-app
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+
+---
+# ══════════════════════════════════════════
+# dev-app 네임스페이스 (개발 환경)
+# ══════════════════════════════════════════
+
+# 기본 deny-all
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: dev-app
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# Frontend Pod 정책
+# ingress: nginx-gateway에서만
+# egress: backend Pod로만 + DNS + AWS API
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend
+  namespace: dev-app
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: nginx-gateway
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: backend
+      ports:
+        - port: 8080
+          protocol: TCP
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 172.16.0.0/16
+              - 192.168.0.0/16
+              - 10.0.0.0/8
+      ports:
+        - port: 443
+          protocol: TCP
+---
+# Backend Pod 정책
+# ingress: nginx-gateway 또는 frontend Pod에서
+# egress: ai Pod + DB(5432) + Redis(6379) + DNS + AWS API
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend
+  namespace: dev-app
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: nginx-gateway
+    - from:
+        - podSelector:
+            matchLabels:
+              app: frontend
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: ai
+      ports:
+        - port: 8000
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 172.16.20.0/24   # DB 서브넷
+      ports:
+        - port: 5432
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 172.16.0.0/16    # Redis (VPC 내부)
+      ports:
+        - port: 6379
+          protocol: TCP
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 172.16.0.0/16
+              - 192.168.0.0/16
+              - 10.0.0.0/8
+      ports:
+        - port: 443
+          protocol: TCP
+---
+# AI Pod 정책
+# ingress: nginx-gateway 또는 backend Pod에서
+# egress: DB(5432) + 외부 AI API(443) + DNS
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ai
+  namespace: dev-app
+spec:
+  podSelector:
+    matchLabels:
+      app: ai
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: nginx-gateway
+    - from:
+        - podSelector:
+            matchLabels:
+              app: backend
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 172.16.20.0/24   # DB 서브넷
+      ports:
+        - port: 5432
+          protocol: TCP
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 172.16.0.0/16
+              - 192.168.0.0/16
+              - 10.0.0.0/8
+      ports:
+        - port: 443
+          protocol: TCP
+
+---
+# ══════════════════════════════════════════
+# stg-app 네임스페이스 (스테이징 환경)
+# dev-app과 동일한 구조
+# ══════════════════════════════════════════
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: stg-app
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend
+  namespace: stg-app
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: nginx-gateway
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: backend
+      ports:
+        - port: 8080
+          protocol: TCP
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 172.16.0.0/16
+              - 192.168.0.0/16
+              - 10.0.0.0/8
+      ports:
+        - port: 443
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend
+  namespace: stg-app
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: nginx-gateway
+    - from:
+        - podSelector:
+            matchLabels:
+              app: frontend
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: ai
+      ports:
+        - port: 8000
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 172.16.20.0/24
+      ports:
+        - port: 5432
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 172.16.0.0/16
+      ports:
+        - port: 6379
+          protocol: TCP
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 172.16.0.0/16
+              - 192.168.0.0/16
+              - 10.0.0.0/8
+      ports:
+        - port: 443
+          protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ai
+  namespace: stg-app
+spec:
+  podSelector:
+    matchLabels:
+      app: ai
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: nginx-gateway
+    - from:
+        - podSelector:
+            matchLabels:
+              app: backend
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 172.16.20.0/24
+      ports:
+        - port: 5432
+          protocol: TCP
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 172.16.0.0/16
+              - 192.168.0.0/16
+              - 10.0.0.0/8
+      ports:
+        - port: 443
+          protocol: TCP
