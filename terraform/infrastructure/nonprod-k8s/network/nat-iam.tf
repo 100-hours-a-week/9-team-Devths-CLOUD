@@ -8,13 +8,18 @@
 #
 # ============================================================================
 
-# SSM 로그 설정 - 콘솔에서 생성된 실제 값 사용
+# ============================================================================
+# local
+# ============================================================================
 locals {
   ssm_cloudwatch_log_group_arn = "arn:aws:logs:ap-northeast-2:174678835309:log-group:SSMSessionMangerLogGroup"
-  ssm_log_bucket_arn          = "arn:aws:s3:::devths-log-ssm"
+  ssm_log_bucket_arn           = "arn:aws:s3:::devths-log-ssm"
 }
 
-# NAT Instance IAM 역할
+# ============================================================================
+# NAT IAM
+# ============================================================================
+
 resource "aws_iam_role" "nat_instance" {
   name = "${title(var.project_name)}-NAT-Instance-NonProd"
 
@@ -73,7 +78,10 @@ resource "aws_iam_policy" "nat_cloudwatch_metrics" {
   )
 }
 
-# SSM Session Manager 로그 권한 (CloudWatch Logs)
+# ============================================================================
+# SSM 세션 로그 IAM
+# ============================================================================
+
 resource "aws_iam_role_policy" "nat_ssm_logs" {
   name = "${title(var.project_name)}-NAT-SSM-Logs-NonProd"
   role = aws_iam_role.nat_instance.id
