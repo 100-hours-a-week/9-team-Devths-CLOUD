@@ -1,0 +1,33 @@
+---
+# dev 환경 TLS 인증서 (dev.devths.com, api.dev.devths.com)
+# Let's Encrypt Staging으로 먼저 검증 후 letsencrypt-prod로 변경
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: devths-tls-dev
+  namespace: nginx-gateway
+spec:
+  secretName: devths-tls-dev
+  issuerRef:
+    name: letsencrypt-staging   # 검증 완료 후 letsencrypt-prod로 변경
+    kind: ClusterIssuer
+  dnsNames:
+    - dev.devths.com
+    - api.dev.devths.com
+    - ai.dev.devths.com         # AI 서비스 추가 시 사용
+---
+# stg 환경 TLS 인증서 (stg.devths.com, api.stg.devths.com)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: devths-tls-stg
+  namespace: nginx-gateway
+spec:
+  secretName: devths-tls-stg
+  issuerRef:
+    name: letsencrypt-staging   # 검증 완료 후 letsencrypt-prod로 변경
+    kind: ClusterIssuer
+  dnsNames:
+    - stg.devths.com
+    - api.stg.devths.com
+    - ai.stg.devths.com         # AI 서비스 추가 시 사용

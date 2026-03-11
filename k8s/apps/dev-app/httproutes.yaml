@@ -1,0 +1,61 @@
+---
+# dev-app HTTPRoute (dev.devths.com)
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: frontend-dev
+  namespace: dev-app
+spec:
+  parentRefs:
+    - name: devths-gateway
+      namespace: nginx-gateway
+  hostnames:
+    - "dev.devths.com"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: frontend-dev-service
+          port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: backend-dev
+  namespace: dev-app
+spec:
+  parentRefs:
+    - name: devths-gateway
+      namespace: nginx-gateway
+  hostnames:
+    - "api.dev.devths.com"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: backend-dev-service
+          port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ai-dev
+  namespace: dev-app
+spec:
+  parentRefs:
+    - name: devths-gateway
+      namespace: nginx-gateway
+  hostnames:
+    - "ai.dev.devths.com"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: ai-dev-service
+          port: 80
