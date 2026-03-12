@@ -163,6 +163,12 @@ spec:
       ports:
         - port: 6379
           protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 172.16.10.81/32  # DB EC2 (RabbitMQ)
+      ports:
+        - port: 5672
+          protocol: TCP
     - ports:
         - port: 53
           protocol: UDP
@@ -323,6 +329,12 @@ spec:
             cidr: 172.16.10.81/32  # DB EC2 (Redis)
       ports:
         - port: 6379
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 172.16.10.81/32  # DB EC2 (RabbitMQ)
+      ports:
+        - port: 5672
           protocol: TCP
     - ports:
         - port: 53
