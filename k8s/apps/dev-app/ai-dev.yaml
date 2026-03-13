@@ -39,7 +39,6 @@ spec:
         app: ai
 
     spec:
-
       containers:
         - name: devths-ai
           image: ${ECR_IMAGE}
@@ -49,3 +48,10 @@ spec:
             - secretRef:
                 # Secret 안의 모든 키를 환경변수로 자동 주입
                 name: ai-secret-kv
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi" # 이 부분을 현재 설정보다 높여보세요.
+              cpu: "1000m"
