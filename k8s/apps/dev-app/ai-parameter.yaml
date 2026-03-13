@@ -1,0 +1,29 @@
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+
+# 스크릿 정보
+metadata:
+  name: ai-all-secrets
+  namespace: dev-app
+spec:
+  # 1분마다 AWS를 체크해서 바뀐 게 있으면 자동 갱신!
+  refreshInterval: 1m
+  secretStoreRef:
+    name: ssm-store
+    kind: SecretStore
+
+  target:
+    name: ai-secret-kv
+
+  # 파라미터 스토어에서 가져오는 것
+  dataFrom:
+    - find:
+        path: /Dev/AI
+        # 해당 경로 아래의 모든 이름을 매칭
+        name:
+          regexp: ".*"
+      # /Dev/BE/ 부분을 삭제하고 순수 변수명만 남깁니다.
+      rewrite:
+        - regexp:
+            source: "^/Dev/AI/(.*)"
+            target: "$1"
