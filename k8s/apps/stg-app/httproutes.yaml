@@ -30,7 +30,7 @@ spec:
     - name: devths-gateway
       namespace: nginx-gateway
   hostnames:
-    - "api.stg.devths.com"
+    - "stg.api.devths.com"
   rules:
     - matches:
         - path:
@@ -50,7 +50,7 @@ spec:
     - name: devths-gateway
       namespace: nginx-gateway
   hostnames:
-    - "ai.stg.devths.com"
+    - "stg.ai.devths.com"
   rules:
     - matches:
         - path:
