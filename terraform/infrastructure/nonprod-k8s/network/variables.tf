@@ -61,8 +61,6 @@ variable "vpc_cidr" {
 # 서브넷
 # ============================================================================
 
-
-
 # 퍼블릭 서브넷 CIDR
 variable "public_subnet_cidrs" {
   description = "Public subnet CIDR blocks"
@@ -110,6 +108,34 @@ variable "nat_instance_type" {
   description = "Instance type for NAT instance (t3.nano is sufficient for nonprod)"
   type        = string
   default     = "t3.nano"
+}
+
+# ============================================================================
+# 쿠버네티스 보안그룹
+# ============================================================================
+
+variable "k8s_api_server_allowed_cidrs" {
+  description = "Additional CIDRs that may reach the Kubernetes API server on port 6443"
+  type        = list(string)
+  default     = []
+}
+
+variable "k8s_ingress_allowed_cidrs" {
+  description = "CIDRs allowed to reach ports 80 and 443 on Kubernetes nodes"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
+variable "k8s_nodeport_allowed_cidrs" {
+  description = "CIDRs allowed to reach the Kubernetes NodePort range"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
+variable "calico_overlay_udp_port" {
+  description = "UDP port used for Calico VXLAN overlay traffic; Calico VXLAN uses 4789"
+  type        = number
+  default     = 4789
 }
 
 # ============================================================================

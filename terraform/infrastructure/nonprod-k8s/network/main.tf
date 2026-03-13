@@ -52,10 +52,10 @@ module "vpc" {
   availability_zones    = var.availability_zones
 
   # NAT 및 엔드포인트 설정
-  nat_type             = var.nat_type
-  single_nat           = var.single_nat
-  nat_instance_type    = var.nat_instance_type
-  nat_key_name         = "devths-non-prod"
+  nat_type                      = var.nat_type
+  single_nat                    = var.single_nat
+  nat_instance_type             = var.nat_instance_type
+  nat_key_name                  = "devths-non-prod"
   nat_iam_instance_profile_name = aws_iam_instance_profile.nat_instance.name
 
   # SSH 연결
