@@ -153,6 +153,18 @@ spec:
           protocol: TCP
     - to:
         - ipBlock:
+            cidr: 192.168.0.0/16  # DB RDS (PostgreSQL)
+      ports:
+        - port: 5432
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 192.168.0.0/16  # DB Elasticache (Redis)
+      ports:
+        - port: 6379
+          protocol: TCP
+    - to:
+        - ipBlock:
             cidr: 172.16.10.81/32  # DB EC2 (PostgreSQL)
       ports:
         - port: 5432
@@ -216,6 +228,12 @@ spec:
       ports:
         - port: 5432
           protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 192.168.0.0/16  # DB Elasticache (Redis)
+      ports:
+        - port: 6379
+          protocol: TCP
     - ports:
         - port: 53
           protocol: UDP
@@ -277,6 +295,18 @@ spec:
         - port: 53
           protocol: UDP
         - port: 53
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 192.168.0.0/16  # DB RDS (PostgreSQL)
+      ports:
+        - port: 5432
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 192.168.0.0/16  # DB Elasticache (Redis)
+      ports:
+        - port: 6379
           protocol: TCP
     - to:
         - ipBlock:
@@ -379,6 +409,12 @@ spec:
             cidr: 172.16.10.81/32  # DB EC2 (PostgreSQL)
       ports:
         - port: 5432
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 192.168.0.0/16  # DB Elasticache (Redis)
+      ports:
+        - port: 6379
           protocol: TCP
     - ports:
         - port: 53
