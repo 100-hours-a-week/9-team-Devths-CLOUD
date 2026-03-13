@@ -1,85 +1,101 @@
-# ============================================================================
-# 시작 템플릿 Outputs
-# ============================================================================
+# ==============================================================================
+# Launch Template Outputs
+# ==============================================================================
 
 output "launch_template_id" {
-  description = "시작 템플릿 ID"
+  description = "ID of the launch template"
   value       = aws_launch_template.this.id
 }
 
-output "launch_template_name" {
-  description = "시작 템플릿 name"
-  value       = aws_launch_template.this.name
+output "launch_template_arn" {
+  description = "ARN of the launch template"
+  value       = aws_launch_template.this.arn
 }
 
 output "launch_template_latest_version" {
-  description = "시작 템플릿 latest version"
+  description = "Latest version of the launch template"
   value       = aws_launch_template.this.latest_version
 }
 
-# ============================================================================
-# Auto Scaling Group Outputs
-# ============================================================================
+output "launch_template_name" {
+  description = "Name of the launch template"
+  value       = aws_launch_template.this.name
+}
 
+# ==============================================================================
+# Auto Scaling Group Outputs
+# ==============================================================================
+
+output "autoscaling_group_id" {
+  description = "ID of the Auto Scaling Group"
+  value       = aws_autoscaling_group.this.id
+}
+
+output "autoscaling_group_name" {
+  description = "Name of the Auto Scaling Group"
+  value       = aws_autoscaling_group.this.name
+}
+
+output "autoscaling_group_arn" {
+  description = "ARN of the Auto Scaling Group"
+  value       = aws_autoscaling_group.this.arn
+}
+
+# Aliases for backwards compatibility
 output "asg_id" {
-  description = "Auto Scaling Group ID"
+  description = "ID of the Auto Scaling Group (alias)"
   value       = aws_autoscaling_group.this.id
 }
 
 output "asg_name" {
-  description = "Auto Scaling Group name"
+  description = "Name of the Auto Scaling Group (alias)"
   value       = aws_autoscaling_group.this.name
 }
 
 output "asg_arn" {
-  description = "Auto Scaling Group ARN"
+  description = "ARN of the Auto Scaling Group (alias)"
   value       = aws_autoscaling_group.this.arn
 }
 
-output "asg_min_size" {
-  description = "Auto Scaling Group minimum size"
+output "autoscaling_group_min_size" {
+  description = "Minimum size of the Auto Scaling Group"
   value       = aws_autoscaling_group.this.min_size
 }
 
-output "asg_max_size" {
-  description = "Auto Scaling Group maximum size"
+output "autoscaling_group_max_size" {
+  description = "Maximum size of the Auto Scaling Group"
   value       = aws_autoscaling_group.this.max_size
 }
 
-output "asg_desired_capacity" {
-  description = "Auto Scaling Group desired capacity"
+output "autoscaling_group_desired_capacity" {
+  description = "Desired capacity of the Auto Scaling Group"
   value       = aws_autoscaling_group.this.desired_capacity
 }
 
-# ============================================================================
+# ==============================================================================
 # Auto Scaling Policy Outputs
-# ============================================================================
+# ==============================================================================
 
-output "cpu_tracking_policy_arn" {
-  description = "ARN of the CPU target tracking scaling policy"
-  value       = var.enable_autoscaling ? aws_autoscaling_policy.cpu_tracking[0].arn : null
+output "scale_up_policy_arn" {
+  description = "ARN of the scale up policy"
+  value       = var.enable_autoscaling ? aws_autoscaling_policy.scale_up[0].arn : null
 }
 
-output "scale_out_policy_arn" {
-  description = "ARN of the scale out policy"
-  value       = var.enable_autoscaling ? aws_autoscaling_policy.scale_out[0].arn : null
+output "scale_down_policy_arn" {
+  description = "ARN of the scale down policy"
+  value       = var.enable_autoscaling ? aws_autoscaling_policy.scale_down[0].arn : null
 }
 
-output "scale_in_policy_arn" {
-  description = "ARN of the scale in policy"
-  value       = var.enable_autoscaling ? aws_autoscaling_policy.scale_in[0].arn : null
-}
-
-# ============================================================================
+# ==============================================================================
 # CloudWatch Alarm Outputs
-# ============================================================================
+# ==============================================================================
 
-output "cpu_high_alarm_arn" {
-  description = "ARN of the CPU high CloudWatch alarm"
-  value       = var.enable_autoscaling ? aws_cloudwatch_metric_alarm.cpu_high[0].arn : null
+output "high_cpu_alarm_arn" {
+  description = "ARN of the high CPU CloudWatch alarm"
+  value       = var.enable_autoscaling ? aws_cloudwatch_metric_alarm.high_cpu[0].arn : null
 }
 
-output "cpu_low_alarm_arn" {
-  description = "ARN of the CPU low CloudWatch alarm"
-  value       = var.enable_autoscaling ? aws_cloudwatch_metric_alarm.cpu_low[0].arn : null
+output "low_cpu_alarm_arn" {
+  description = "ARN of the low CPU CloudWatch alarm"
+  value       = var.enable_autoscaling ? aws_cloudwatch_metric_alarm.low_cpu[0].arn : null
 }
