@@ -1,0 +1,14 @@
+apiVersion: v2
+name: devths-platform
+
+# 설명
+description: Devths Platform Infrastructure Helm Chart (cert-manager, nginx-gateway, network-policy)
+
+# 타입
+type: application
+
+# 헬름차트 버전
+version: 1.0.0
+
+# 애플리케이션 버전
+appVersion: "2.0.0"

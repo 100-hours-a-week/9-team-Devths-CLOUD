@@ -1,0 +1,97 @@
+# NonProd 환경별 values (Dev + Staging + ArgoCD)
+
+certManager:
+  enabled: true
+  acmeEmail: "your-email@example.com"  # 🔒 실제 이메일 주소로 변경
+  letsencrypt:
+    staging:
+      enabled: false  # 테스트 시 true, 검증 완료 후 false
+    production:
+      enabled: true
+
+gateway:
+  enabled: true
+  name: devths-gateway
+  namespace: nginx-gateway
+  gatewayClassName: nginx
+
+  http:
+    enabled: true
+    port: 80
+
+  listeners:
+    dev:
+      enabled: true
+      domains:
+        web: dev.your-domain.com      # 🔒 실제 도메인으로 변경
+        api: dev.api.your-domain.com  # 🔒 실제 도메인으로 변경
+        ai: dev.ai.your-domain.com    # 🔒 실제 도메인으로 변경
+      tlsSecretName: your-tls-dev
+
+    stg:
+      enabled: true
+      domains:
+        web: stg.your-domain.com      # 🔒 실제 도메인으로 변경
+        api: stg.api.your-domain.com  # 🔒 실제 도메인으로 변경
+        ai: stg.ai.your-domain.com    # 🔒 실제 도메인으로 변경
+      tlsSecretName: your-tls-stg
+
+    argo:
+      enabled: true
+      domain: nonprod.argo.your-domain.com  # 🔒 실제 도메인으로 변경
+      tlsSecretName: your-tls-argo
+
+networkPolicy:
+  enabled: true
+
+  database:
+    rds:
+      cidr: "192.168.0.0/16"  # 🔒 실제 RDS CIDR로 변경
+    ec2:
+      ip: "172.16.10.81/32"   # 🔒 실제 EC2 IP로 변경
+
+  ports:
+    frontend: 3000
+    backend: 8080
+    ai: 8000
+    postgres: 5432
+    redis: 6379
+    rabbitmq: 5672
+    dns: 53
+    http: 80
+    https: 443
+
+  namespaces:
+    - name: nginx-gateway
+      enabled: true
+    - name: dev-app
+      enabled: true
+    - name: stg-app
+      enabled: true
+
+certificates:
+  enabled: true
+  issuer: letsencrypt-prod  # 또는 letsencrypt-staging
+
+  certs:
+    - name: your-tls-dev
+      namespace: nginx-gateway
+      dnsNames:
+        - dev.your-domain.com      # 🔒 실제 도메인으로 변경
+        - dev.api.your-domain.com  # 🔒 실제 도메인으로 변경
+        - dev.ai.your-domain.com   # 🔒 실제 도메인으로 변경
+      enabled: true
+
+    - name: your-tls-stg
+      namespace: nginx-gateway
+      dnsNames:
+        - stg.your-domain.com      # 🔒 실제 도메인으로 변경
+        - stg.api.your-domain.com  # 🔒 실제 도메인으로 변경
+        - stg.ai.your-domain.com   # 🔒 실제 도메인으로 변경
+      enabled: true
+
+    - name: your-tls-argo
+      namespace: nginx-gateway
+      dnsNames:
+        - nonprod.argo.your-domain.com  # 🔒 실제 도메인으로 변경
+      enabled: true

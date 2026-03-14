@@ -50,3 +50,10 @@ terraform.rc
 # Optional: ignore plan files saved before destroying Terraform configuration
 # Uncomment the line below if you want to ignore planout files.
 # planout
+
+# Helm values files with sensitive data
+**/values-*.yaml
+!**/values-*.yaml.example
+
+# Kustomize overlay files with sensitive data (선택사항)
+# k8s-kustomize/overlays/**/secrets.yaml
