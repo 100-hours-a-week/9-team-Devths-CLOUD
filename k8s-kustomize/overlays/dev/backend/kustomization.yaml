@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# 네임 스페이스
+namespace: dev-app
+
+resources:
+  - ../../../base/backend
+  - httproute.yaml
+
+nameSuffix: -dev
+
+# 이미지 수정
+# TODO: 해당 부분은 CICD에서 ImageUpdator를 통해 직접 태그를 변경하도록 진행
+images:
+  - name: REPLACE_ME
+    newName: ${ECR_REGISTRY}/devths-backend
+    newTag: ${IMAGE_TAG}
+
+# overlays 수정내용 반영
+patches:
+  - path: deployment.yaml
+    target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: devths-backend

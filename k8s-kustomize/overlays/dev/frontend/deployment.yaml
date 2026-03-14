@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+
+# 기본 설정
+metadata:
+  name: devths-fe
+
+# 스펙
+spec:
+  # Replica 개수
+  replicas: 2
+
+  # 라벨
+  template:
+    metadata:
+      labels:
+        environment: dev
