@@ -1,0 +1,53 @@
+# ===================================
+# Dev AI
+# ===================================
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+# 기본 정보
+metadata:
+  name: ai-dev
+  namespace: argocd
+  # Finalizers를 설정하면 Application 삭제 시 관련 리소스도 함께 삭제됨
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+
+spec:
+  # ArgoCD 프로젝트 (기본 프로젝트 사용)
+  project: default
+
+  # Helm Chart 소스 설정
+  source:
+    # Git 리포지토리 URL (실제 URL로 교체 필요)
+    repoURL: https://github.com/100-hours-a-week/cloud-k8s.git
+    # Dev 환경은 develop 브랜치를 참조
+    targetRevision: develop
+    # Helm Chart 경로
+    path: k8s/charts/ai
+    # Helm 설정
+    helm:
+      # values 파일 목록 (순서대로 병합됨)
+      valueFiles:
+        - values.yaml
+        - values-dev.yaml
+
+  # 배포 대상 클러스터
+  destination:
+    # 클러스터 URL (현재 클러스터)
+    server: https://kubernetes.default.svc
+    # 네임스페이스
+    namespace: dev-app
+
+  # 동기화 정책
+  syncPolicy:
+    # 자동 동기화 설정
+    automated:
+      # Git에 변경사항이 있으면 자동으로 배포
+      prune: true
+      # 클러스터의 실제 상태가 Git과 다르면 자동으로 수정
+      selfHeal: true
+    # 동기화 옵션
+    syncOptions:
+      # 네임스페이스가 없으면 자동 생성
+      - CreateNamespace=true

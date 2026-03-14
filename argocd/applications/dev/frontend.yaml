@@ -1,0 +1,43 @@
+# ===================================
+# Dev Frontend
+# ===================================
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+# 기본 정보
+metadata:
+  name: frontend-dev
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+
+# 스펙
+spec:
+  project: default
+
+  # Kustomize 소스 설정
+  source:
+    # GitOps URL
+    repoURL: https://github.com/100-hours-a-week/cloud-k8s.git
+    # Dev 환경은 develop 브랜치를 참조
+    targetRevision: develop
+    # Kustomize 오버레이 경로
+    path: k8s-kustomize/overlays/dev/frontend
+
+  # 배포 대상 클러스터
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev-app
+
+  # 동기화 정책
+  syncPolicy:
+    # 자동 동기화 설정
+    automated:
+      # GitOps와 다르면, 삭제
+      prune: true
+      # GitOps와 다르면, 자동 수정
+      selfHeal: true
+    # 동기화 옵션
+    syncOptions:
+      - CreateNamespace=true
