@@ -1,0 +1,13 @@
+# nonprod 환경 ArgoCD 인증서 (nonorpod.argo.devths.com)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: devths-tls-argo
+  namespace: nginx-gateway
+spec:
+  secretName: devths-tls-argo
+  issuerRef:
+    name: letsencrypt-staging   # 검증 완료 후 letsencrypt-prod로 변경
+    kind: ClusterIssuer
+  dnsNames:
+    - nonprod.argo.devths.com
