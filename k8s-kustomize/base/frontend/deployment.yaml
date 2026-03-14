@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+
+# 기본 정보
+metadata:
+  name: devths-frontend
+
+# 스펙
+spec:
+  replicas: 4
+
+  # 셀렉터
+  selector:
+    matchLabels:
+      app: frontend
+
+  # 라벨
+  template:
+    metadata:
+      labels:
+        app: frontend
+
+    # 컨테이너 스펙
+    spec:
+      containers:
+        - name: devths-fe
+
+          # 수정될 이미지
+          image: REPLACE_ME
+          ports:
+            - containerPort: 3000
