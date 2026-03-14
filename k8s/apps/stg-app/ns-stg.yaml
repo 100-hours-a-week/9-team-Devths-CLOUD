@@ -1,5 +1,0 @@
-# Staging 네임스페이스
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: stg-app
