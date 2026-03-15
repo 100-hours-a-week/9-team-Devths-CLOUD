@@ -15,3 +15,17 @@ spec:
     metadata:
       labels:
         environment: dev
+
+    # 컨테이너 스펙
+    spec:
+      containers:
+        - name: devths-fe
+
+          # 자원 제한
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "400m"
