@@ -17,20 +17,14 @@ spec:
   # ArgoCD 프로젝트 (기본 프로젝트 사용)
   project: default
 
-  # Helm Chart 소스 설정
+  # Kustomize 소스 설정
   source:
     # Git 리포지토리 URL (실제 URL로 교체 필요)
     repoURL: https://github.com/100-hours-a-week/cloud-k8s.git
     # Dev 환경은 develop 브랜치를 참조
     targetRevision: develop
-    # Helm Chart 경로
-    path: k8s/charts/backend
-    # Helm 설정
-    helm:
-      # values 파일 목록 (순서대로 병합됨)
-      valueFiles:
-        - values.yaml
-        - values-dev.yaml
+    # Kustomize 오버레이 경로
+    path: k8s-kustomize/overlays/dev/backend
 
   # 배포 대상 클러스터
   destination:
