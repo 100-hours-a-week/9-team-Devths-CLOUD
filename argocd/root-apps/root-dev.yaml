@@ -21,9 +21,9 @@ spec:
   # GitOps 소 설정
   source:
     # Git 리포지토리 URL
-    repoURL: https://github.com/100-hours-a-week/cloud-k8s.git
-    # Dev 환경은 develop 브랜치를 참조
-    targetRevision: develop
+    repoURL: https://github.com/100-hours-a-week/9-team-Devths-CLOUD
+    # GitOps 기준 브랜치인 main을 참조
+    targetRevision: main
     # ArgoCD Application 매니페스트가 있는 디렉토리
     path: argocd/applications/dev
     # Directory 설정

@@ -11,6 +11,14 @@ metadata:
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  annotations:
+    # ArgoCD Image Updater 설정
+    argocd-image-updater.argoproj.io/image-list: frontend=174678835309.dkr.ecr.ap-northeast-2.amazonaws.com/devths/fe-dev
+    argocd-image-updater.argoproj.io/frontend.update-strategy: latest
+    argocd-image-updater.argoproj.io/frontend.allow-tags: regexp:^dev-.*$
+    argocd-image-updater.argoproj.io/frontend.kustomize.image-name: REPLACE_ME
+    argocd-image-updater.argoproj.io/write-back-method: git
+    argocd-image-updater.argoproj.io/git-branch: main
 
 # 스펙
 spec:
@@ -19,9 +27,9 @@ spec:
   # Kustomize 소스 설정
   source:
     # GitOps URL
-    repoURL: https://github.com/100-hours-a-week/cloud-k8s.git
-    # Dev 환경은 develop 브랜치를 참조
-    targetRevision: develop
+    repoURL: https://github.com/100-hours-a-week/9-team-Devths-CLOUD
+    # Main 브랜치 참조 (환경은 overlay로 구분)
+    targetRevision: main
     # Kustomize 오버레이 경로
     path: k8s-kustomize/overlays/dev/frontend
 
