@@ -1,0 +1,47 @@
+{
+  "task_id": "mask-abc123",
+  "status": "completed",
+  "progress": 100,
+  "result": {
+    "success": true,
+    "detected_pii": [
+      {
+        "type": "face",
+        "confidence": 0.95,
+        "bbox": [100, 150, 300, 400],
+        "page": 1
+      },
+      {
+        "type": "name",
+        "text": "홍길동",
+        "confidence": 0.98,
+        "position": [50, 80, 120, 95],
+        "page": 1
+      },
+      {
+        "type": "phone_number",
+        "text": "010-1234-5678",
+        "confidence": 0.92,
+        "position": [50, 120, 180, 135],
+        "page": 1
+      },
+      {
+        "type": "email_address",
+        "text": "hong@example.com",
+        "confidence": 0.96,
+        "position": [50, 140, 220, 155],
+        "page": 1
+      },
+      {
+        "type": "university",
+        "text": "한국대학교",
+        "confidence": 0.89,
+        "position": [50, 300, 150, 315],
+        "page": 1
+      }
+    ],
+    "masked_file_url": "https://s3.amazonaws.com/devths-masked/masked-document-abc123.pdf",
+    "original_file": "document.pdf",
+    "model_used": "gemini"
+  }
+}

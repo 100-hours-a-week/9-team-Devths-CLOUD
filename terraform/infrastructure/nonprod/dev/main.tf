@@ -1,0 +1,81 @@
+# ============================================================================
+# Dev 환경
+# ============================================================================
+#
+# 이 환경은 개발(Development) 환경을 위한 인프라를 정의합니다.
+#
+# 구성 파일:
+# - main.tf         : Terraform 설정, Provider, Remote State 참조
+# - ssm.tf          : SSM Parameter Store
+# - iam.tf          : IAM 역할 및 정책
+# - s3.tf           : S3 Storage 버킷
+# - ec2.tf          : EC2 인스턴스 (Frontend, Backend, AI)
+# - codedeploy.tf   : CodeDeploy 배포 그룹
+# - route53.tf      : Route53 DNS 레코드
+# - variables.tf    : 입력 변수
+# - outputs.tf      : 출력 값
+#
+# ============================================================================
+
+# 테라폼 설정
+terraform {
+  required_version = ">= 1.0"
+
+  backend "s3" {
+    bucket = "devths-state-terraform"
+    key    = "nonprod/dev/terraform.tfstate"
+    region = "ap-northeast-2"
+    encrypt        = true
+  }
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
+# 테라폼 설정 - 프로바이더
+provider "aws" {
+  region = var.aws_region
+}
+
+locals {
+  tf_state_bucket = var.tf_state_bucket
+  tf_state_region = var.tf_state_region
+}
+
+# ============================================================================
+# Remote State 참조
+# ============================================================================
+
+# 공유 VPC 참조
+data "terraform_remote_state" "vpc" {
+  backend = "s3"
+  config = {
+    bucket = local.tf_state_bucket
+    key    = "nonprod/network/terraform.tfstate"
+    region = local.tf_state_region
+  }
+}
+
+# 공유 S3 Artifact 버킷 참조
+data "terraform_remote_state" "s3" {
+  backend = "s3"
+  config = {
+    bucket = local.tf_state_bucket
+    key    = "nonprod/network/terraform.tfstate"
+    region = local.tf_state_region
+  }
+}
+
+# 공유 SSM Session Manager 로그 설정 참조
+data "terraform_remote_state" "ssm" {
+  backend = "s3"
+  config = {
+    bucket = local.tf_state_bucket
+    key    = "common/ssm/terraform.tfstate"
+    region = local.tf_state_region
+  }
+}

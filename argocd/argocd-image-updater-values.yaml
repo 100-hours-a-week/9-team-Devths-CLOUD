@@ -1,0 +1,74 @@
+# ArgoCD Image Updater 생성
+
+# 기본 설정
+fullnameOverride: argocd-image-updater
+
+config:
+  # ArgoCD 연결 설정
+  argocd:
+    # ArgoCD가 같은 클러스터에 있으므로 내부 서비스 사용
+    grpcWeb: false
+    serverAddress: "http://argocd-server.argocd.svc.cluster.local"
+    insecure: true
+    plaintext: true
+
+  # Git write-back 설정
+  git:
+    user: argocd-image-updater
+    email: argocd-image-updater@noreply.github.com
+
+  # ECR 레지스트리 설정
+  registries:
+    - name: ECR
+      prefix: 174678835309.dkr.ecr.ap-northeast-2.amazonaws.com
+      api_url: https://174678835309.dkr.ecr.ap-northeast-2.amazonaws.com
+      # EC2 인스턴스 프로파일 사용 (kubeadm 환경)
+      credentials: ext:/scripts/ecr-login.sh
+      default: true
+
+  # 로그 레벨
+  logLevel: info
+
+# ECR 인증 스크립트 (EC2 인스턴스 프로파일 사용)
+authScripts:
+  enabled: true
+  scripts:
+    ecr-login.sh: |
+      #!/bin/sh
+      # AWS CLI를 사용하여 ECR 로그인 토큰 생성
+      aws ecr get-login-password --region ap-northeast-2 2>/dev/null || echo ""
+
+# 리소스 제한
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+# 업데이트 주기
+image:
+  pullPolicy: IfNotPresent
+
+# ServiceAccount 설정
+serviceAccount:
+  create: true
+  name: argocd-image-updater
+
+# 환경 변수 주입
+extraEnv:
+  - name: ARGOCD_IMAGE_UPDATER_INTERVAL
+    value: "1m"
+
+  # GitHub Token 기반 인증
+  - name: GIT_HTTPS_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: argocd-image-updater-git-creds
+        key: username
+  - name: GIT_HTTPS_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: argocd-image-updater-git-creds
+        key: password

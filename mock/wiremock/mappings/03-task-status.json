@@ -1,0 +1,97 @@
+{
+  "mappings": [
+    {
+      "name": "Task Status - Processing",
+      "priority": 3,
+      "scenarioName": "task-lifecycle",
+      "requiredScenarioState": "Started",
+      "newScenarioState": "InProgress",
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/ai/task/([0-9]+)"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "task_id": "{{request.pathSegments.[2]}}",
+          "status": "processing",
+          "progress": 30,
+          "message": "텍스트 추출 중..."
+        },
+        "fixedDelayMilliseconds": 500,
+        "transformers": ["response-template"]
+      }
+    },
+    {
+      "name": "Task Status - Completed",
+      "priority": 3,
+      "scenarioName": "task-lifecycle",
+      "requiredScenarioState": "InProgress",
+      "newScenarioState": "Started",
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/ai/task/([0-9]+)"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "bodyFileName": "task-completed-response.json",
+        "fixedDelayMilliseconds": 5000,
+        "transformers": ["response-template"]
+      }
+    },
+    {
+      "name": "Task Status - Not Found (404)",
+      "priority": 1,
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/ai/task/999999"
+      },
+      "response": {
+        "status": 404,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "detail": {
+            "code": "TASK_NOT_FOUND",
+            "message": "작업을 찾을 수 없습니다: 999999"
+          }
+        }
+      }
+    },
+    {
+      "name": "Task Status - Failed",
+      "priority": 2,
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/ai/task/([0-9]+)",
+        "queryParameters": {
+          "fail": {
+            "equalTo": "true"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "task_id": "{{request.pathSegments.[2]}}",
+          "status": "failed",
+          "error": {
+            "code": "OCR_FAILED",
+            "message": "이미지에서 텍스트를 추출할 수 없습니다"
+          }
+        },
+        "transformers": ["response-template"]
+      }
+    }
+  ]
+}

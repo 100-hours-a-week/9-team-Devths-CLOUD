@@ -1,0 +1,22 @@
+{
+  "id": "chatcmpl-{{randomValue type='UUID'}}",
+  "object": "chat.completion",
+  "created": {{now epoch=true}},
+  "model": "gpt-4",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "안녕하세요! 저는 Devths 테스트용 AI 어시스턴트입니다. 무엇을 도와드릴까요?"
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 15,
+    "completion_tokens": 25,
+    "total_tokens": 40
+  },
+  "system_fingerprint": "fp_{{randomValue length=10 type='ALPHANUMERIC'}}"
+}

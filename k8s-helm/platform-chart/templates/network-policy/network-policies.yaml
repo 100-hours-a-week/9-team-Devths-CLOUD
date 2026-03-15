@@ -1,0 +1,257 @@
+{{- if .Values.networkPolicy.enabled }}
+---
+# Devths V3 nonprod NetworkPolicy
+# 네임스페이스: dev-app (FE+BE+AI 공존), stg-app (동일 구조)
+# Pod 레이블 기준: app: frontend / app: backend / app: ai
+#
+# 트래픽 흐름:
+#   인터넷 → NLB → nginx-gateway → frontend/backend/ai Pod
+#   frontend → backend ({{ .Values.networkPolicy.ports.backend }})
+#   backend  → ai ({{ .Values.networkPolicy.ports.ai }}), DB({{ .Values.networkPolicy.ports.postgres }}), Redis({{ .Values.networkPolicy.ports.redis }})
+#   ai       → DB({{ .Values.networkPolicy.ports.postgres }}), 외부 AI API({{ .Values.networkPolicy.ports.https }})
+
+# ══════════════════════════════════════════
+# nginx-gateway 네임스페이스
+# ══════════════════════════════════════════
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: nginx-gateway
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-nginx-gateway
+  namespace: nginx-gateway
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - ports:
+        - port: {{ .Values.networkPolicy.ports.http }}
+          protocol: TCP
+        - port: {{ .Values.networkPolicy.ports.https }}
+          protocol: TCP
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: cert-manager
+  egress:
+    - to:
+        - namespaceSelector:
+            matchExpressions:
+              - key: kubernetes.io/metadata.name
+                operator: In
+                values:
+                  - dev-app
+                  - stg-app
+    - ports:
+        - port: {{ .Values.networkPolicy.ports.dns }}
+          protocol: UDP
+        - port: {{ .Values.networkPolicy.ports.dns }}
+          protocol: TCP
+
+{{- range .Values.networkPolicy.namespaces }}
+{{- if and .enabled (or (eq .name "dev-app") (eq .name "stg-app")) }}
+---
+# ══════════════════════════════════════════
+# {{ .name }} 네임스페이스
+# ══════════════════════════════════════════
+
+# 기본 deny-all
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: {{ .name }}
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+# Frontend Pod 정책
+# ingress: nginx-gateway에서만
+# egress: backend Pod로만 + DNS + AWS API
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend
+  namespace: {{ .name }}
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: nginx-gateway
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: backend
+      ports:
+        - port: {{ $.Values.networkPolicy.ports.backend }}
+          protocol: TCP
+    - ports:
+        - port: {{ $.Values.networkPolicy.ports.dns }}
+          protocol: UDP
+        - port: {{ $.Values.networkPolicy.ports.dns }}
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 172.16.0.0/16
+              - 192.168.0.0/16
+              - 10.0.0.0/8
+      ports:
+        - port: {{ $.Values.networkPolicy.ports.https }}
+          protocol: TCP
+---
+# Backend Pod 정책
+# ingress: nginx-gateway 또는 frontend Pod에서
+# egress: ai Pod + DB({{ $.Values.networkPolicy.ports.postgres }}) + Redis({{ $.Values.networkPolicy.ports.redis }}) + DNS + AWS API
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend
+  namespace: {{ .name }}
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: nginx-gateway
+    - from:
+        - podSelector:
+            matchLabels:
+              app: frontend
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: ai
+      ports:
+        - port: {{ $.Values.networkPolicy.ports.ai }}
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: {{ $.Values.networkPolicy.database.rds.cidr }}  # DB RDS (PostgreSQL)
+      ports:
+        - port: {{ $.Values.networkPolicy.ports.postgres }}
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: {{ $.Values.networkPolicy.database.rds.cidr }}  # DB Elasticache (Redis)
+      ports:
+        - port: {{ $.Values.networkPolicy.ports.redis }}
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: {{ $.Values.networkPolicy.database.ec2.ip }}  # DB EC2 (PostgreSQL)
+      ports:
+        - port: {{ $.Values.networkPolicy.ports.postgres }}
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: {{ $.Values.networkPolicy.database.ec2.ip }}  # DB EC2 (Redis)
+      ports:
+        - port: {{ $.Values.networkPolicy.ports.redis }}
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: {{ $.Values.networkPolicy.database.ec2.ip }}  # DB EC2 (RabbitMQ)
+      ports:
+        - port: {{ $.Values.networkPolicy.ports.rabbitmq }}
+          protocol: TCP
+    - ports:
+        - port: {{ $.Values.networkPolicy.ports.dns }}
+          protocol: UDP
+        - port: {{ $.Values.networkPolicy.ports.dns }}
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 172.16.0.0/16
+              - 192.168.0.0/16
+              - 10.0.0.0/8
+      ports:
+        - port: {{ $.Values.networkPolicy.ports.https }}
+          protocol: TCP
+---
+# AI Pod 정책
+# ingress: nginx-gateway 또는 backend Pod에서
+# egress: DB({{ $.Values.networkPolicy.ports.postgres }}) + 외부 AI API({{ $.Values.networkPolicy.ports.https }}) + DNS
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ai
+  namespace: {{ .name }}
+spec:
+  podSelector:
+    matchLabels:
+      app: ai
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: nginx-gateway
+    - from:
+        - podSelector:
+            matchLabels:
+              app: backend
+  egress:
+    - to:
+        - ipBlock:
+            cidr: {{ $.Values.networkPolicy.database.ec2.ip }}  # DB EC2 (PostgreSQL)
+      ports:
+        - port: {{ $.Values.networkPolicy.ports.postgres }}
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: {{ $.Values.networkPolicy.database.rds.cidr }}  # DB Elasticache (Redis)
+      ports:
+        - port: {{ $.Values.networkPolicy.ports.redis }}
+          protocol: TCP
+    - ports:
+        - port: {{ $.Values.networkPolicy.ports.dns }}
+          protocol: UDP
+        - port: {{ $.Values.networkPolicy.ports.dns }}
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 172.16.0.0/16
+              - 192.168.0.0/16
+              - 10.0.0.0/8
+      ports:
+        - port: {{ $.Values.networkPolicy.ports.https }}
+          protocol: TCP
+{{- end }}
+{{- end }}
+{{- end }}

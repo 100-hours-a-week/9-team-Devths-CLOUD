@@ -1,0 +1,137 @@
+# 게이트웨이
+{{- if .Values.gateway.enabled }}
+
+# 게이트웨이 클래스
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: nginx
+spec:
+  controllerName: gateway.nginx.org/nginx-gateway-controller
+---
+
+# 게이트웨이 설정
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: {{ .Values.gateway.name }}
+  namespace: {{ .Values.gateway.namespace }}
+spec:
+  gatewayClassName: {{ .Values.gateway.gatewayClassName }}
+  listeners:
+
+    {{- if .Values.gateway.http.enabled }}
+    # 80 포트
+    - name: http
+      port: {{ .Values.gateway.http.port }}
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
+    {{- end }}
+
+    {{- if .Values.gateway.listeners.dev.enabled }}
+    # 개발용 프런트
+    - name: dev-web-https
+      port: 443
+      protocol: HTTPS
+      hostname: {{ .Values.gateway.listeners.dev.domains.web }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ .Values.gateway.listeners.dev.tlsSecretName }}
+            namespace: {{ .Values.gateway.namespace }}
+      allowedRoutes:
+        namespaces:
+          from: All
+
+    # 개발용 백엔드
+    - name: dev-api-https
+      port: 443
+      protocol: HTTPS
+      hostname: {{ .Values.gateway.listeners.dev.domains.api }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ .Values.gateway.listeners.dev.tlsSecretName }}
+            namespace: {{ .Values.gateway.namespace }}
+      allowedRoutes:
+        namespaces:
+          from: All
+
+    # 개발용 인공지능
+    - name: dev-ai-https
+      port: 443
+      protocol: HTTPS
+      hostname: {{ .Values.gateway.listeners.dev.domains.ai }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ .Values.gateway.listeners.dev.tlsSecretName }}
+            namespace: {{ .Values.gateway.namespace }}
+      allowedRoutes:
+        namespaces:
+          from: All
+    {{- end }}
+
+    {{- if .Values.gateway.listeners.stg.enabled }}
+    # 스테이징 프런트
+    - name: stg-web-https
+      port: 443
+      protocol: HTTPS
+      hostname: {{ .Values.gateway.listeners.stg.domains.web }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ .Values.gateway.listeners.stg.tlsSecretName }}
+            namespace: {{ .Values.gateway.namespace }}
+      allowedRoutes:
+        namespaces:
+          from: All
+
+    # 스테이징 백엔드
+    - name: stg-api-https
+      port: 443
+      protocol: HTTPS
+      hostname: {{ .Values.gateway.listeners.stg.domains.api }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ .Values.gateway.listeners.stg.tlsSecretName }}
+            namespace: {{ .Values.gateway.namespace }}
+      allowedRoutes:
+        namespaces:
+          from: All
+
+    # 스테이징 인공지능
+    - name: stg-ai-https
+      port: 443
+      protocol: HTTPS
+      hostname: {{ .Values.gateway.listeners.stg.domains.ai }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ .Values.gateway.listeners.stg.tlsSecretName }}
+            namespace: {{ .Values.gateway.namespace }}
+      allowedRoutes:
+        namespaces:
+          from: All
+    {{- end }}
+
+    {{- if .Values.gateway.listeners.argo.enabled }}
+    # Argo CD
+    - name: argo-https
+      port: 443
+      protocol: HTTPS
+      hostname: {{ .Values.gateway.listeners.argo.domain }}
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: {{ .Values.gateway.listeners.argo.tlsSecretName }}
+            namespace: {{ .Values.gateway.namespace }}
+      allowedRoutes:
+        namespaces:
+          from: All
+    {{- end }}
+
+{{- end }}

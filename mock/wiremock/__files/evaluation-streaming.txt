@@ -1,0 +1,72 @@
+data: {"chunk": "# 면접 평가 리포트\n\n"}
+
+data: {"chunk": "## 종합 평가\n"}
+
+data: {"chunk": "전반적인 "}
+
+data: {"chunk": "면접 "}
+
+data: {"chunk": "태도와 "}
+
+data: {"chunk": "답변 "}
+
+data: {"chunk": "수준이 "}
+
+data: {"chunk": "우수합니다"}
+
+data: {"chunk": ".\n\n"}
+
+data: {"chunk": "## 강점\n"}
+
+data: {"chunk": "1. **명확한 의사소통**: 질문에 대한 이해도가 높고 답변이 논리적입니다.\n"}
+
+data: {"chunk": "2. **기술적 깊이**: 사용한 기술 스택에 대한 이해도가 높습니다.\n"}
+
+data: {"chunk": "3. **문제 해결 능력**: 프로젝트에서 겪은 문제를 효과적으로 해결한 경험이 있습니다.\n\n"}
+
+data: {"chunk": "## 개선이 필요한 부분\n"}
+
+data: {"chunk": "1. **구체적 사례**: 일부 답변에서 더 구체적인 수치나 사례를 제시하면 좋겠습니다.\n"}
+
+data: {"chunk": "2. **최신 기술 트렌드**: 최신 기술 동향에 대한 관심도를 높이면 좋겠습니다.\n\n"}
+
+data: {"chunk": "## 질문별 평가\n\n"}
+
+data: {"chunk": "### Q1. 자기소개\n"}
+
+data: {"chunk": "- **평가**: 우수\n"}
+
+data: {"chunk": "- **피드백**: 경력과 강점을 잘 정리하여 전달했습니다.\n\n"}
+
+data: {"chunk": "### Q2. 프로젝트 경험\n"}
+
+data: {"chunk": "- **평가**: 양호\n"}
+
+data: {"chunk": "- **피드백**: 프로젝트의 기술적 난이도와 해결 과정을 더 상세히 설명하면 좋겠습니다.\n\n"}
+
+data: {"chunk": "## 최종 점수\n"}
+
+data: {"chunk": "**85/100점**\n\n"}
+
+data: {"chunk": "면접자는 "}
+
+data: {"chunk": "백엔드 개발자로서 "}
+
+data: {"chunk": "필요한 "}
+
+data: {"chunk": "기본 역량을 "}
+
+data: {"chunk": "충분히 "}
+
+data: {"chunk": "갖추고 있으며"}
+
+data: {"chunk": ", "}
+
+data: {"chunk": "성장 가능성이 "}
+
+data: {"chunk": "높습니다"}
+
+data: {"chunk": "."}
+
+data: [DONE]
+

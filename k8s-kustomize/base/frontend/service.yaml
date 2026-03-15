@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+
+# 기본 정보
+metadata:
+  name: frontend-service
+
+# 스펙
+spec:
+  type: ClusterIP
+
+  # 라벨 셀렉터
+  selector:
+    app: frontend
+
+  # 포트 및 타겟 포트
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000

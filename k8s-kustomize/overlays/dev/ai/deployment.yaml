@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+
+# 기본 정보
+metadata:
+  name: devths-ai
+
+# 스펙
+spec:
+  # Replica 개수
+  replicas: 2
+
+  # 라벨
+  template:
+    metadata:
+      labels:
+        environment: dev
+
+    # 컨테이너 스펙
+    spec:
+      containers:
+        - name: devths-ai
+
+          # 자원 설정
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"

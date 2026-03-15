@@ -1,0 +1,121 @@
+%{ if environment == "nonprod" ~}
+# 인증 기능을 비활성화 (로컬/내부망 사용 시 false)
+auth_enabled: false
+
+# 서버 설정
+server:
+  http_listen_port: 3100    # Loki HTTP 인터페이스 포트
+  grpc_listen_port: 9096    # 내부 통신용 gRPC 포트
+
+# 공통 설정
+common:
+  instance_addr: 0.0.0.0
+  path_prefix: /loki         # 데이터 및 설정 경로 접두사
+  replication_factor: 1      # 데이터 복제본 개수 (단일 노드라 1로 설정)
+  ring:
+    kvstore:
+      store: inmemory        # 클러스터 멤버 정보를 메모리에 저장
+
+# 스키마(데이터 구조) 설정
+schema_config:
+  configs:
+    - from: 2020-10-24       # 설정 적용 시작일
+      store: boltdb-shipper  # 인덱스 저장 방식
+      object_store: s3       # 실제 로그 데이터(Chunk) 저장소
+      schema: v11
+      index:
+        prefix: index_       # 인덱스 파일 접두어
+        period: 24h          # 인덱스 생성 주기
+
+# 저장소 상세 설정
+storage_config:
+  boltdb_shipper:
+    active_index_directory: /loki/index    # 활성 인덱스 저장 경로
+    cache_location: /loki/boltdb-cache     # 볼트DB 캐시 경로
+    cache_ttl: 24h                         # 캐시 유지 시간
+  filesystem:
+    directory: /loki/chunks                # 로컬 청크 저장 경로 (S3 사용 시 캐시 용도)
+  aws:
+    s3: s3://$${AWS_REGION}                 # AWS 리전 설정 (환경변수)
+    bucketnames: $${LOKI_S3_BUCKET}         # S3 버킷 이름 (환경변수)
+    s3forcepathstyle: false                # 가상 호스트 스타일 주소 사용 여부
+
+# 알람(Alert) 규칙 설정
+ruler:
+  alertmanager_url: http://alertmanager:9093 # 알람을 보낼 Alertmanager 주소
+
+# 제한 설정 (리소스 및 속도 제어)
+limits_config:
+  retention_period: 30d      # 로그 보관 기간 (30일)
+  ingestion_rate_mb: 16      # 초당 최대 수집량 (16MB)
+  ingestion_burst_size_mb: 32 # 순간 최대 수집량 (32MB)
+  per_stream_rate_limit: 10MB       # 개별 스트림당 초당 제한
+  per_stream_rate_limit_burst: 20MB # 개별 스트림당 순간 최대 제한
+  allow_structured_metadata: false  # 구조화된 메타데이터 허용 여부
+
+# 컴팩터 설정 (인덱스 압축 및 보관 주기 관리)
+compactor:
+  working_directory: /loki/compactor      # 컴팩터 작업 디렉토리
+  compaction_interval: 10m                # 압축 실행 간격
+  retention_enabled: true                 # 보관 정책(Retention) 활성화
+  retention_delete_delay: 2h              # 삭제 지연 시간
+  retention_delete_worker_count: 150      # 삭제 작업 워커 수
+  delete_request_store: s3                # 삭제 요청 정보 저장소
+%{ else ~}
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+
+common:
+  instance_addr: 0.0.0.0
+  path_prefix: /loki
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: boltdb-shipper
+      object_store: s3
+      schema: v11
+      index:
+        prefix: index_
+        period: 24h
+
+storage_config:
+  boltdb_shipper:
+    active_index_directory: /loki/index
+    cache_location: /loki/boltdb-cache
+    cache_ttl: 24h
+  filesystem:
+    directory: /loki/chunks
+  aws:
+    s3: s3://$${AWS_REGION}
+    bucketnames: $${LOKI_S3_BUCKET}
+    s3forcepathstyle: false
+
+ruler:
+  alertmanager_url: http://alertmanager:9093
+
+limits_config:
+  retention_period: 30d
+  ingestion_rate_mb: 16
+  ingestion_burst_size_mb: 32
+  per_stream_rate_limit: 10MB
+  per_stream_rate_limit_burst: 20MB
+  # --- 추가된 부분 (에러 해결 핵심) ---
+  allow_structured_metadata: false
+  # --------------------------------
+
+compactor:
+  working_directory: /loki/compactor
+  compaction_interval: 10m
+  retention_enabled: true
+  retention_delete_delay: 2h
+  retention_delete_worker_count: 150
+  delete_request_store: s3
+%{ endif ~}

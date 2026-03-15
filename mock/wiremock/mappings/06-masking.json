@@ -1,0 +1,54 @@
+{
+  "mappings": [
+    {
+      "name": "Masking Draft - Success (비동기 시작)",
+      "priority": 5,
+      "request": {
+        "method": "POST",
+        "urlPath": "/ai/masking/draft",
+        "headers": {
+          "Content-Type": {
+            "matches": "application/json.*"
+          }
+        },
+        "bodyPatterns": [
+          {
+            "matchesJsonPath": "$.s3_key"
+          },
+          {
+            "matchesJsonPath": "$.file_type"
+          }
+        ]
+      },
+      "response": {
+        "status": 202,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "task_id": "mask-{{randomValue type='UUID'}}",
+          "status": "processing",
+          "message": "PII 마스킹 작업이 시작되었습니다."
+        },
+        "fixedDelayMilliseconds": 100,
+        "transformers": ["response-template"]
+      }
+    },
+    {
+      "name": "Masking Task Status - Completed",
+      "priority": 5,
+      "request": {
+        "method": "GET",
+        "urlPathPattern": "/ai/masking/task/mask-.*"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "bodyFileName": "masking-completed-response.json",
+        "fixedDelayMilliseconds": 2000
+      }
+    }
+  ]
+}
