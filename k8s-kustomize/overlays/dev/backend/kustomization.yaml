@@ -11,11 +11,11 @@ resources:
 nameSuffix: -dev
 
 # 이미지 수정
-# TODO: 해당 부분은 CICD에서 ImageUpdator를 통해 직접 태그를 변경하도록 진행
+# ArgoCD Image Updater가 자동으로 newTag를 업데이트
 images:
   - name: REPLACE_ME
-    newName: ${ECR_REGISTRY}/devths/be-dev
-    newTag: ${IMAGE_TAG}
+    newName: 174678835309.dkr.ecr.ap-northeast-2.amazonaws.com/devths/be-dev
+    newTag: dev-latest
 
 # overlays 수정내용 반영
 patches:
