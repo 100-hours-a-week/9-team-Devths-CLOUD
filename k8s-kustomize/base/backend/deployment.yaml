@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+
+# 기본 정보
+metadata:
+  name: devths-be
+
+# 스펙
+spec:
+  replicas: 4
+
+  # 셀렉터
+  selector:
+    matchLabels:
+      app: backend
+
+  # 라벨
+  template:
+    metadata:
+      labels:
+        app: backend
+
+    # 컨테이너 스펙
+    spec:
+      containers:
+        - name: devths-be
+
+          # 수정될 이미지
+          image: REPLACE_ME
+          ports:
+            - containerPort: 8080
+
+          # 파라미터 스토어에서 주입받는 내용
+          envFrom:
+            - secretRef:
+                name: backend-secret-kv

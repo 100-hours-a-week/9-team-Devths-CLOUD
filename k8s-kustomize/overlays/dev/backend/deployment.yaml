@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+
+# 기본 설정
+metadata:
+  name: devths-be
+
+# 스펙
+spec:
+  # Replica 개수
+  replicas: 2
+
+  # 라벨
+  template:
+    metadata:
+      labels:
+        environment: dev
+
+    # 컨테이너 스펙
+    spec:
+      containers:
+        - name: devths-be
+
+          # 자원 제한
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1024Mi"
+              cpu: "1000m"

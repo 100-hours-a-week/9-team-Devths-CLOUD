@@ -1,0 +1,68 @@
+# 민감하지않은 공통 부분만 출력
+
+# CertManager
+certManager:
+  enabled: false
+  acmeEmail: "example@mail.com"
+  letsencrypt:
+    staging:
+      enabled: false
+    production:
+      enabled: false
+
+# 게이트웨이
+gateway:
+  enabled: false
+  name: devths-gateway
+  namespace: nginx-gateway
+  gatewayClassName: nginx
+  http:
+    enabled: true
+    port: 80
+  listeners:
+    dev:
+      enabled: true
+      domains:
+        web: dev.your-domain.com      # 🔒 실제 도메인으로 변경
+        api: dev.api.your-domain.com  # 🔒 실제 도메인으로 변경
+        ai: dev.ai.your-domain.com    # 🔒 실제 도메인으로 변경
+      tlsSecretName: your-tls-dev
+
+    stg:
+      enabled: true
+      domains:
+        web: stg.your-domain.com      # 🔒 실제 도메인으로 변경
+        api: stg.api.your-domain.com  # 🔒 실제 도메인으로 변경
+        ai: stg.ai.your-domain.com    # 🔒 실제 도메인으로 변경
+      tlsSecretName: your-tls-stg
+
+    argo:
+      enabled: true
+      domain: nonprod.argo.your-domain.com  # 🔒 실제 도메인으로 변경
+      tlsSecretName: your-tls-argo
+
+# 네트워크 정책
+networkPolicy:
+  enabled: false
+  database:
+    rds:
+      cidr: ""
+    ec2:
+      ip: ""
+  ports:
+    frontend: 3000
+    backend: 8080
+    ai: 8000
+    postgres: 5432
+    redis: 6379
+    rabbitmq: 5672
+    dns: 53
+    http: 80
+    https: 443
+  namespaces: []
+
+# 증명서
+certificates:
+  enabled: false
+  issuer: letsencrypt-prod
+  certs: []

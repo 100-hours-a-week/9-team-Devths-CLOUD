@@ -1,0 +1,39 @@
+# 인증서
+{{- if .Values.certificates.enabled }}
+
+# 반복문 전체
+{{- range .Values.certificates.certs }}
+
+# 반복문 내부
+{{- if .enabled }}
+---
+# 인증서 내부
+apiVersion: cert-manager.io/v1
+kind: Certificate
+
+# 기본설정
+metadata:
+  name: {{ .name }}
+  namespace: {{ .namespace }}
+
+# 인증서 스펙
+spec:
+  secretName: {{ .name }}
+
+  # 인증서 발급 주체
+  issuerRef:
+    name: {{ $.Values.certificates.issuer }}
+    kind: ClusterIssuer
+  dnsNames:
+    {{- range .dnsNames }}
+    - {{ . }}
+    {{- end }}
+
+# 반복문 내부
+{{- end }}
+
+# 반복문 전체
+{{- end }}
+
+# 인증서 전체
+{{- end }}

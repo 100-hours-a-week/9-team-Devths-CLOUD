@@ -1,0 +1,38 @@
+# 네임스페이스, 이미지 등에 대한 내용은 overlays 에서 추가될 예정
+
+apiVersion: apps/v1
+kind: Deployment
+
+# 기본 정보
+metadata:
+  name: devths-ai
+
+# 스펙
+spec:
+  replicas: 4
+
+  # 셀렉터
+  selector:
+    matchLabels:
+      app: ai
+
+  # 라벨
+  template:
+    metadata:
+      labels:
+        app: ai
+
+    # 컨테이너 스펙
+    spec:
+      containers:
+        - name: devths-ai
+
+          # 수정될 이미지
+          image: REPLACE_ME
+          ports:
+            - containerPort: 8000
+
+          # 파라미터 스토어에서 주입받는 내용
+          envFrom:
+            - secretRef:
+                name: ai-secret-kv
