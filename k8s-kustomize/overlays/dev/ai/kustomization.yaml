@@ -14,7 +14,7 @@ nameSuffix: -dev
 # TODO: 해당 부분은 CICD에서 ImageUpdator를 통해 직접 태그를 변경하도록 진행
 images:
   - name: REPLACE_ME
-    newName: ${ECR_REGISTRY}/devths-ai
+    newName: ${ECR_REGISTRY}/devths/ai-dev
     newTag: ${IMAGE_TAG}
 
 # overlays 수정내용 반영
