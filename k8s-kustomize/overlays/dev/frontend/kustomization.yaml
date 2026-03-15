@@ -15,7 +15,7 @@ nameSuffix: -dev
 images:
   - name: REPLACE_ME
     newName: 174678835309.dkr.ecr.ap-northeast-2.amazonaws.com/devths/fe-dev
-    newTag: dev-latest
+    newTag: latest
 
 # overlays 수정내용 반영
 patches:
