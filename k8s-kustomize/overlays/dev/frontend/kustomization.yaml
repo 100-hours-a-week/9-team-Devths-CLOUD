@@ -24,4 +24,4 @@ patches:
       group: apps
       version: v1
       kind: Deployment
-      name: devths-frontend
+      name: devths-fe

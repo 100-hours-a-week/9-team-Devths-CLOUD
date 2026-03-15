@@ -3,7 +3,7 @@ kind: Deployment
 
 # 기본 정보
 metadata:
-  name: devths-frontend
+  name: devths-fe
 
 # 스펙
 spec:
