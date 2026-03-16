@@ -14,7 +14,8 @@ metadata:
   annotations:
     # ArgoCD Image Updater 설정
     argocd-image-updater.argoproj.io/image-list: frontend=174678835309.dkr.ecr.ap-northeast-2.amazonaws.com/devths/fe-dev
-    argocd-image-updater.argoproj.io/frontend.update-strategy: latest
+    argocd-image-updater.argoproj.io/frontend.update-strategy: newest-build
+    argocd-image-updater.argoproj.io/frontend.allow-tags: regexp:^[0-9]{8}_[0-9]{6}-[a-f0-9]{7}$
     argocd-image-updater.argoproj.io/frontend.kustomize.image-name: REPLACE_ME
     argocd-image-updater.argoproj.io/write-back-method: git
     argocd-image-updater.argoproj.io/git-branch: main
