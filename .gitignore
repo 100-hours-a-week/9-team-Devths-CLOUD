@@ -60,3 +60,5 @@ terraform.rc
 
 # ArgoCD Image Updater Git credentials
 k8s-helm/argocd-image-updater-secret.yaml
+k8s-helm/release/*.yaml
+/k8s-helm/releases/argocd/secrets/notifications-secret.yaml

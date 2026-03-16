@@ -20,27 +20,27 @@ data:
   # Discord 서비스 설정
   # ===================================
   # Frontend Nonprod (Dev + Staging)
-  service.discord-frontend-nonprod: |
+  service.discord.frontend-nonprod: |
     token: $discord-frontend-nonprod-webhook
 
   # Backend Nonprod (Dev + Staging)
-  service.discord-backend-nonprod: |
+  service.discord.backend-nonprod: |
     token: $discord-backend-nonprod-webhook
 
   # AI Nonprod (Dev + Staging)
-  service.discord-ai-nonprod: |
+  service.discord.ai-nonprod: |
     token: $discord-ai-nonprod-webhook
 
   # Frontend Production
-  service.discord-frontend-prod: |
+  service.discord.frontend-prod: |
     token: $discord-frontend-prod-webhook
 
   # Backend Production
-  service.discord-backend-prod: |
+  service.discord.backend-prod: |
     token: $discord-backend-prod-webhook
 
   # AI Production
-  service.discord-ai-prod: |
+  service.discord.ai-prod: |
     token: $discord-ai-prod-webhook
 
   # ===================================
