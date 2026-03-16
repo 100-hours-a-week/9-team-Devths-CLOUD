@@ -1,5 +1,10 @@
 # Copy to values-nonprod.yaml and add argo/argo-cd overrides here.
 # Example:
-# global:
-#   domain: nonprod.argo.example.com
-{}
+global:
+  domain: nonprod.argo.devths.com
+
+configs:
+  cm:
+    # Git/Helm 변경 감지 주기.
+    timeout.reconciliation: "60s"
+    timeout.reconciliation.jitter: "15s"
