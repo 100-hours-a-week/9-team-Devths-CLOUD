@@ -29,11 +29,9 @@ metadata:
     argocd-image-updater.argoproj.io/git-branch: main
 
     # ArgoCD Notifications 설정 (AI Nonprod Discord 채널)
-    notifications.argoproj.io/subscribe.on-deployed.discord.ai-nonprod: ""
-    notifications.argoproj.io/subscribe.on-sync-failed.discord.ai-nonprod: ""
-    notifications.argoproj.io/subscribe.on-health-degraded.discord.ai-nonprod: ""
-    notifications.argoproj.io/subscribe.on-sync-running.discord.ai-nonprod: ""
-    notifications.argoproj.io/subscribe.on-sync-succeeded.discord.ai-nonprod: ""
+    notifications.argoproj.io/subscribe.on-deployed.webhook.ai-nonprod: ""
+    notifications.argoproj.io/subscribe.on-sync-failed.webhook.ai-nonprod: ""
+    notifications.argoproj.io/subscribe.on-health-degraded.webhook.ai-nonprod: ""
 
 spec:
   # ArgoCD 프로젝트 (기본 프로젝트 사용)
