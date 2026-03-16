@@ -30,9 +30,9 @@ metadata:
     argocd-image-updater.argoproj.io/git-branch: main
 
     # ArgoCD Notifications 설정 (Frontend Nonprod Discord 채널)
-    notifications.argoproj.io/subscribe.on-deployed.webhook.frontend-nonprod: ""
-    notifications.argoproj.io/subscribe.on-sync-failed.webhook.frontend-nonprod: ""
-    notifications.argoproj.io/subscribe.on-health-degraded.webhook.frontend-nonprod: ""
+    notifications.argoproj.io/subscribe.on-deployed.frontend-nonprod: ""
+    notifications.argoproj.io/subscribe.on-sync-failed.frontend-nonprod: ""
+    notifications.argoproj.io/subscribe.on-health-degraded.frontend-nonprod: ""
 
 # 스펙
 spec:
