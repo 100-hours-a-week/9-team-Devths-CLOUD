@@ -9,6 +9,11 @@ kind: Application
 metadata:
   name: frontend-dev
   namespace: argocd
+
+  # 라벨 추가
+  labels:
+    devths.io/environment: dev
+    devths.io/image-updater: enabled
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   annotations:
