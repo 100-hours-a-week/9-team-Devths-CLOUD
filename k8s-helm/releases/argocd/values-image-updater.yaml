@@ -35,8 +35,10 @@ authScripts:
   scripts:
     ecr-login.sh: |
       #!/bin/sh
-      # AWS CLI를 사용하여 ECR 로그인 토큰 생성
-      aws ecr get-login-password --region ap-northeast-2 2>/dev/null || echo ""
+      set -e
+      
+      PASSWORD="$(aws ecr get-login-password --region ap-northeast-2)"
+      printf 'AWS:%s\n' "$PASSWORD"
 
 # 리소스 제한
 resources:
