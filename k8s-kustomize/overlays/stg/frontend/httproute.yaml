@@ -1,0 +1,26 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+
+# 기본 설정
+metadata:
+  name: frontend
+
+# 스펙
+spec:
+  parentRefs:
+    - name: devths-gateway
+      namespace: nginx-gateway
+
+  # 도메인 명
+  hostnames:
+    - "stg.devths.com"
+
+  # 참조 규칙
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: frontend-service-stg
+          port: 80

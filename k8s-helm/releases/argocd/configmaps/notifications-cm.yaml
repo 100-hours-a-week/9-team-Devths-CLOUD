@@ -16,6 +16,8 @@ metadata:
 
 # 데이터
 data:
+  context.argocdUrl: "https://nonprod.argo.devths.com"
+
   # ===================================
   # Discord Webhook 서비스 설정
   # ===================================
@@ -74,12 +76,12 @@ data:
           {
             "embeds": [{
               "title": "✅ 배포 완료",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
+              "description": "ArgoCD 배포가 성공적으로 완료되었습니다.",
               "color": 3066993,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -88,7 +90,17 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "📍 Namespace",
+                  "value": "{{.app.spec.destination.namespace}}",
+                  "inline": true
+                },
+                {
+                  "name": "🔖 Revision",
+                  "value": "{{.app.status.sync.revision | substr 0 7}}",
+                  "inline": true
+                },
+                {
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -102,12 +114,12 @@ data:
           {
             "embeds": [{
               "title": "✅ 배포 완료",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
+              "description": "ArgoCD 배포가 성공적으로 완료되었습니다.",
               "color": 3066993,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -116,7 +128,17 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "📍 Namespace",
+                  "value": "{{.app.spec.destination.namespace}}",
+                  "inline": true
+                },
+                {
+                  "name": "🔖 Revision",
+                  "value": "{{.app.status.sync.revision | substr 0 7}}",
+                  "inline": true
+                },
+                {
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -130,12 +152,12 @@ data:
           {
             "embeds": [{
               "title": "✅ 배포 완료",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
+              "description": "ArgoCD 배포가 성공적으로 완료되었습니다.",
               "color": 3066993,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -144,7 +166,17 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "📍 Namespace",
+                  "value": "{{.app.spec.destination.namespace}}",
+                  "inline": true
+                },
+                {
+                  "name": "🔖 Revision",
+                  "value": "{{.app.status.sync.revision | substr 0 7}}",
+                  "inline": true
+                },
+                {
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -158,12 +190,12 @@ data:
           {
             "embeds": [{
               "title": "✅ 배포 완료",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
+              "description": "ArgoCD 배포가 성공적으로 완료되었습니다.",
               "color": 3066993,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -172,7 +204,17 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "📍 Namespace",
+                  "value": "{{.app.spec.destination.namespace}}",
+                  "inline": true
+                },
+                {
+                  "name": "🔖 Revision",
+                  "value": "{{.app.status.sync.revision | substr 0 7}}",
+                  "inline": true
+                },
+                {
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -186,12 +228,12 @@ data:
           {
             "embeds": [{
               "title": "✅ 배포 완료",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
+              "description": "ArgoCD 배포가 성공적으로 완료되었습니다.",
               "color": 3066993,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -200,7 +242,17 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "📍 Namespace",
+                  "value": "{{.app.spec.destination.namespace}}",
+                  "inline": true
+                },
+                {
+                  "name": "🔖 Revision",
+                  "value": "{{.app.status.sync.revision | substr 0 7}}",
+                  "inline": true
+                },
+                {
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -214,12 +266,12 @@ data:
           {
             "embeds": [{
               "title": "✅ 배포 완료",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
+              "description": "ArgoCD 배포가 성공적으로 완료되었습니다.",
               "color": 3066993,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -228,7 +280,17 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "📍 Namespace",
+                  "value": "{{.app.spec.destination.namespace}}",
+                  "inline": true
+                },
+                {
+                  "name": "🔖 Revision",
+                  "value": "{{.app.status.sync.revision | substr 0 7}}",
+                  "inline": true
+                },
+                {
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -248,12 +310,12 @@ data:
           {
             "embeds": [{
               "title": "❌ 동기화 실패",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
+              "description": "ArgoCD 동기화에 실패했습니다.",
               "color": 15158332,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -262,12 +324,17 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "⚠️ 에러",
+                  "name": "📍 Namespace",
+                  "value": "{{.app.spec.destination.namespace}}",
+                  "inline": true
+                },
+                {
+                  "name": "⚠️ Error",
                   "value": "{{.app.status.operationState.message}}",
                   "inline": false
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -280,12 +347,12 @@ data:
           {
             "embeds": [{
               "title": "❌ 동기화 실패",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
+              "description": "ArgoCD 동기화에 실패했습니다.",
               "color": 15158332,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -294,12 +361,17 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "⚠️ 에러",
+                  "name": "📍 Namespace",
+                  "value": "{{.app.spec.destination.namespace}}",
+                  "inline": true
+                },
+                {
+                  "name": "⚠️ Error",
                   "value": "{{.app.status.operationState.message}}",
                   "inline": false
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -312,12 +384,12 @@ data:
           {
             "embeds": [{
               "title": "❌ 동기화 실패",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
+              "description": "ArgoCD 동기화에 실패했습니다.",
               "color": 15158332,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -326,12 +398,17 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "⚠️ 에러",
+                  "name": "📍 Namespace",
+                  "value": "{{.app.spec.destination.namespace}}",
+                  "inline": true
+                },
+                {
+                  "name": "⚠️ Error",
                   "value": "{{.app.status.operationState.message}}",
                   "inline": false
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -344,12 +421,12 @@ data:
           {
             "embeds": [{
               "title": "❌ 동기화 실패",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
+              "description": "ArgoCD 동기화에 실패했습니다.",
               "color": 15158332,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -358,12 +435,17 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "⚠️ 에러",
+                  "name": "📍 Namespace",
+                  "value": "{{.app.spec.destination.namespace}}",
+                  "inline": true
+                },
+                {
+                  "name": "⚠️ Error",
                   "value": "{{.app.status.operationState.message}}",
                   "inline": false
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -376,12 +458,12 @@ data:
           {
             "embeds": [{
               "title": "❌ 동기화 실패",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
+              "description": "ArgoCD 동기화에 실패했습니다.",
               "color": 15158332,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -390,12 +472,17 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "⚠️ 에러",
+                  "name": "📍 Namespace",
+                  "value": "{{.app.spec.destination.namespace}}",
+                  "inline": true
+                },
+                {
+                  "name": "⚠️ Error",
                   "value": "{{.app.status.operationState.message}}",
                   "inline": false
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -408,12 +495,12 @@ data:
           {
             "embeds": [{
               "title": "❌ 동기화 실패",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
+              "description": "ArgoCD 동기화에 실패했습니다.",
               "color": 15158332,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -422,12 +509,17 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "⚠️ 에러",
+                  "name": "📍 Namespace",
+                  "value": "{{.app.spec.destination.namespace}}",
+                  "inline": true
+                },
+                {
+                  "name": "⚠️ Error",
                   "value": "{{.app.status.operationState.message}}",
                   "inline": false
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -446,12 +538,12 @@ data:
           {
             "embeds": [{
               "title": "⚠️ 헬스 체크 이상",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
+              "description": "애플리케이션 헬스 상태가 비정상입니다.",
               "color": 16776960,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -465,7 +557,7 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -478,12 +570,12 @@ data:
           {
             "embeds": [{
               "title": "⚠️ 헬스 체크 이상",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
+              "description": "애플리케이션 헬스 상태가 비정상입니다.",
               "color": 16776960,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -497,7 +589,7 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -510,12 +602,12 @@ data:
           {
             "embeds": [{
               "title": "⚠️ 헬스 체크 이상",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
+              "description": "애플리케이션 헬스 상태가 비정상입니다.",
               "color": 16776960,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -529,7 +621,7 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -542,12 +634,12 @@ data:
           {
             "embeds": [{
               "title": "⚠️ 헬스 체크 이상",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
+              "description": "애플리케이션 헬스 상태가 비정상입니다.",
               "color": 16776960,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -561,7 +653,7 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -574,12 +666,12 @@ data:
           {
             "embeds": [{
               "title": "⚠️ 헬스 체크 이상",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
+              "description": "애플리케이션 헬스 상태가 비정상입니다.",
               "color": 16776960,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -593,7 +685,7 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }
@@ -606,12 +698,12 @@ data:
           {
             "embeds": [{
               "title": "⚠️ 헬스 체크 이상",
-            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
+              "description": "애플리케이션 헬스 상태가 비정상입니다.",
               "color": 16776960,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
+                  "value": "{{ index .app.metadata.labels "devths.io/environment" | upper }}",
                   "inline": true
                 },
                 {
@@ -625,7 +717,7 @@ data:
                   "inline": true
                 },
                 {
-                  "name": "🔗 ArgoCD URL",
+                  "name": "🔗 ArgoCD",
                   "value": "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})",
                   "inline": false
                 }

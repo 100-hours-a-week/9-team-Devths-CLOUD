@@ -1,0 +1,65 @@
+# ===================================
+# Stg Frontend
+# ===================================
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+# 기본 정보
+metadata:
+  name: frontend-stg
+  namespace: argocd
+
+  # 라벨 추가
+  labels:
+    devths.io/environment: stg
+    devths.io/image-updater: enabled
+
+  # Finalizers를 설정하면 Application 삭제 시 관련 리소스도 함께 삭제됨
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+
+  # 어노테이션 메타데이터
+  annotations:
+    # ArgoCD Image Updater 설정
+    argocd-image-updater.argoproj.io/image-list: frontend=174678835309.dkr.ecr.ap-northeast-2.amazonaws.com/devths/fe-stg
+    argocd-image-updater.argoproj.io/frontend.update-strategy: newest-build
+    argocd-image-updater.argoproj.io/frontend.allow-tags: regexp:^[0-9]{8}_[0-9]{6}-[a-f0-9]{7}$
+    argocd-image-updater.argoproj.io/frontend.kustomize.image-name: REPLACE_ME
+    argocd-image-updater.argoproj.io/write-back-method: git
+    argocd-image-updater.argoproj.io/git-branch: main
+
+    # ArgoCD Notifications 설정 (Frontend Nonprod Discord 채널)
+    notifications.argoproj.io/subscribe.on-deployed.frontend-nonprod: ""
+    notifications.argoproj.io/subscribe.on-sync-failed.frontend-nonprod: ""
+    notifications.argoproj.io/subscribe.on-health-degraded.frontend-nonprod: ""
+
+# 스펙
+spec:
+  project: default
+
+  # Kustomize 소스 설정
+  source:
+    # GitOps URL
+    repoURL: https://github.com/100-hours-a-week/9-team-Devths-CLOUD
+    # Main 브랜치 참조 (환경은 overlay로 구분)
+    targetRevision: main
+    # Kustomize 오버레이 경로
+    path: k8s-kustomize/overlays/stg/frontend
+
+  # 배포 대상 클러스터
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: stg-app
+
+  # 동기화 정책
+  syncPolicy:
+    # 자동 동기화 설정
+    automated:
+      # GitOps와 다르면, 삭제
+      prune: true
+      # GitOps와 다르면, 자동 수정
+      selfHeal: true
+    # 동기화 옵션
+    syncOptions:
+      - CreateNamespace=true

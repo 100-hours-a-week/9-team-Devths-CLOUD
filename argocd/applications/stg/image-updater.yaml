@@ -1,0 +1,19 @@
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+
+# 기본 정보
+metadata:
+  name: stg-applications
+  namespace: argocd
+
+spec:
+  # 라벨 기반 어플리케이션 적용
+  applicationRefs:
+    - namePattern: "*"
+
+      # 라벨 추가
+      labelSelectors:
+        matchLabels:
+          devths.io/image-updater: "enabled"
+          devths.io/environment: "stg"
+      useAnnotations: true
