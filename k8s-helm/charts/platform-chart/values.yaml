@@ -61,7 +61,7 @@ networkPolicy:
     https: 443
   namespaces: []
 
-# 증명서
+# 인증서
 certificates:
   enabled: false
   issuer: letsencrypt-prod

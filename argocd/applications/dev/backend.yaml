@@ -17,6 +17,8 @@ metadata:
   # Finalizers를 설정하면 Application 삭제 시 관련 리소스도 함께 삭제됨
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+
+  # 어노테이션 메타데이터
   annotations:
     # ArgoCD Image Updater 설정
     argocd-image-updater.argoproj.io/image-list: backend=174678835309.dkr.ecr.ap-northeast-2.amazonaws.com/devths/be-dev
@@ -25,6 +27,13 @@ metadata:
     argocd-image-updater.argoproj.io/backend.kustomize.image-name: REPLACE_ME
     argocd-image-updater.argoproj.io/write-back-method: git
     argocd-image-updater.argoproj.io/git-branch: main
+
+    # ArgoCD Notifications 설정 (Dev 환경 전용 Discord 채널)
+    notifications.argoproj.io/subscribe.on-deployed.discord-dev: ""
+    notifications.argoproj.io/subscribe.on-sync-failed.discord-dev: ""
+    notifications.argoproj.io/subscribe.on-health-degraded.discord-dev: ""
+    # notifications.argoproj.io/subscribe.on-sync-running.discord-dev: ""  # 선택사항
+    # notifications.argoproj.io/subscribe.on-sync-succeeded.discord-dev: ""  # 선택사항
 
 spec:
   # ArgoCD 프로젝트 (기본 프로젝트 사용)
