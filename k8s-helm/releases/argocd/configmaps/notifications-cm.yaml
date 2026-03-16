@@ -74,12 +74,12 @@ data:
           {
             "embeds": [{
               "title": "✅ 배포 완료",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
               "color": 3066993,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -102,12 +102,12 @@ data:
           {
             "embeds": [{
               "title": "✅ 배포 완료",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
               "color": 3066993,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -130,12 +130,12 @@ data:
           {
             "embeds": [{
               "title": "✅ 배포 완료",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
               "color": 3066993,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -158,12 +158,12 @@ data:
           {
             "embeds": [{
               "title": "✅ 배포 완료",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
               "color": 3066993,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -186,12 +186,12 @@ data:
           {
             "embeds": [{
               "title": "✅ 배포 완료",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
               "color": 3066993,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -214,12 +214,12 @@ data:
           {
             "embeds": [{
               "title": "✅ 배포 완료",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}\n**리비전**: {{.app.status.sync.revision | substr 0 7}}",
               "color": 3066993,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -248,12 +248,12 @@ data:
           {
             "embeds": [{
               "title": "❌ 동기화 실패",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
               "color": 15158332,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -280,12 +280,12 @@ data:
           {
             "embeds": [{
               "title": "❌ 동기화 실패",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
               "color": 15158332,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -312,12 +312,12 @@ data:
           {
             "embeds": [{
               "title": "❌ 동기화 실패",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
               "color": 15158332,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -344,12 +344,12 @@ data:
           {
             "embeds": [{
               "title": "❌ 동기화 실패",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
               "color": 15158332,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -376,12 +376,12 @@ data:
           {
             "embeds": [{
               "title": "❌ 동기화 실패",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
               "color": 15158332,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -408,12 +408,12 @@ data:
           {
             "embeds": [{
               "title": "❌ 동기화 실패",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**네임스페이스**: {{.app.spec.destination.namespace}}",
               "color": 15158332,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -446,12 +446,12 @@ data:
           {
             "embeds": [{
               "title": "⚠️ 헬스 체크 이상",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
               "color": 16776960,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -478,12 +478,12 @@ data:
           {
             "embeds": [{
               "title": "⚠️ 헬스 체크 이상",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
               "color": 16776960,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -510,12 +510,12 @@ data:
           {
             "embeds": [{
               "title": "⚠️ 헬스 체크 이상",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
               "color": 16776960,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -542,12 +542,12 @@ data:
           {
             "embeds": [{
               "title": "⚠️ 헬스 체크 이상",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
               "color": 16776960,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -574,12 +574,12 @@ data:
           {
             "embeds": [{
               "title": "⚠️ 헬스 체크 이상",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
               "color": 16776960,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
@@ -606,12 +606,12 @@ data:
           {
             "embeds": [{
               "title": "⚠️ 헬스 체크 이상",
-              "description": "**환경**: {{.app.metadata.labels.environment | upper}}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
+            "description": "**환경**: {{ index .app.metadata.labels \"devths.io/environment\" | upper }}\n**애플리케이션**: {{.app.metadata.name}}\n**헬스 상태**: {{.app.status.health.status}}",
               "color": 16776960,
               "fields": [
                 {
                   "name": "🌍 Environment",
-                  "value": "{{.app.metadata.labels.environment | upper}}",
+                  "value": "{{ index .app.metadata.labels \"devths.io/environment\" | upper }}",
                   "inline": true
                 },
                 {
