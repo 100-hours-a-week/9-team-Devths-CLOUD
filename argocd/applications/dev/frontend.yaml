@@ -29,12 +29,12 @@ metadata:
     argocd-image-updater.argoproj.io/write-back-method: git
     argocd-image-updater.argoproj.io/git-branch: main
 
-    # ArgoCD Notifications 설정 (Dev 환경 전용 Discord 채널)
-    notifications.argoproj.io/subscribe.on-deployed.discord-dev: ""
-    notifications.argoproj.io/subscribe.on-sync-failed.discord-dev: ""
-    notifications.argoproj.io/subscribe.on-health-degraded.discord-dev: ""
-    # notifications.argoproj.io/subscribe.on-sync-running.discord-dev: ""  # 선택사항
-    # notifications.argoproj.io/subscribe.on-sync-succeeded.discord-dev: ""  # 선택사항
+    # ArgoCD Notifications 설정 (Frontend Nonprod Discord 채널)
+    notifications.argoproj.io/subscribe.on-deployed.discord-frontend-nonprod: ""
+    notifications.argoproj.io/subscribe.on-sync-failed.discord-frontend-nonprod: ""
+    notifications.argoproj.io/subscribe.on-health-degraded.discord-frontend-nonprod: ""
+    notifications.argoproj.io/subscribe.on-sync-running.discord-frontend-nonprod: ""
+    notifications.argoproj.io/subscribe.on-sync-succeeded.discord-frontend-nonprod: ""
 
 # 스펙
 spec:

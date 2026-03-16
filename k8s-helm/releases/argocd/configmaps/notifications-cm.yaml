@@ -1,0 +1,199 @@
+# ===================================
+# ArgoCD Discord 알림 템플릿 및 트리거 설정
+# ===================================
+
+# 사용 방법:
+# 1. kubectl apply -f k8s-helm/releases/argocd/configmaps/notifications-cm.yaml
+# ===================================
+
+apiVersion: v1
+kind: ConfigMap
+
+# 기본 정보
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+
+# 데이터
+data:
+  # ===================================
+  # Discord 서비스 설정
+  # ===================================
+  # Frontend Nonprod (Dev + Staging)
+  service.discord-frontend-nonprod: |
+    token: $discord-frontend-nonprod-webhook
+
+  # Backend Nonprod (Dev + Staging)
+  service.discord-backend-nonprod: |
+    token: $discord-backend-nonprod-webhook
+
+  # AI Nonprod (Dev + Staging)
+  service.discord-ai-nonprod: |
+    token: $discord-ai-nonprod-webhook
+
+  # Frontend Production
+  service.discord-frontend-prod: |
+    token: $discord-frontend-prod-webhook
+
+  # Backend Production
+  service.discord-backend-prod: |
+    token: $discord-backend-prod-webhook
+
+  # AI Production
+  service.discord-ai-prod: |
+    token: $discord-ai-prod-webhook
+
+  # ===================================
+  # 템플릿: 배포 완료 (Deployed)
+  # ===================================
+  template.app-deployed: |
+    discord:
+      title: "✅ 배포 완료"
+      description: |
+        **환경**: {{.app.metadata.labels.environment | upper}}
+        **애플리케이션**: {{.app.metadata.name}}
+        **네임스페이스**: {{.app.spec.destination.namespace}}
+        **리포지토리**: {{call .repo.FullNameByRepoURL .app.spec.source.repoURL}}
+        **리비전**: {{.app.status.sync.revision | substr 0 7}}
+        **배포 시각**: {{.app.status.operationState.finishedAt}}
+      color: 3066993
+      fields:
+      - name: "🌍 Environment"
+        value: "{{.app.metadata.labels.environment | upper}}"
+        inline: true
+      - name: "📦 Application"
+        value: "{{.app.metadata.name}}"
+        inline: true
+      - name: "🔗 ArgoCD URL"
+        value: "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})"
+        inline: false
+
+  # ===================================
+  # 템플릿: 동기화 실패 (Sync Failed)
+  # ===================================
+  template.app-sync-failed: |
+    discord:
+      title: "❌ 동기화 실패"
+      description: |
+        **환경**: {{.app.metadata.labels.environment | upper}}
+        **애플리케이션**: {{.app.metadata.name}}
+        **네임스페이스**: {{.app.spec.destination.namespace}}
+        **에러 메시지**: {{.app.status.operationState.message}}
+      color: 15158332
+      fields:
+      - name: "🌍 Environment"
+        value: "{{.app.metadata.labels.environment | upper}}"
+        inline: true
+      - name: "📦 Application"
+        value: "{{.app.metadata.name}}"
+        inline: true
+      - name: "🔗 ArgoCD URL"
+        value: "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})"
+        inline: false
+      - name: "⚠️ 에러"
+        value: "{{.app.status.operationState.message}}"
+        inline: false
+
+  # ===================================
+  # 템플릿: 헬스 체크 이상 (Health Degraded)
+  # ===================================
+  template.app-health-degraded: |
+    discord:
+      title: "⚠️ 헬스 체크 이상"
+      description: |
+        **환경**: {{.app.metadata.labels.environment | upper}}
+        **애플리케이션**: {{.app.metadata.name}}
+        **네임스페이스**: {{.app.spec.destination.namespace}}
+        **헬스 상태**: {{.app.status.health.status}}
+        **메시지**: {{.app.status.health.message}}
+      color: 16776960
+      fields:
+      - name: "🌍 Environment"
+        value: "{{.app.metadata.labels.environment | upper}}"
+        inline: true
+      - name: "📦 Application"
+        value: "{{.app.metadata.name}}"
+        inline: true
+      - name: "🏥 Health Status"
+        value: "{{.app.status.health.status}}"
+        inline: true
+      - name: "🔗 ArgoCD URL"
+        value: "[바로가기]({{.context.argocdUrl}}/applications/{{.app.metadata.name}})"
+        inline: false
+
+  # ===================================
+  # 템플릿: 동기화 시작
+  # ===================================
+  template.app-sync-running: |
+    discord:
+      title: "🔄 동기화 시작"
+      description: |
+        **환경**: {{.app.metadata.labels.environment | upper}}
+        **애플리케이션**: {{.app.metadata.name}}
+        **네임스페이스**: {{.app.spec.destination.namespace}}
+      color: 6737151
+      fields:
+      - name: "🌍 Environment"
+        value: "{{.app.metadata.labels.environment | upper}}"
+        inline: true
+      - name: "📦 Application"
+        value: "{{.app.metadata.name}}"
+        inline: true
+
+  # ===================================
+  # 템플릿: 동기화 성공
+  # ===================================
+  template.app-sync-succeeded: |
+    discord:
+      title: "✅ 동기화 성공"
+      description: |
+        **환경**: {{.app.metadata.labels.environment | upper}}
+        **애플리케이션**: {{.app.metadata.name}}
+        **네임스페이스**: {{.app.spec.destination.namespace}}
+        **리비전**: {{.app.status.sync.revision | substr 0 7}}
+      color: 3066993
+      fields:
+      - name: "🌍 Environment"
+        value: "{{.app.metadata.labels.environment | upper}}"
+        inline: true
+      - name: "📦 Application"
+        value: "{{.app.metadata.name}}"
+        inline: true
+
+  # ===================================
+  # 트리거 설정
+  # ===================================
+  # 배포 완료 시 알림
+  trigger.on-deployed: |
+    - description: Application is synced and healthy
+      send:
+      - app-deployed
+      when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy'
+
+  # 동기화 실패 시 알림
+  trigger.on-sync-failed: |
+    - description: Application syncing has failed
+      send:
+      - app-sync-failed
+      when: app.status.operationState.phase in ['Error', 'Failed']
+
+  # 헬스 체크 이상 시 알림
+  trigger.on-health-degraded: |
+    - description: Application has degraded
+      send:
+      - app-health-degraded
+      when: app.status.health.status == 'Degraded'
+
+  # 동기화 시작 시 알림
+  trigger.on-sync-running: |
+    - description: Application is being synced
+      send:
+      - app-sync-running
+      when: app.status.operationState.phase in ['Running']
+
+  # 동기화 성공 시 알림
+  trigger.on-sync-succeeded: |
+    - description: Application syncing has succeeded
+      send:
+      - app-sync-succeeded
+      when: app.status.operationState.phase in ['Succeeded']
