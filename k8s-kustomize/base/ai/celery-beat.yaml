@@ -1,0 +1,44 @@
+# Celery Beat Deployment (AI)
+# 주간 트렌드 크롤링 스케줄러
+# replicas: 1 고정 — 중복 실행 시 스케줄 태스크 이중 발행 문제 발생
+# 네임스페이스, 이미지 등은 overlays 에서 추가될 예정
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: devths-ai-beat
+
+spec:
+  replicas: 1  # 절대 1 이상으로 올리지 말 것
+  revisionHistoryLimit: 3
+
+  strategy:
+    type: Recreate  # Beat는 동시 실행 불가 — 기존 Pod 먼저 종료 후 새 Pod 시작
+
+  selector:
+    matchLabels:
+      app: ai-beat
+
+  template:
+    metadata:
+      labels:
+        app: ai-beat
+
+    spec:
+      containers:
+        - name: devths-ai-beat
+
+          image: REPLACE_ME
+          command:
+            - poetry
+            - run
+            - celery
+            - -A
+            - app.tasks.celery_app
+            - beat
+            - --loglevel=info
+
+          envFrom:
+            - secretRef:
+                name: ai-secret-kv
