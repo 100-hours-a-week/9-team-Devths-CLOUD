@@ -9,6 +9,13 @@ metadata:
 spec:
   replicas: 4
 
+  # 배포 전략: Zero-downtime Rolling Update
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0  # 삭제 되는 Pod 수
+      maxSurge: 1        # 업데이트를 위해서 1개의 Pod 추가
+
   # 셀렉터
   selector:
     matchLabels:

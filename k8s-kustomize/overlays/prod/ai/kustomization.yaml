@@ -2,41 +2,49 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 # 네임 스페이스
-namespace: dev-app
+namespace: prod-app
 
 resources:
   - ../../../base/ai
   - httproute.yaml
 
-nameSuffix: -dev
+nameSuffix: -prod
 
 # 이미지 수정
 # ArgoCD Image Updater가 자동으로 newTag를 업데이트
 images:
   - name: REPLACE_ME
-    newName: 174678835309.dkr.ecr.ap-northeast-2.amazonaws.com/devths/ai-dev
+    newName: 174678835309.dkr.ecr.ap-northeast-2.amazonaws.com/devths/ai-prod
     newTag: latest
 
 # overlays 수정내용 반영
 patches:
+
+  # 디플로이먼트
   - path: deployment.yaml
     target:
       group: apps
       version: v1
       kind: Deployment
       name: devths-ai
+
+  # 셀러리 워커
   - path: celery-worker-trend.yaml
     target:
       group: apps
       version: v1
       kind: Deployment
       name: devths-ai-worker-trend
+
+  # 셀러리 워커
   - path: celery-worker-extract.yaml
     target:
       group: apps
       version: v1
       kind: Deployment
       name: devths-ai-worker-extract
+
+  # 셀러리 워커
   - path: celery-beat.yaml
     target:
       group: apps

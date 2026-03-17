@@ -1,0 +1,68 @@
+# ===================================
+# Prod Backend
+# ===================================
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+# 기본 정보
+metadata:
+  name: backend-prod
+  namespace: argocd
+
+  # 라벨 추가
+  labels:
+    devths.io/environment: prod
+    devths.io/image-updater: enabled
+  # Finalizers를 설정하면 Application 삭제 시 관련 리소스도 함께 삭제됨
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+
+  # 어노테이션 메타데이터
+  annotations:
+    # ArgoCD Image Updater 설정
+    argocd-image-updater.argoproj.io/image-list: backend=174678835309.dkr.ecr.ap-northeast-2.amazonaws.com/devths/be-prod
+    argocd-image-updater.argoproj.io/backend.update-strategy: newest-build
+    argocd-image-updater.argoproj.io/backend.allow-tags: regexp:^[0-9]{8}_[0-9]{6}-[a-f0-9]{7}$
+    argocd-image-updater.argoproj.io/backend.kustomize.image-name: REPLACE_ME
+    argocd-image-updater.argoproj.io/write-back-method: git
+    argocd-image-updater.argoproj.io/git-branch: main
+
+    # ArgoCD Notifications 설정 (Backend Prod Discord 채널)
+    notifications.argoproj.io/subscribe.on-sync-running.backend-prod: ""
+    notifications.argoproj.io/subscribe.on-deployed.backend-prod: ""
+    notifications.argoproj.io/subscribe.on-sync-failed.backend-prod: ""
+    notifications.argoproj.io/subscribe.on-health-degraded.backend-prod: ""
+
+spec:
+  # ArgoCD 프로젝트 (기본 프로젝트 사용)
+  project: default
+
+  # Kustomize 소스 설정
+  source:
+    # Git 리포지토리 URL (실제 URL로 교체 필요)
+    repoURL: https://github.com/100-hours-a-week/9-team-Devths-CLOUD
+    # Main 브랜치 참조 (환경은 overlay로 구분)
+    targetRevision: main
+    # Kustomize 오버레이 경로
+    path: k8s-kustomize/overlays/prod/backend
+
+  # 배포 대상 클러스터
+  destination:
+    # 클러스터 URL (현재 클러스터)
+    server: https://kubernetes.default.svc
+    # 네임스페이스
+    namespace: prod-app
+
+  # 동기화 정책
+  syncPolicy:
+    # 자동 동기화 설정
+    automated:
+      # Git에 변경사항이 있으면 자동으로 배포
+      prune: true
+      # 클러스터의 실제 상태가 Git과 다르면 자동으로 수정
+      selfHeal: true
+    # 동기화 옵션
+    syncOptions:
+      # 네임스페이스가 없으면 자동 생성
+      - CreateNamespace=true

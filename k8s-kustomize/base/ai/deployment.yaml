@@ -10,6 +10,14 @@ metadata:
 # 스펙
 spec:
   replicas: 4
+  revisionHistoryLimit: 3
+
+  # 배포 전략: Zero-downtime Rolling Update
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # 한 번에 1개 Pod 추가
+      maxUnavailable: 0  # 가용 Pod 수 유지
 
   # 셀렉터
   selector:
@@ -36,3 +44,20 @@ spec:
           envFrom:
             - secretRef:
                 name: ai-secret-kv
+
+          # ML 모델 로딩을 고려한 Probe 설정
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            failureThreshold: 3

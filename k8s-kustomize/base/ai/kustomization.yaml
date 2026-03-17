@@ -4,4 +4,6 @@ kind: Kustomization
 # 적용될 리소스
 resources:
   - deployment.yaml
+  - celery-workers.yaml
+  - celery-beat.yaml
   - service.yaml
