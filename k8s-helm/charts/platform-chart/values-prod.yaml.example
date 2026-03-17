@@ -155,8 +155,16 @@ externalSecrets:
           creationPolicy: Owner
           deletionPolicy: Retain
         dataFrom:
-          - extract:
-              key: key
+          - find:
+              path: "/Prod/BE"  # 🔒 실제 Parameter Store 경로로 변경
+              name:
+                regexp: ".*"
+              conversionStrategy: "Default"
+              decodingStrategy: "None"
+            rewrite:
+              - regexp:
+                  source: "^/Prod/BE/(.*)"  # 🔒 실제 경로에 맞게 변경
+                  target: "$1"
 
     # 인공지능 시크릿 적용
     - name: ai-secret-kv
@@ -171,8 +179,16 @@ externalSecrets:
           creationPolicy: Owner
           deletionPolicy: Retain
         dataFrom:
-          - extract:
-              key: key
+          - find:
+              path: "/Prod/AI"  # 🔒 실제 Parameter Store 경로로 변경
+              name:
+                regexp: ".*"
+              conversionStrategy: "Default"
+              decodingStrategy: "None"
+            rewrite:
+              - regexp:
+                  source: "^/Prod/AI/(.*)"  # 🔒 실제 경로에 맞게 변경
+                  target: "$1"
 
 # ArgoCD 적용
 argocd:

@@ -137,8 +137,8 @@ externalSecrets:
             region: ap-northeast-2
             # role: arn:aws:iam::123456789012:role/external-secrets-ssm
 
-  # 아래 예시는 각 SSM Parameter가 JSON object를 담고 있다고 가정하고 dataFrom.extract를 사용
-  # 예: /Dev/Backend 값이 {"SPRING_PROFILES_ACTIVE":"dev","JWT_SECRET":"..."} 형태
+  # 아래 예시는 SSM Parameter Store 경로 아래의 모든 파라미터를 찾아서 가져옵니다
+  # 예: /Dev/BE/ 경로 아래의 모든 파라미터를 찾아 키 이름을 rewrite합니다
   secrets:
     - name: backend-secret-kv
       namespace: dev-app
@@ -152,8 +152,16 @@ externalSecrets:
           creationPolicy: Owner
           deletionPolicy: Retain
         dataFrom:
-          - extract:
-              key: /Dev/Backend
+          - find:
+              path: "/Dev/BE"  # 🔒 실제 Parameter Store 경로로 변경
+              name:
+                regexp: ".*"
+              conversionStrategy: "Default"
+              decodingStrategy: "None"
+            rewrite:
+              - regexp:
+                  source: "^/Dev/BE/(.*)"  # 🔒 실제 경로에 맞게 변경
+                  target: "$1"
 
     - name: ai-secret-kv
       namespace: dev-app
@@ -167,8 +175,16 @@ externalSecrets:
           creationPolicy: Owner
           deletionPolicy: Retain
         dataFrom:
-          - extract:
-              key: /Dev/AI
+          - find:
+              path: "/Dev/AI"  # 🔒 실제 Parameter Store 경로로 변경
+              name:
+                regexp: ".*"
+              conversionStrategy: "Default"
+              decodingStrategy: "None"
+            rewrite:
+              - regexp:
+                  source: "^/Dev/AI/(.*)"  # 🔒 실제 경로에 맞게 변경
+                  target: "$1"
 
     - name: backend-secret-kv
       namespace: stg-app
@@ -182,8 +198,16 @@ externalSecrets:
           creationPolicy: Owner
           deletionPolicy: Retain
         dataFrom:
-          - extract:
-              key: /Stg/Backend
+          - find:
+              path: "/Stg/BE"  # 🔒 실제 Parameter Store 경로로 변경
+              name:
+                regexp: ".*"
+              conversionStrategy: "Default"
+              decodingStrategy: "None"
+            rewrite:
+              - regexp:
+                  source: "^/Stg/BE/(.*)"  # 🔒 실제 경로에 맞게 변경
+                  target: "$1"
 
     - name: ai-secret-kv
       namespace: stg-app
@@ -197,8 +221,16 @@ externalSecrets:
           creationPolicy: Owner
           deletionPolicy: Retain
         dataFrom:
-          - extract:
-              key: /Stg/AI
+          - find:
+              path: "/Stg/AI"  # 🔒 실제 Parameter Store 경로로 변경
+              name:
+                regexp: ".*"
+              conversionStrategy: "Default"
+              decodingStrategy: "None"
+            rewrite:
+              - regexp:
+                  source: "^/Stg/AI/(.*)"  # 🔒 실제 경로에 맞게 변경
+                  target: "$1"
 
 argocd:
   imageUpdater:
