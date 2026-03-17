@@ -22,7 +22,7 @@ config:
     - name: ECR
       prefix: 174678835309.dkr.ecr.ap-northeast-2.amazonaws.com
       api_url: https://174678835309.dkr.ecr.ap-northeast-2.amazonaws.com
-      # EC2 인스턴스 프로파일 사용 (kubeadm 환경)
+      # EC2 스크립트 사용 (CronJob으로 업데이트 함)
       credentials: ext:/scripts/ecr-login.sh
       default: true
 
@@ -58,19 +58,4 @@ serviceAccount:
   create: true
   name: argocd-image-updater
 
-# 환경 변수 주입
-extraEnv:
-  - name: ARGOCD_IMAGE_UPDATER_INTERVAL
-    value: "1m"
-
-  # GitHub Token 기반 인증
-  - name: GIT_HTTPS_USERNAME
-    valueFrom:
-      secretKeyRef:
-        name: argocd-image-updater-git-creds
-        key: username
-  - name: GIT_HTTPS_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: argocd-image-updater-git-creds
-        key: password
+# Git 환경 변수는 UI에서 주입
