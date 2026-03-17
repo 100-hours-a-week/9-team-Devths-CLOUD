@@ -1,0 +1,176 @@
+# Prod values
+
+# SSL 매니저
+certManager:
+  enabled: true
+
+  # 🔒 실제 이메일 주소로 변경
+  acmeEmail: "your-email@example.com"
+
+  # 테스트 시 true, 검증 완료 후 false
+  letsencrypt:
+    staging:
+      enabled: false
+    production:
+      enabled: true
+
+# 게이트웨이
+gateway:
+  enabled: true
+  name: devths-gateway
+  namespace: nginx-gateway
+  gatewayClassName: nginx
+
+  http:
+    enabled: true
+    port: 80
+
+  # 환경별 리스너 (for문으로 순회)
+  environments:
+    - name: dev
+      enabled: false  # Prod 환경에서는 비활성화
+      tlsSecretName: your-tls-dev
+      services:
+        - name: web
+          hostname: dev.your-domain.com
+        - name: api
+          hostname: dev.api.your-domain.com
+        - name: ai
+          hostname: dev.ai.your-domain.com
+
+    - name: stg
+      enabled: false  # Prod 환경에서는 비활성화
+      tlsSecretName: your-tls-stg
+      services:
+        - name: web
+          hostname: stg.your-domain.com
+        - name: api
+          hostname: stg.api.your-domain.com
+        - name: ai
+          hostname: stg.ai.your-domain.com
+
+    - name: prod
+      enabled: true  # Prod 환경 활성화
+      tlsSecretName: your-tls-prod
+      services:
+        - name: web
+          hostname: your-domain.com           # 🔒 실제 도메인으로 변경
+        - name: api
+          hostname: api.your-domain.com       # 🔒 실제 도메인으로 변경
+        - name: ai
+          hostname: ai.your-domain.com        # 🔒 실제 도메인으로 변경
+
+  # 특수 리스너 (ArgoCD 등)
+  listeners:
+    argo:
+      enabled: true
+      domain: prod.argo.your-domain.com  # 🔒 실제 도메인으로 변경
+      tlsSecretName: your-tls-argo-prod
+
+# 네트워크 정책
+networkPolicy:
+  enabled: true
+
+  # 🔒 실제 CIDR/IP 로 변경
+  database:
+    rds:
+      cidr: "172.16.0.0/16"
+    ec2:
+      ip: "10.0.0.0/16"
+
+  ports:
+    frontend: 3000
+    backend: 8080
+    ai: 8000
+    postgres: 5432
+    redis: 6379
+    rabbitmq: 5672
+    dns: 53
+    http: 80
+    https: 443
+
+  namespaces:
+    - name: nginx-gateway
+      enabled: true
+    - name: app
+      enabled: true
+
+# 인증서
+certificates:
+  enabled: true
+  issuer: letsencrypt-staging
+
+  certs:
+    - name: your-tls-prod
+      namespace: nginx-gateway
+      dnsNames:
+        - domain.com
+        - www.domain.com
+        - api.domain.com
+        - ai.domain.com
+      enabled: true
+
+    # 🔒 실제 도메인으로 변경
+    - name: your-tls-argo
+      namespace: nginx-gateway
+      dnsNames:
+        - argo.your-domain.com
+      enabled: true
+
+# AWS 기반 파라미터 스토어 적용
+externalSecrets:
+  enabled: true
+
+  # 시크릿 스토어
+  secretStores:
+    - kind: ClusterSecretStore
+      name: aws-parameter-store
+      spec:
+        provider:
+          aws:
+            service: ParameterStore
+            region: ap-northeast-2
+            # role: arn:aws:iam::123456789012:role/external-secrets-ssm
+
+  # 시크릿
+  secrets:
+
+    # 백엔드 시크릿 적용
+    - name: backend-secret-kv
+      namespace: app
+      spec:
+        refreshInterval: 1h
+        secretStoreRef:
+          name: aws-parameter-store
+          kind: ClusterSecretStore
+        target:
+          name: backend-secret-kv
+          creationPolicy: Owner
+          deletionPolicy: Retain
+        dataFrom:
+          - extract:
+              key: key
+
+    # 인공지능 시크릿 적용
+    - name: ai-secret-kv
+      namespace: app
+      spec:
+        refreshInterval: 1h
+        secretStoreRef:
+          name: aws-parameter-store
+          kind: ClusterSecretStore
+        target:
+          name: ai-secret-kv
+          creationPolicy: Owner
+          deletionPolicy: Retain
+        dataFrom:
+          - extract:
+              key: key
+
+# ArgoCD 적용
+argocd:
+  imageUpdater:
+    restartCronJob:
+      enabled: true
+      # ECR 토큰은 12시간마다 만료되므로 6시간마다 재시작
+      schedule: "0 */6 * * *"
