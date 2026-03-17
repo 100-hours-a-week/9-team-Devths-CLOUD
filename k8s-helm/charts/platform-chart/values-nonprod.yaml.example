@@ -8,6 +8,11 @@ certManager:
       enabled: false  # 테스트 시 true, 검증 완료 후 false
     production:
       enabled: true
+  # DNS-01 Challenge (Route53)
+  route53:
+    region: "ap-northeast-2"  # 🔒 실제 AWS Region으로 변경
+    hostedZoneID: ""  # 🔒 실제 Route53 Hosted Zone ID로 변경 (선택사항)
+    role: ""  # 🔒 실제 IAM Role ARN으로 변경 (IRSA 사용 시)
 
 gateway:
   enabled: true
