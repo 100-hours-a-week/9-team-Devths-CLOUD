@@ -20,8 +20,8 @@ spec:
   gatewayClassName: {{ .Values.gateway.gatewayClassName }}
   listeners:
 
-    {{- if .Values.gateway.http.enabled }}
     # 80 포트
+    {{- if .Values.gateway.http.enabled }}
     - name: http
       port: {{ .Values.gateway.http.port }}
       protocol: HTTP
@@ -30,92 +30,35 @@ spec:
           from: All
     {{- end }}
 
-    {{- if .Values.gateway.listeners.dev.enabled }}
-    # 개발용 프런트
-    - name: dev-web-https
-      port: 443
-      protocol: HTTPS
-      hostname: {{ .Values.gateway.listeners.dev.domains.web }}
-      tls:
-        mode: Terminate
-        certificateRefs:
-          - name: {{ .Values.gateway.listeners.dev.tlsSecretName }}
-            namespace: {{ .Values.gateway.namespace }}
-      allowedRoutes:
-        namespaces:
-          from: All
+    # 환경 체크
+    {{- range $env := .Values.gateway.environments }}
 
-    # 개발용 백엔드
-    - name: dev-api-https
-      port: 443
-      protocol: HTTPS
-      hostname: {{ .Values.gateway.listeners.dev.domains.api }}
-      tls:
-        mode: Terminate
-        certificateRefs:
-          - name: {{ .Values.gateway.listeners.dev.tlsSecretName }}
-            namespace: {{ .Values.gateway.namespace }}
-      allowedRoutes:
-        namespaces:
-          from: All
+    # true인 환경
+    {{- if $env.enabled }}
 
-    # 개발용 인공지능
-    - name: dev-ai-https
+    # 반복문 진행
+    {{- range $service := $env.services }}
+
+    # 443 포트 적용
+    - name: {{ $env.name }}-{{ $service.name }}-https
       port: 443
       protocol: HTTPS
-      hostname: {{ .Values.gateway.listeners.dev.domains.ai }}
+      hostname: {{ $service.hostname }}
       tls:
         mode: Terminate
         certificateRefs:
-          - name: {{ .Values.gateway.listeners.dev.tlsSecretName }}
-            namespace: {{ .Values.gateway.namespace }}
+          - name: {{ $env.tlsSecretName }}
+            namespace: {{ $.Values.gateway.namespace }}
       allowedRoutes:
         namespaces:
           from: All
+    # 반복문 종료
     {{- end }}
 
-    {{- if .Values.gateway.listeners.stg.enabled }}
-    # 스테이징 프런트
-    - name: stg-web-https
-      port: 443
-      protocol: HTTPS
-      hostname: {{ .Values.gateway.listeners.stg.domains.web }}
-      tls:
-        mode: Terminate
-        certificateRefs:
-          - name: {{ .Values.gateway.listeners.stg.tlsSecretName }}
-            namespace: {{ .Values.gateway.namespace }}
-      allowedRoutes:
-        namespaces:
-          from: All
+    # true 환경
+    {{- end }}
 
-    # 스테이징 백엔드
-    - name: stg-api-https
-      port: 443
-      protocol: HTTPS
-      hostname: {{ .Values.gateway.listeners.stg.domains.api }}
-      tls:
-        mode: Terminate
-        certificateRefs:
-          - name: {{ .Values.gateway.listeners.stg.tlsSecretName }}
-            namespace: {{ .Values.gateway.namespace }}
-      allowedRoutes:
-        namespaces:
-          from: All
-
-    # 스테이징 인공지능
-    - name: stg-ai-https
-      port: 443
-      protocol: HTTPS
-      hostname: {{ .Values.gateway.listeners.stg.domains.ai }}
-      tls:
-        mode: Terminate
-        certificateRefs:
-          - name: {{ .Values.gateway.listeners.stg.tlsSecretName }}
-            namespace: {{ .Values.gateway.namespace }}
-      allowedRoutes:
-        namespaces:
-          from: All
+    # 환경 체크
     {{- end }}
 
     {{- if .Values.gateway.listeners.argo.enabled }}

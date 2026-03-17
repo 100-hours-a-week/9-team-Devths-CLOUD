@@ -1,7 +1,7 @@
 {{- if .Values.networkPolicy.enabled }}
 ---
-# Devths V3 nonprod NetworkPolicy
-# 네임스페이스: dev-app (FE+BE+AI 공존), stg-app (동일 구조)
+# Devths NetworkPolicy
+# 네임스페이스: dev-app, stg-app, app
 # Pod 레이블 기준: app: frontend / app: backend / app: ai
 #
 # 트래픽 흐름:
@@ -51,8 +51,11 @@ spec:
               - key: kubernetes.io/metadata.name
                 operator: In
                 values:
-                  - dev-app
-                  - stg-app
+                  {{- range .Values.networkPolicy.namespaces }}
+                  {{- if .enabled }}
+                  - {{ .name }}
+                  {{- end }}
+                  {{- end }}
                   - argocd
     - ports:
         - port: {{ .Values.networkPolicy.ports.dns }}
@@ -61,7 +64,7 @@ spec:
           protocol: TCP
 
 {{- range .Values.networkPolicy.namespaces }}
-{{- if and .enabled (or (eq .name "dev-app") (eq .name "stg-app")) }}
+{{- if .enabled }}
 ---
 # ══════════════════════════════════════════
 # {{ .name }} 네임스페이스

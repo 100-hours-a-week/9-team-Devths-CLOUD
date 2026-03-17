@@ -19,23 +19,43 @@ gateway:
     enabled: true
     port: 80
 
-  listeners:
-    dev:
+  # 환경별 리스너 (for문으로 순회)
+  environments:
+    - name: dev
       enabled: true
-      domains:
-        web: dev.your-domain.com      # 🔒 실제 도메인으로 변경
-        api: dev.api.your-domain.com  # 🔒 실제 도메인으로 변경
-        ai: dev.ai.your-domain.com    # 🔒 실제 도메인으로 변경
       tlsSecretName: your-tls-dev
+      services:
+        - name: web
+          hostname: dev.your-domain.com       # 🔒 실제 도메인으로 변경
+        - name: api
+          hostname: dev.api.your-domain.com   # 🔒 실제 도메인으로 변경
+        - name: ai
+          hostname: dev.ai.your-domain.com    # 🔒 실제 도메인으로 변경
 
-    stg:
+    - name: stg
       enabled: true
-      domains:
-        web: stg.your-domain.com      # 🔒 실제 도메인으로 변경
-        api: stg.api.your-domain.com  # 🔒 실제 도메인으로 변경
-        ai: stg.ai.your-domain.com    # 🔒 실제 도메인으로 변경
       tlsSecretName: your-tls-stg
+      services:
+        - name: web
+          hostname: stg.your-domain.com       # 🔒 실제 도메인으로 변경
+        - name: api
+          hostname: stg.api.your-domain.com   # 🔒 실제 도메인으로 변경
+        - name: ai
+          hostname: stg.ai.your-domain.com    # 🔒 실제 도메인으로 변경
 
+    - name: prod
+      enabled: false  # NonProd 환경에서는 비활성화
+      tlsSecretName: your-tls-prod
+      services:
+        - name: web
+          hostname: your-domain.com
+        - name: api
+          hostname: api.your-domain.com
+        - name: ai
+          hostname: ai.your-domain.com
+
+  # 특수 리스너 (ArgoCD 등)
+  listeners:
     argo:
       enabled: true
       domain: nonprod.argo.your-domain.com  # 🔒 실제 도메인으로 변경
@@ -95,3 +115,88 @@ certificates:
       dnsNames:
         - nonprod.argo.your-domain.com  # 🔒 실제 도메인으로 변경
       enabled: true
+
+externalSecrets:
+  enabled: true
+
+  # External Secrets Operator가 AWS 자격 증명을 어디서 얻을지는
+  # 운영 방식(IRSA/Pod Identity/노드 역할/secretRef)에 맞게 spec.provider.aws를 조정
+  secretStores:
+    - kind: ClusterSecretStore
+      name: aws-parameter-store
+      spec:
+        provider:
+          aws:
+            service: ParameterStore
+            region: ap-northeast-2
+            # role: arn:aws:iam::123456789012:role/external-secrets-ssm
+
+  # 아래 예시는 각 SSM Parameter가 JSON object를 담고 있다고 가정하고 dataFrom.extract를 사용
+  # 예: /Dev/Backend 값이 {"SPRING_PROFILES_ACTIVE":"dev","JWT_SECRET":"..."} 형태
+  secrets:
+    - name: backend-secret-kv
+      namespace: dev-app
+      spec:
+        refreshInterval: 1h
+        secretStoreRef:
+          name: aws-parameter-store
+          kind: ClusterSecretStore
+        target:
+          name: backend-secret-kv
+          creationPolicy: Owner
+          deletionPolicy: Retain
+        dataFrom:
+          - extract:
+              key: /Dev/Backend
+
+    - name: ai-secret-kv
+      namespace: dev-app
+      spec:
+        refreshInterval: 1h
+        secretStoreRef:
+          name: aws-parameter-store
+          kind: ClusterSecretStore
+        target:
+          name: ai-secret-kv
+          creationPolicy: Owner
+          deletionPolicy: Retain
+        dataFrom:
+          - extract:
+              key: /Dev/AI
+
+    - name: backend-secret-kv
+      namespace: stg-app
+      spec:
+        refreshInterval: 1h
+        secretStoreRef:
+          name: aws-parameter-store
+          kind: ClusterSecretStore
+        target:
+          name: backend-secret-kv
+          creationPolicy: Owner
+          deletionPolicy: Retain
+        dataFrom:
+          - extract:
+              key: /Stg/Backend
+
+    - name: ai-secret-kv
+      namespace: stg-app
+      spec:
+        refreshInterval: 1h
+        secretStoreRef:
+          name: aws-parameter-store
+          kind: ClusterSecretStore
+        target:
+          name: ai-secret-kv
+          creationPolicy: Owner
+          deletionPolicy: Retain
+        dataFrom:
+          - extract:
+              key: /Stg/AI
+
+argocd:
+  imageUpdater:
+    restartCronJob:
+      enabled: true
+      # ECR 토큰은 12시간마다 만료되므로 6시간마다 재시작
+      schedule: "0 */6 * * *"
