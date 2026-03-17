@@ -50,7 +50,7 @@ spec:
   # 배포 대상 클러스터
   destination:
     server: https://kubernetes.default.svc
-    namespace: prod-app
+    namespace: app
 
   # 동기화 정책
   syncPolicy:
