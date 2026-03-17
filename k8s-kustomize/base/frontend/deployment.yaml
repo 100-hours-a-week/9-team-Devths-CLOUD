@@ -8,6 +8,8 @@ metadata:
 # 스펙
 spec:
   replicas: 4
+  # RS 최근 3개 버전만 보관
+  revisionHistoryLimit: 3
 
   # 배포 전략: Zero-downtime Rolling Update
   strategy:
