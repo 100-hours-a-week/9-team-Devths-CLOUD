@@ -45,6 +45,14 @@ spec:
             matchLabels:
               kubernetes.io/metadata.name: cert-manager
   egress:
+    # Kubernetes API 서버 접근 (cert-generator, nginx-gateway-fabric 등)
+    # 일반적으로 kubernetes.default.svc (10.96.0.1:443)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - port: {{ .Values.networkPolicy.ports.https }}
+          protocol: TCP
+    # 애플리케이션 네임스페이스 접근
     - to:
         - namespaceSelector:
             matchExpressions:
@@ -57,6 +65,7 @@ spec:
                   {{- end }}
                   {{- end }}
                   - argocd
+    # DNS
     - ports:
         - port: {{ .Values.networkPolicy.ports.dns }}
           protocol: UDP
