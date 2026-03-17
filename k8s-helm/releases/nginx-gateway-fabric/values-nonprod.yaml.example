@@ -3,3 +3,13 @@
 # namespace: nginx-gateway
 # image: ghcr.io/nginx/nginx-gateway-fabric:2.4.2
 fullnameOverride: ngf-nginx-gateway-fabric
+
+# Service 설정
+nginx:
+  service:
+    type: NodePort
+    nodePorts:
+      - port: 30080
+        listenerPort: 80
+      - port: 30443
+        listenerPort: 443
