@@ -1,7 +1,7 @@
 # Copy to values-nonprod.yaml and add argo/argo-cd overrides here.
 # Example:
 global:
-  domain: nonprod.argo.devths.com
+  domain: domain
 
 configs:
   cm:
