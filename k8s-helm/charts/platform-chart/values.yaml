@@ -66,3 +66,24 @@ certificates:
   enabled: false
   issuer: letsencrypt-prod
   certs: []
+
+# External Secrets Operator 리소스
+# ESO 컨트롤러/CRD는 이 차트가 아니라 별도 release로 설치해야 함
+externalSecrets:
+  enabled: false
+
+  # SecretStore / ClusterSecretStore 리소스 목록
+  secretStores: []
+
+  # ExternalSecret 리소스 목록
+  secrets: []
+
+# ArgoCD 설정
+argocd:
+  # ArgoCD Image Updater ECR 토큰 자동 갱신
+  imageUpdater:
+    restartCronJob:
+      enabled: false
+      # ECR 토큰은 12시간마다 만료되므로 6시간마다 재시작
+      # 0 */6 * * * = 매 6시간마다 (0시, 6시, 12시, 18시)
+      schedule: "0 */6 * * *"
