@@ -1,7 +1,5 @@
-# 게이트웨이
-{{- if .Values.gateway.enabled }}
-
 # 게이트웨이 클래스
+{{- if and .Values.gateway.enabled .Values.gateway.createGatewayClass }}
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
 metadata:
@@ -9,8 +7,10 @@ metadata:
 spec:
   controllerName: gateway.nginx.org/nginx-gateway-controller
 ---
+{{- end }}
 
 # 게이트웨이 설정
+{{- if .Values.gateway.enabled }}
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:

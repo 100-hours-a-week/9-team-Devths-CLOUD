@@ -1,2 +1,8 @@
-# Copy to values-nonprod.yaml and add projectcalico/tigera-operator overrides here.
-{}
+installation:
+  calicoNetwork:
+    bgp: Disabled
+    ipPools:
+      - cidr: 192.168.0.0/16
+        encapsulation: VXLAN
+        natOutgoing: Enabled
+        nodeSelector: all()

@@ -11,6 +11,7 @@ certManager:
 
 gateway:
   enabled: true
+  createGatewayClass: false
   name: devths-gateway
   namespace: nginx-gateway
   gatewayClassName: nginx
