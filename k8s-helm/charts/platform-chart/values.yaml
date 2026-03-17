@@ -19,23 +19,44 @@ gateway:
   http:
     enabled: true
     port: 80
-  listeners:
-    dev:
+
+  # 환경별 리스너 (for문으로 순회)
+  environments:
+    - name: dev
       enabled: true
-      domains:
-        web: dev.your-domain.com      # 🔒 실제 도메인으로 변경
-        api: dev.api.your-domain.com  # 🔒 실제 도메인으로 변경
-        ai: dev.ai.your-domain.com    # 🔒 실제 도메인으로 변경
       tlsSecretName: your-tls-dev
+      services:
+        - name: web
+          hostname: dev.your-domain.com       # 🔒 실제 도메인으로 변경
+        - name: api
+          hostname: dev.api.your-domain.com   # 🔒 실제 도메인으로 변경
+        - name: ai
+          hostname: dev.ai.your-domain.com    # 🔒 실제 도메인으로 변경
 
-    stg:
+    - name: stg
       enabled: true
-      domains:
-        web: stg.your-domain.com      # 🔒 실제 도메인으로 변경
-        api: stg.api.your-domain.com  # 🔒 실제 도메인으로 변경
-        ai: stg.ai.your-domain.com    # 🔒 실제 도메인으로 변경
       tlsSecretName: your-tls-stg
+      services:
+        - name: web
+          hostname: stg.your-domain.com       # 🔒 실제 도메인으로 변경
+        - name: api
+          hostname: stg.api.your-domain.com   # 🔒 실제 도메인으로 변경
+        - name: ai
+          hostname: stg.ai.your-domain.com    # 🔒 실제 도메인으로 변경
 
+    - name: prod
+      enabled: false
+      tlsSecretName: your-tls-prod
+      services:
+        - name: web
+          hostname: your-domain.com           # 🔒 실제 도메인으로 변경
+        - name: api
+          hostname: api.your-domain.com       # 🔒 실제 도메인으로 변경
+        - name: ai
+          hostname: ai.your-domain.com        # 🔒 실제 도메인으로 변경
+
+  # 특수 리스너 (ArgoCD 등)
+  listeners:
     argo:
       enabled: true
       domain: nonprod.argo.your-domain.com  # 🔒 실제 도메인으로 변경
