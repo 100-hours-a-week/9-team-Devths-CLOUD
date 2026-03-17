@@ -1,0 +1,98 @@
+# Celery Worker Deployments (AI)
+# - celery-worker-trend  : 트렌드 크롤링 전용 Worker
+# - celery-worker-extract: 텍스트 추출/마스킹/평가 전용 Worker
+# 네임스페이스, 이미지 등은 overlays 에서 추가될 예정
+
+---
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: devths-ai-worker-trend
+
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+  selector:
+    matchLabels:
+      app: ai-worker-trend
+
+  template:
+    metadata:
+      labels:
+        app: ai-worker-trend
+
+    spec:
+      containers:
+        - name: devths-ai-worker-trend
+
+          image: REPLACE_ME
+          command:
+            - poetry
+            - run
+            - celery
+            - -A
+            - app.tasks.celery_app
+            - worker
+            - --loglevel=info
+            - -Q
+            - trend_crawl
+
+          envFrom:
+            - secretRef:
+                name: ai-secret-kv
+
+---
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: devths-ai-worker-extract
+
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+  selector:
+    matchLabels:
+      app: ai-worker-extract
+
+  template:
+    metadata:
+      labels:
+        app: ai-worker-extract
+
+    spec:
+      containers:
+        - name: devths-ai-worker-extract
+
+          image: REPLACE_ME
+          command:
+            - poetry
+            - run
+            - celery
+            - -A
+            - app.tasks.celery_app
+            - worker
+            - --loglevel=info
+            - -Q
+            - text_extract,masking,evaluation
+            - -c
+            - "2"
+
+          envFrom:
+            - secretRef:
+                name: ai-secret-kv

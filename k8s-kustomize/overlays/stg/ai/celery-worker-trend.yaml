@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: devths-ai-worker-trend
+
+spec:
+  replicas: 1
+
+  template:
+    metadata:
+      labels:
+        environment: stg
+
+    spec:
+      containers:
+        - name: devths-ai-worker-trend
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
