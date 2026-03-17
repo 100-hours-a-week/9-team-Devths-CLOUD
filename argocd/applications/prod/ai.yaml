@@ -51,7 +51,7 @@ spec:
     # 클러스터 URL (현재 클러스터)
     server: https://kubernetes.default.svc
     # 네임스페이스
-    namespace: prod-app
+    namespace: app
 
   # 동기화 정책
   syncPolicy:
