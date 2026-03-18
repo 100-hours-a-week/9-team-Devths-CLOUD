@@ -20,10 +20,10 @@ spec:
   gatewayClassName: {{ .Values.gateway.gatewayClassName }}
   listeners:
 
-    # 80 포트
-    {{- if .Values.gateway.http.enabled }}
+    # HTTP 포트 (80) - HTTPS 리다이렉트 또는 일반 HTTP 트래픽용
+    {{- if or .Values.gateway.http.enabled .Values.gateway.http_redirect.enabled }}
     - name: http
-      port: {{ .Values.gateway.http.port }}
+      port: 80
       protocol: HTTP
       allowedRoutes:
         namespaces:

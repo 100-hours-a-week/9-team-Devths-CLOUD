@@ -1,0 +1,67 @@
+{{- if .Values.accessControl.enabled }}
+---
+# 403 Access Denied를 반환하는 Nginx Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: access-denied
+  namespace: {{ .Values.gateway.namespace }}
+  labels:
+    app: access-denied
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: access-denied
+  template:
+    metadata:
+      labels:
+        app: access-denied
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/conf.d
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: access-denied-config
+
+---
+# Nginx ConfigMap - 모든 요청에 403 반환
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: access-denied-config
+  namespace: {{ .Values.gateway.namespace }}
+data:
+  default.conf: |
+    server {
+      listen 80;
+      server_name _;
+
+      location / {
+        default_type text/plain;
+        return 403 'Access Denied';
+      }
+    }
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: access-denied
+  namespace: {{ .Values.gateway.namespace }}
+spec:
+  selector:
+    app: access-denied
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+{{- end }}

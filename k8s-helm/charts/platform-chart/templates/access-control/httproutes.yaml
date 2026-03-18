@@ -1,0 +1,35 @@
+{{- if .Values.accessControl.enabled }}
+{{- range .Values.accessControl.blockedPaths }}
+---
+# HTTPRoute for blocking {{ .name }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: block-{{ .name }}
+  namespace: {{ $.Values.gateway.namespace }}
+spec:
+  parentRefs:
+    - name: {{ $.Values.gateway.name }}
+      namespace: {{ $.Values.gateway.namespace }}
+
+  # 호스트 이름 (여러 호스트에 적용 가능)
+  hostnames:
+    {{- range .hostnames }}
+    - {{ . | quote }}
+    {{- end }}
+
+  # 차단할 경로 규칙
+  rules:
+    {{- range .paths }}
+    {{- /* Gateway API PathPrefix는 glob를 해석하지 않으므로 ALB 스타일 * suffix는 접두사로 정규화한다. */}}
+    {{- $pathPrefix := trimSuffix "*" (trimSuffix "/*" .) }}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: {{ $pathPrefix | quote }}
+      backendRefs:
+        - name: access-denied
+          port: 80
+    {{- end }}
+{{- end }}
+{{- end }}

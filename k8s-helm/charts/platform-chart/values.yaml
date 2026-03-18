@@ -22,9 +22,15 @@ gateway:
   name: devths-gateway
   namespace: nginx-gateway
   gatewayClassName: nginx
+
+  # HTTP 포트 (80)
   http:
     enabled: true
     port: 80
+
+  # HTTP to HTTPS 리다이렉트 (301 Permanent Redirect)
+  http_redirect:
+    enabled: false  # true로 설정 시 모든 HTTP 요청을 HTTPS로 리다이렉트
 
   # 환경별 리스너 (for문으로 순회)
   environments:
@@ -67,6 +73,11 @@ gateway:
       enabled: true
       domain: nonprod.argo.your-domain.com  # 🔒 실제 도메인으로 변경
       tlsSecretName: your-tls-argo
+
+# 접근 제어 (Access Control)
+accessControl:
+  enabled: false
+  blockedPaths: []
 
 # 네트워크 정책
 networkPolicy:
