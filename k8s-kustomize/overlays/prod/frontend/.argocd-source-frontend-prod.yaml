@@ -1,0 +1,3 @@
+kustomize:
+  images:
+  - REPLACE_ME=174678835309.dkr.ecr.ap-northeast-2.amazonaws.com/devths/fe-prod:20260304_152104-c737322
