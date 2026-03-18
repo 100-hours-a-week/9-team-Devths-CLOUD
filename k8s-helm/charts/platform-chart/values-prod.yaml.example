@@ -32,6 +32,10 @@ gateway:
     enabled: true
     port: 80
 
+  # HTTP to HTTPS 리다이렉트 (301 Permanent Redirect)
+  http_redirect:
+    enabled: true  # 모든 HTTP 요청을 HTTPS로 리다이렉트
+
   # 환경별 리스너 (for문으로 순회)
   environments:
     - name: dev
@@ -62,6 +66,8 @@ gateway:
       services:
         - name: web
           hostname: your-domain.com           # 🔒 실제 도메인으로 변경
+        - name: www
+          hostname: www.your-domain.com
         - name: api
           hostname: api.your-domain.com       # 🔒 실제 도메인으로 변경
         - name: ai
@@ -73,6 +79,17 @@ gateway:
       enabled: true
       domain: prod.argo.your-domain.com  # 🔒 실제 도메인으로 변경
       tlsSecretName: your-tls-argo-prod
+
+# 접근 제어 (Access Control)
+accessControl:
+  enabled: true
+  blockedPaths:
+    - name: swagger-api-docs
+      hostnames:
+        - api.your-domain.com  # 🔒 실제 도메인으로 변경
+      paths:
+        - /swagger-ui/
+        - /v3/api-docs/
 
 # 네트워크 정책
 networkPolicy:

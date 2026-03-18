@@ -1,0 +1,30 @@
+{{- if .Values.gateway.http_redirect.enabled }}
+{{- range $env := .Values.gateway.environments }}
+{{- if $env.enabled }}
+{{- range $service := $env.services }}
+---
+# HTTP to HTTPS Redirect for {{ $service.hostname }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: {{ $env.name }}-{{ $service.name }}-redirect
+  namespace: {{ $.Values.gateway.namespace }}
+spec:
+  parentRefs:
+    - name: {{ $.Values.gateway.name }}
+      namespace: {{ $.Values.gateway.namespace }}
+      sectionName: http
+
+  hostnames:
+    - {{ $service.hostname | quote }}
+
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            statusCode: 301
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
