@@ -21,10 +21,12 @@ spec:
   # 차단할 경로 규칙
   rules:
     {{- range .paths }}
+    {{- /* Gateway API PathPrefix는 glob를 해석하지 않으므로 ALB 스타일 * suffix는 접두사로 정규화한다. */}}
+    {{- $pathPrefix := trimSuffix "*" (trimSuffix "/*" .) }}
     - matches:
         - path:
             type: PathPrefix
-            value: {{ . }}
+            value: {{ $pathPrefix | quote }}
       backendRefs:
         - name: access-denied
           port: 80

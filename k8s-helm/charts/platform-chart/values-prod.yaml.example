@@ -88,8 +88,8 @@ accessControl:
       hostnames:
         - api.your-domain.com  # 🔒 실제 도메인으로 변경
       paths:
-        - /swagger-ui/
-        - /v3/api-docs/
+        - /swagger-ui
+        - /v3/api-docs
 
 # 네트워크 정책
 networkPolicy:

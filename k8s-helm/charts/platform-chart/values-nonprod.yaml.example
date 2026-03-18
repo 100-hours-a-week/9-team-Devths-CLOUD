@@ -80,8 +80,8 @@ accessControl:
         - dev.api.your-domain.com  # 🔒 실제 도메인으로 변경
         - stg.api.your-domain.com  # 🔒 실제 도메인으로 변경
       paths:
-        - /swagger-ui/
-        - /v3/api-docs/
+        - /swagger-ui
+        - /v3/api-docs
 
 networkPolicy:
   enabled: true
