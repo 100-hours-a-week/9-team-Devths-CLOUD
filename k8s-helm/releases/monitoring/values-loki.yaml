@@ -40,6 +40,7 @@ loki:
 
   compactor:
     retention_enabled: true  # limits_config.retention_period 적용에 필수
+    delete_request_store: s3  # retention_enabled: true 시 필수
 
   rulerConfig:
     storage:
