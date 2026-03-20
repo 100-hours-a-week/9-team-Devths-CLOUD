@@ -9,12 +9,15 @@ locals {
     prometheus_retention   = var.prometheus_retention
     grafana_admin_password = var.grafana_admin_password
     monitoring_domain      = var.monitoring_domain
+    k8s_loki_url           = var.k8s_loki_nodeport_url
+    k8s_tempo_url          = var.k8s_tempo_nodeport_url
   })
 
   # Prometheus 설정
   prometheus_content = templatefile("${path.module}/scripts/templates/prometheus.yml.tpl", {
-    environment = var.environment
-    aws_region  = var.aws_region
+    environment  = var.environment
+    aws_region   = var.aws_region
+    k8s_mode     = var.k8s_loki_nodeport_url != "" || var.k8s_tempo_nodeport_url != ""
   })
 
   # Infrastructure Alert Rules 설정 (환경별)
@@ -54,7 +57,10 @@ locals {
   })
 
   # Grafana Datasources 설정
-  grafana_datasources_content = templatefile("${path.module}/scripts/templates/grafana-datasources.yml.tpl", {})
+  grafana_datasources_content = templatefile("${path.module}/scripts/templates/grafana-datasources.yml.tpl", {
+    k8s_loki_url  = var.k8s_loki_nodeport_url
+    k8s_tempo_url = var.k8s_tempo_nodeport_url
+  })
   grafana_dashboards_content  = templatefile("${path.module}/scripts/templates/grafana-dashboards.yml.tpl", {})
 }
 

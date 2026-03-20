@@ -302,3 +302,34 @@ resource "aws_iam_role_policy" "ec2_tempo_s3" {
     ]
   })
 }
+
+# ===================================
+# Loki S3 버킷 접근 권한
+# ===================================
+
+# Loki S3 버킷 접근 권한 (로그 데이터 저장)
+resource "aws_iam_role_policy" "ec2_loki_s3" {
+  count = var.loki_bucket_arn != "" ? 1 : 0
+  name  = "${title(var.project_name)}-EC2-Loki-S3-${title(var.environment)}"
+  role  = aws_iam_role.ec2.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "LokiS3Access"
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          var.loki_bucket_arn,
+          "${var.loki_bucket_arn}/*"
+        ]
+      }
+    ]
+  })
+}

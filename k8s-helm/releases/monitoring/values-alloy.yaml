@@ -1,0 +1,153 @@
+# Grafana Alloy Helm values (nonprod K8s)
+# Chart: grafana/alloy
+# 역할: K8s Pod 로그 수집 → Loki, OTLP 트레이스 수신 → Tempo
+
+alloy:
+  # OTLP 수신 포트 노출 (4317: gRPC, 4318: HTTP)
+  extraPorts:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+      protocol: TCP
+
+  configMap:
+    create: true
+    # River DSL 설정
+    content: |
+      // =========================================================
+      // 로그 수집: K8s Pod → Loki
+      // =========================================================
+
+      discovery.kubernetes "pods" {
+        role = "pod"
+      }
+
+      // Pod 로그 파일 tail
+      discovery.relabel "pod_logs" {
+        targets = discovery.kubernetes.pods.targets
+
+        // 로그 수집 제외할 Pod 선택적 필터링
+        rule {
+          source_labels = ["__meta_kubernetes_pod_annotation_logging_scrape"]
+          regex         = "false"
+          action        = "drop"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_namespace"]
+          target_label  = "namespace"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_name"]
+          target_label  = "pod"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          target_label  = "container"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_name"]
+          separator     = "/"
+          target_label  = "__path__"
+          replacement   = "/var/log/pods/*$1/*.log"
+        }
+
+        rule {
+          source_labels = ["__meta_kubernetes_pod_label_app"]
+          target_label  = "app"
+        }
+
+        rule {
+          target_label = "cluster"
+          replacement  = "devths-nonprod"
+        }
+      }
+
+      local.file_match "pod_logs" {
+        path_targets = discovery.relabel.pod_logs.output
+        sync_period  = "5s"
+      }
+
+      loki.source.file "pod_logs" {
+        targets    = local.file_match.pod_logs.targets
+        forward_to = [loki.process.pod_logs.receiver]
+      }
+
+      loki.process "pod_logs" {
+        // JSON 로그 파싱 (Spring Boot, FastAPI 등)
+        stage.json {
+          expressions = {
+            level    = "level",
+            traceId  = "traceId",
+            spanId   = "spanId",
+            message  = "message",
+          }
+        }
+
+        // level 라벨 추가
+        stage.labels {
+          values = {
+            level = "level",
+          }
+        }
+
+        forward_to = [loki.write.loki.receiver]
+      }
+
+      loki.write "loki" {
+        endpoint {
+          url = "http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push"
+        }
+      }
+
+      // =========================================================
+      // OTLP 트레이스 수신: 앱 → Alloy → Tempo
+      // =========================================================
+
+      otelcol.receiver.otlp "default" {
+        grpc {
+          endpoint = "0.0.0.0:4317"
+        }
+        http {
+          endpoint = "0.0.0.0:4318"
+        }
+
+        output {
+          traces = [otelcol.exporter.otlp.tempo.input]
+        }
+      }
+
+      otelcol.exporter.otlp "tempo" {
+        client {
+          endpoint = "tempo.monitoring.svc.cluster.local:4317"
+          tls {
+            insecure = true
+          }
+        }
+      }
+
+controller:
+  type: daemonset  # 모든 노드에서 로그 수집
+
+  # 마스터 노드 포함 실행
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+
+# Pod 로그 파일 마운트
+mounts:
+  varlog: true
+  dockercontainers: true
+
+# OTLP 수신 포트 노출
+service:
+  enabled: true
+  type: ClusterIP

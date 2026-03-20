@@ -63,7 +63,8 @@ services:
     depends_on:
       - prometheus
 
-  # 그라파나 Tempo
+%{ if k8s_tempo_url == "" ~}
+  # 그라파나 Tempo (EC2 로컬 실행 — k8s_tempo_nodeport_url 미설정 시)
   tempo:
     image: grafana/tempo:2.6.1
     container_name: devths-tempo
@@ -82,7 +83,9 @@ services:
     networks:
       - monitoring
 
-  # Loki
+%{ endif ~}
+%{ if k8s_loki_url == "" ~}
+  # Loki (EC2 로컬 실행 — k8s_loki_nodeport_url 미설정 시)
   loki:
     image: grafana/loki:latest
     container_name: devths-loki
@@ -99,7 +102,7 @@ services:
     networks:
       - monitoring
 
-  # Promtail
+  # Promtail (EC2 로컬 Loki 사용 시만 포함)
   promtail:
     image: grafana/promtail:latest
     container_name: devths-promtail
@@ -114,15 +117,20 @@ services:
     depends_on:
       - loki
 
+%{ endif ~}
 volumes:
   prometheus-data:
     driver: local
   grafana-data:
     driver: local
+%{ if k8s_loki_url == "" ~}
   loki-data:
     driver: local
+%{ endif ~}
+%{ if k8s_tempo_url == "" ~}
   tempo-data:
     driver: local
+%{ endif ~}
 
 networks:
   monitoring:
@@ -194,7 +202,8 @@ services:
     depends_on:
       - prometheus
 
-  # 그라파나 Tempo
+%{ if k8s_tempo_url == "" ~}
+  # 그라파나 Tempo (EC2 로컬 실행 — k8s_tempo_nodeport_url 미설정 시)
   tempo:
     image: grafana/tempo:2.6.1
     container_name: devths-tempo-prod
@@ -213,7 +222,9 @@ services:
     networks:
       - monitoring
 
-  # Loki
+%{ endif ~}
+%{ if k8s_loki_url == "" ~}
+  # Loki (EC2 로컬 실행 — k8s_loki_nodeport_url 미설정 시)
   loki:
     image: grafana/loki:latest
     container_name: devths-loki-prod
@@ -230,7 +241,7 @@ services:
     networks:
       - monitoring
 
-  # Promtail
+  # Promtail (EC2 로컬 Loki 사용 시만 포함)
   promtail:
     image: grafana/promtail:latest
     container_name: devths-promtail-prod
@@ -245,15 +256,20 @@ services:
     depends_on:
       - loki
 
+%{ endif ~}
 volumes:
   prometheus-data:
     driver: local
   grafana-data:
     driver: local
+%{ if k8s_loki_url == "" ~}
   loki-data:
     driver: local
+%{ endif ~}
+%{ if k8s_tempo_url == "" ~}
   tempo-data:
     driver: local
+%{ endif ~}
 
 networks:
   monitoring:

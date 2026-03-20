@@ -50,6 +50,12 @@ variable "tempo_bucket_arn" {
   default     = ""
 }
 
+variable "loki_bucket_arn" {
+  description = "S3 bucket ARN for Loki log storage (optional)"
+  type        = string
+  default     = ""
+}
+
 variable "common_tags" {
   description = "Common tags for all resources"
   type        = map(string)

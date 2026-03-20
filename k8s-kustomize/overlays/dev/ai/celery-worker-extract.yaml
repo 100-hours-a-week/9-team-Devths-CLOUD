@@ -23,3 +23,24 @@ spec:
             limits:
               memory: "768Mi"
               cpu: "500m"
+
+          # OpenTelemetry 설정 — Celery 태스크 추적
+          # text_extract, masking, evaluation 큐 처리 (-c 2: 동시 실행 2개)
+          # celery.queue에 복수 큐 기록 — Tempo 필터링용
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: "devths-ai-worker-extract"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://alloy.monitoring.svc.cluster.local:4318"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: "deployment.environment=dev,service.namespace=devths,service.component=celery-worker,celery.queue=text_extract|masking|evaluation"
+            - name: OTEL_TRACES_SAMPLER
+              value: "parentbased_always_on"
+            - name: OTEL_PROPAGATORS
+              value: "tracecontext,baggage"
+            - name: OTEL_METRICS_EXPORTER
+              value: "none"
+            - name: OTEL_LOGS_EXPORTER
+              value: "none"

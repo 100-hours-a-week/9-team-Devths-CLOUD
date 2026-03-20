@@ -167,6 +167,54 @@ variable "asg_health_check_grace_period" {
 }
 
 # ============================================================================
+# Monitoring EC2
+# ============================================================================
+
+variable "monitoring_instance_type" {
+  description = "EC2 instance type for the monitoring server"
+  type        = string
+  default     = "t3.medium"
+}
+
+variable "domain_name" {
+  description = "Base domain name (e.g., devths.com)"
+  type        = string
+  default     = "devths.com"
+}
+
+variable "monitoring_domain" {
+  description = "Full monitoring domain for Grafana (e.g., k8s.monitoring.devths.com)"
+  type        = string
+  default     = "k8s.monitoring.devths.com"
+}
+
+variable "grafana_admin_password" {
+  description = "Grafana admin password"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "alertmanager_discord_webhook_nonprod" {
+  description = "Discord webhook URL for nonprod alerts (optional)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "k8s_loki_nodeport_url" {
+  description = "K8s NodePort URL for in-cluster Loki (e.g. http://172.16.10.177:30100). When set, Loki/Promtail are excluded from docker-compose and Grafana uses this URL."
+  type        = string
+  default     = "http://172.16.10.177:30100"
+}
+
+variable "k8s_tempo_nodeport_url" {
+  description = "K8s NodePort URL for in-cluster Tempo (e.g. http://172.16.10.177:32200). When set, Tempo is excluded from docker-compose and Grafana uses this URL."
+  type        = string
+  default     = "http://172.16.10.177:32200"
+}
+
+# ============================================================================
 # Tags
 # ============================================================================
 
