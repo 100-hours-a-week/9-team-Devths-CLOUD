@@ -15,8 +15,6 @@ datasources:
       httpMethod: POST
 
   # Loki - K8s in-cluster (NodePort: 마스터 노드 172.16.10.177:30100)
-  # derivedFields(datasourceUid 참조) 제거 — Grafana 12.4.1 일괄 검증 실패 원인
-  # 트레이스 연동은 아래 Tempo의 tracesToLogsV2로 단방향 처리 (Tempo → Loki)
   - name: Loki
     uid: loki
     type: loki
@@ -26,7 +24,9 @@ datasources:
     editable: true
 
   # Tempo - K8s in-cluster (NodePort: 마스터 노드 172.16.10.177:32200)
-  # tracesToLogsV2: Tempo 트레이스 → Loki 로그 이동 (Loki가 먼저 선언되어 uid 참조 안전)
+  # 주의: tracesToLogsV2/tracesToMetrics/serviceMap 등 datasourceUid 참조는
+  # Grafana 12.x 프로비저닝 시 DB 저장 전 검증 실패로 크래시 유발
+  # → Grafana UI에서 기동 후 수동 설정: Administration > Data sources > Tempo
   - name: Tempo
     type: tempo
     uid: tempo
@@ -34,19 +34,7 @@ datasources:
     url: http://172.16.10.177:32200
     editable: true
     jsonData:
-      tracesToLogsV2:
-        datasourceUid: loki
-        spanStartTimeShift: "-1h"
-        spanEndTimeShift: "1h"
-        filterByTraceID: true
-        filterBySpanID: false
-      tracesToMetrics:
-        datasourceUid: prometheus
-        spanStartTimeShift: "-1h"
-        spanEndTimeShift: "1h"
       nodeGraph:
         enabled: true
       search:
         hide: false
-      serviceMap:
-        datasourceUid: prometheus
