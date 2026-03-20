@@ -27,6 +27,7 @@ services:
   alertmanager:
     image: prom/alertmanager
     container_name: alertmanager-nonprod
+    restart: unless-stopped
     environment:
       - DISCORD_WEBHOOK_NONPROD=${DISCORD_WEBHOOK_NONPROD}
     volumes:

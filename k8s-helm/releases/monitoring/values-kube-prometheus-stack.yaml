@@ -44,14 +44,9 @@ prometheus:
         cpu: 500m
         memory: 1Gi
 
-    # 스토리지 (2h 분량)
-    storageSpec:
-      volumeClaimTemplate:
-        spec:
-          accessModes: ["ReadWriteOnce"]
-          resources:
-            requests:
-              storage: 10Gi
+    # 스토리지: emptyDir 사용 (2h 단기 보관 + remote_write → EC2 Prometheus가 30d 보관)
+    # PVC 불필요 — Pod 재시작 시 데이터 손실되나 EC2에서 복구 가능
+    storageSpec: {}
 
 # kube-state-metrics 활성화 (K8s 오브젝트 상태 메트릭)
 kubeStateMetrics:
