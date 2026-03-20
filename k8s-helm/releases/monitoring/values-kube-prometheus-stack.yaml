@@ -15,6 +15,7 @@ prometheus:
     # 단기 보관 (EC2 Prometheus가 30d 보관)
     retention: 2h
     retentionSize: "8GB"
+    scrapeInterval: 30s       # EC2 Prometheus scrape_interval(30s)과 통일
 
     # EC2 Prometheus로 remote_write
     # MONITORING_EC2_PRIVATE_IP: 모니터링 EC2 배포 후 실제 IP로 교체

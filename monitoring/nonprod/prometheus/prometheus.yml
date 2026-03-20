@@ -5,6 +5,7 @@ global:
     cluster: 'devths-monitoring-nonprod'
     region: 'ap-northeast-2'
     environment: 'nonprod'
+    env: 'nonprod'          # alertmanager.yml의 {{ .CommonLabels.env }} 참조용
 
 alerting:
   alertmanagers:
