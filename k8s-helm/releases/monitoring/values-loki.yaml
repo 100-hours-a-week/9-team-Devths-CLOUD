@@ -9,6 +9,7 @@ loki:
 
   commonConfig:
     replication_factor: 1
+    path_prefix: /tmp/loki  # /var/loki는 read-only, 차트가 마운트하는 /tmp는 writable
 
   storage:
     bucketNames:
@@ -46,8 +47,8 @@ loki:
     storage:
       type: local
       local:
-        directory: /rules
-    rule_path: /rules
+        directory: /tmp/loki/rules
+    rule_path: /tmp/loki/rules
 
 singleBinary:
   replicas: 1
@@ -60,14 +61,6 @@ singleBinary:
       memory: 512Mi
   persistence:
     enabled: false  # S3를 백엔드로 사용하므로 로컬 PVC 불필요
-  # persistence: false 시 /var/loki 볼륨 미생성 → 컴팩터 working dir 쓰기 실패
-  # emptyDir로 명시 마운트 (Pod 재시작 시 휘발, 실제 데이터는 S3에 보관)
-  extraVolumes:
-    - name: loki-data
-      emptyDir: {}
-  extraVolumeMounts:
-    - name: loki-data
-      mountPath: /var/loki
 
 # SingleBinary 모드에서 SimpleScalable 컴포넌트 비활성화 (충돌 방지)
 read:
