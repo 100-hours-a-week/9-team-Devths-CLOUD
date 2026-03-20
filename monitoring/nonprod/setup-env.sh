@@ -32,7 +32,7 @@ GF_DOMAIN=$(aws ssm get-parameter \
   --name "${SSM_PREFIX}/GF_DOMAIN" \
   --query "Parameter.Value" --output text --region $REGION)
 
-DISCORD_WEBHOOK_NONPROD=$(aws ssm get-parameter \
+export DISCORD_WEBHOOK_NONPROD=$(aws ssm get-parameter \
   --name "${SSM_PREFIX}/DISCORD_WEBHOOK_NONPROD" \
   --with-decryption \
   --query "Parameter.Value" --output text --region $REGION)
