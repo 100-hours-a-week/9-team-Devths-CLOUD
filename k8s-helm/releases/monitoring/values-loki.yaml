@@ -11,15 +11,13 @@ loki:
     replication_factor: 1
 
   storage:
+    bucketNames:
+      chunks: ${LOKI_S3_BUCKET_NAME}
+      ruler: ${LOKI_S3_BUCKET_NAME}
+      admin: ${LOKI_S3_BUCKET_NAME}
     type: s3
     s3:
       region: ap-northeast-2
-      # S3 버킷명은 network Terraform output에서 확인
-      # terraform output -state=../network/terraform.tfstate loki_bucket_name
-      bucketNames:
-        chunks: ${LOKI_S3_BUCKET_NAME}
-        ruler: ${LOKI_S3_BUCKET_NAME}
-        admin: ${LOKI_S3_BUCKET_NAME}
 
   schemaConfig:
     configs:
