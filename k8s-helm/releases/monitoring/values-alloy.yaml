@@ -81,17 +81,30 @@ alloy:
       }
 
       loki.process "pod_logs" {
-        // JSON 로그 파싱 (Spring Boot, FastAPI 등)
+        // [1] containerd(CRI) 로그 포맷 파싱
+        //   containerd 원시 로그: "2024-01-01T00:00:00Z stdout F <실제 내용>"
+        //   stage.cri가 타임스탬프/스트림/플래그 헤더를 제거하고 실제 내용만 남김
+        //   이 단계 없으면 이후 stage.json이 전체 CRI 행을 JSON으로 파싱하려다 실패
+        stage.cri {}
+
+        // [2] JSON 로그 파싱 (Spring Boot logback-json, FastAPI JSON logger 등)
+        //   파싱 실패(비JSON 로그)해도 drop하지 않고 원본 유지 (기본 동작)
         stage.json {
           expressions = {
-            level    = "level",
-            traceId  = "traceId",
-            spanId   = "spanId",
-            message  = "message",
+            level   = "level",
+            traceId = "traceId",
+            spanId  = "spanId",
           }
         }
 
-        // level 라벨 추가
+        // [3] 비JSON 로그 레벨 추출 (AI plaintext 포맷, uvicorn 로그 등)
+        //   JSON 파싱으로 level이 추출된 경우 덮어쓰지 않도록 빈 값일 때만 동작
+        //   패턴: "2024-01-01 INFO app | message" 또는 "[INFO] message" 등
+        stage.regex {
+          expression = "(?i).*?(?P<level>INFO|ERROR|WARN|WARNING|DEBUG|CRITICAL).*"
+        }
+
+        // [4] 추출된 값을 Loki 라벨로 승격
         stage.labels {
           values = {
             level = "level",

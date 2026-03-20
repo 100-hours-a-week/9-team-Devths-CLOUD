@@ -16,6 +16,7 @@ echo "SSM Parameter Store에서 값 가져오는 중... (prefix: ${SSM_PREFIX})"
 
 GF_USER=$(aws ssm get-parameter \
   --name "${SSM_PREFIX}/GF_USER" \
+  --with-decryption \
   --query "Parameter.Value" --output text --region $REGION)
 
 GF_PASSWORD=$(aws ssm get-parameter \

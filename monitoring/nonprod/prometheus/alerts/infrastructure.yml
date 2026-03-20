@@ -3,7 +3,7 @@ groups:
     interval: 30s
     rules:
 
-      # 1. CPU 사용량 (80% 이상)
+      # 1. CPU 사용량 (70% 이상)
       - alert: HighCpuUsage
         expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 70
         for: 3m
