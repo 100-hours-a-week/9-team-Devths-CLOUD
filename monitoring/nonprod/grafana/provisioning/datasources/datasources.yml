@@ -14,26 +14,6 @@ datasources:
       queryTimeout: "60s"
       httpMethod: POST
 
-  # Tempo - K8s in-cluster (NodePort: 마스터 노드 172.16.10.177:32200)
-  # Loki보다 먼저 선언해야 Loki derivedFields에서 uid 참조 오류 없음
-  - name: Tempo
-    type: tempo
-    uid: tempo
-    access: proxy
-    url: http://172.16.10.177:32200
-    editable: true
-    jsonData:
-      tracesToMetrics:
-        datasourceUid: prometheus
-        spanStartTimeShift: "-1h"
-        spanEndTimeShift: "1h"
-      nodeGraph:
-        enabled: true
-      search:
-        hide: false
-      serviceMap:
-        datasourceUid: prometheus
-
   # Loki - K8s in-cluster (NodePort: 마스터 노드 172.16.10.177:30100)
   - name: Loki
     uid: loki
@@ -42,14 +22,19 @@ datasources:
     url: http://172.16.10.177:30100
     isDefault: false
     editable: true
-    jsonData:
-      derivedFields:
-        - datasourceUid: tempo
-          name: TraceID
-          matcherRegex: '"traceId":"([^"]+)"'
-          url: '${__value.raw}'
 
-        - datasourceUid: tempo
-          name: SpanID
-          matcherRegex: '"spanId":"([^"]+)"'
-          url: '${__value.raw}'
+  # Tempo - K8s in-cluster (NodePort: 마스터 노드 172.16.10.177:32200)
+  # 주의: tracesToLogsV2/tracesToMetrics/serviceMap 등 datasourceUid 참조는
+  # Grafana 12.x 프로비저닝 시 DB 저장 전 검증 실패로 크래시 유발
+  # → Grafana UI에서 기동 후 수동 설정: Administration > Data sources > Tempo
+  - name: Tempo
+    type: tempo
+    uid: tempo
+    access: proxy
+    url: http://172.16.10.177:32200
+    editable: true
+    jsonData:
+      nodeGraph:
+        enabled: true
+      search:
+        hide: false

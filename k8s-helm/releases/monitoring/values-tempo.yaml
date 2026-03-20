@@ -11,6 +11,7 @@ tempo:
       s3:
         bucket: ${TEMPO_S3_BUCKET_NAME}   # network Terraform output에서 확인
         region: ap-northeast-2
+        endpoint: s3.ap-northeast-2.amazonaws.com  # 미지정 시 차트가 빈 문자열로 설정 → 시작 실패
 
   # tempo.receivers: 차트가 이 값을 읽어 K8s Service에 OTLP 포트(4317/4318) 추가
   # distributor.receivers와 중복 정의 시 포트 충돌 위험이 있어 여기서 단일 정의

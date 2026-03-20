@@ -9,6 +9,7 @@ loki:
 
   commonConfig:
     replication_factor: 1
+    path_prefix: /tmp/loki  # /var/loki는 read-only, 차트가 마운트하는 /tmp는 writable
 
   storage:
     bucketNames:
@@ -40,13 +41,20 @@ loki:
 
   compactor:
     retention_enabled: true  # limits_config.retention_period 적용에 필수
+    delete_request_store: s3  # retention_enabled: true 시 필수
 
   rulerConfig:
+    wal:
+      dir: /tmp/loki/ruler-wal  # 기본값 /var/loki/ruler-wal → read-only
     storage:
       type: local
       local:
-        directory: /rules
-    rule_path: /rules
+        directory: /tmp/loki/rules
+    rule_path: /tmp/loki/rules
+
+  storage_config:
+    bloom_shipper:
+      working_directory: /tmp/loki/data/bloomshipper  # 기본값 /var/loki/data/bloomshipper → read-only
 
 singleBinary:
   replicas: 1
