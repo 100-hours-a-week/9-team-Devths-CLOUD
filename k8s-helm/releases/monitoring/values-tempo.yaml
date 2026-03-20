@@ -12,14 +12,6 @@ tempo:
         bucket: ${TEMPO_S3_BUCKET_NAME}   # network Terraform output에서 확인
         region: ap-northeast-2
 
-  receivers:
-    otlp:
-      protocols:
-        grpc:
-          endpoint: "0.0.0.0:4317"
-        http:
-          endpoint: "0.0.0.0:4318"
-
   distributor:
     receivers:
       otlp:
@@ -38,7 +30,7 @@ tempo:
 
   querier:
     frontend_worker:
-      frontend_address: tempo-query-frontend:9095
+      frontend_address: localhost:9095
 
   server:
     http_listen_port: 3200
