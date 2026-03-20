@@ -1,7 +1,7 @@
 apiVersion: 1
 
 datasources:
-  # Prometheus - 메트릭 수집
+  # Prometheus - 메트릭 수집 (EC2 로컬)
   - name: Prometheus
     type: prometheus
     access: proxy
@@ -14,55 +14,55 @@ datasources:
       httpMethod: POST
 
   # Loki - 로그 수집
+  # k8s_loki_url이 설정되면 in-cluster NodePort, 아니면 EC2 로컬
   - name: Loki
     type: loki
     access: proxy
+%{ if k8s_loki_url != "" ~}
+    url: ${k8s_loki_url}
+%{ else ~}
     url: http://loki:3100
+%{ endif ~}
     isDefault: false
     editable: true
     jsonData:
       derivedFields:
         - datasourceUid: tempo
           name: TraceID
-          # 작은따옴표(' ')로 감싸면 백슬래시 하나만 써도 됩니다.
-          matcherRegex: '\[([a-f0-9]+),'
+          matcherRegex: '"traceId":"([^"]+)"'
           url: '$${__value.raw}'
 
         - datasourceUid: tempo
           name: SpanID
-          # 여기도 마찬가지로 작은따옴표 사용
-          matcherRegex: ',([a-f0-9]+)\]'
+          matcherRegex: '"spanId":"([^"]+)"'
           url: '$${__value.raw}'
 
   # Tempo - 분산 추적
+  # k8s_tempo_url이 설정되면 in-cluster NodePort, 아니면 EC2 로컬
   - name: Tempo
     type: tempo
     uid: tempo
     access: proxy
+%{ if k8s_tempo_url != "" ~}
+    url: ${k8s_tempo_url}
+%{ else ~}
     url: http://tempo:3200
+%{ endif ~}
     editable: true
     jsonData:
-      # Loki와 연결하여 트레이스에서 로그로 이동 가능
       tracesToLogsV2:
         datasourceUid: Loki
         spanStartTimeShift: "-1h"
         spanEndTimeShift: "1h"
         filterByTraceID: true
         filterBySpanID: false
-        tags:
-          - key: application
-            value: devths-be
-      # Prometheus와 연결하여 트레이스에서 메트릭으로 이동 가능
       tracesToMetrics:
         datasourceUid: Prometheus
         spanStartTimeShift: "-1h"
         spanEndTimeShift: "1h"
-        tags:
-          - key: application
-            value: devths-be
       nodeGraph:
         enabled: true
       search:
         hide: false
       serviceMap:
-        datasourceUid: prometheus
+        datasourceUid: Prometheus

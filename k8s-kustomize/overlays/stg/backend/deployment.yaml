@@ -29,3 +29,20 @@ spec:
             limits:
               memory: "1024Mi"
               cpu: "1000m"
+
+          # OpenTelemetry 환경변수 (Spring Boot Actuator OTel은 아래 변수를 읽지 않음)
+          # Spring Boot는 SSM /Stg/BE/OTLP_ENDPOINT → management.otlp.tracing.endpoint 사용
+          # Java OTel Agent 방식으로 전환 시 아래 주석 해제하여 활성화 가능
+          # env:
+          #   - name: OTEL_SERVICE_NAME
+          #     value: "devths-be"
+          #   - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          #     value: "http://alloy.monitoring.svc.cluster.local:4318"
+          #   - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          #     value: "http/protobuf"
+          #   - name: OTEL_RESOURCE_ATTRIBUTES
+          #     value: "deployment.environment=stg,service.namespace=devths"
+          #   - name: OTEL_METRICS_EXPORTER
+          #     value: "none"
+          #   - name: OTEL_LOGS_EXPORTER
+          #     value: "none"

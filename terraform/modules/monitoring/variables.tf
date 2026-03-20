@@ -128,6 +128,18 @@ variable "alertmanager_discord_webhook_prod" {
   default     = ""
 }
 
+variable "k8s_loki_nodeport_url" {
+  description = "K8s NodePort URL for in-cluster Loki (e.g. http://172.16.10.177:30100). When set, Loki/Promtail are excluded from docker-compose and Grafana uses this URL."
+  type        = string
+  default     = ""
+}
+
+variable "k8s_tempo_nodeport_url" {
+  description = "K8s NodePort URL for in-cluster Tempo (e.g. http://172.16.10.177:32200). When set, Tempo is excluded from docker-compose and Grafana uses this URL."
+  type        = string
+  default     = ""
+}
+
 variable "common_tags" {
   description = "Common tags to apply to all resources"
   type        = map(string)

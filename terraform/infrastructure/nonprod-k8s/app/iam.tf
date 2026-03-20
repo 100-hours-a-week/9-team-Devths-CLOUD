@@ -12,6 +12,7 @@ module "iam" {
   cloudwatch_log_group_arn = data.terraform_remote_state.ssm.outputs.cloudwatch_log_group_arn
   ssm_log_bucket_arn       = data.terraform_remote_state.ssm.outputs.ssm_log_bucket_arn
   tempo_bucket_arn         = try(data.terraform_remote_state.network.outputs.tempo_bucket_arn, "")
+  loki_bucket_arn          = try(data.terraform_remote_state.network.outputs.loki_bucket_arn, "")
   common_tags              = var.common_tags
 }
 

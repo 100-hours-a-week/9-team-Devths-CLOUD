@@ -1,0 +1,104 @@
+# kube-prometheus-stack Helm values (nonprod K8s)
+# Chart: prometheus-community/kube-prometheus-stack
+# 역할: in-cluster 메트릭 수집 → EC2 Prometheus로 remote_write
+
+# Grafana/Alertmanager 비활성화 (EC2 docker-compose에서 관리)
+grafana:
+  enabled: false
+
+alertmanager:
+  enabled: false
+
+# in-cluster Prometheus 설정
+prometheus:
+  prometheusSpec:
+    # 단기 보관 (EC2 Prometheus가 30d 보관)
+    retention: 2h
+    retentionSize: "8GB"
+
+    # EC2 Prometheus로 remote_write
+    # MONITORING_EC2_PRIVATE_IP: 모니터링 EC2 배포 후 실제 IP로 교체
+    remoteWrite:
+      - url: http://MONITORING_EC2_PRIVATE_IP:9090/api/v1/write
+        name: ec2-prometheus
+        remoteTimeout: 30s
+        queueConfig:
+          capacity: 10000
+          maxSamplesPerSend: 2000
+          batchSendDeadline: 10s
+
+    # 모든 네임스페이스의 ServiceMonitor 수집
+    serviceMonitorSelector: {}
+    serviceMonitorNamespaceSelector: {}
+    podMonitorSelector: {}
+    podMonitorNamespaceSelector: {}
+    ruleSelector: {}
+    ruleNamespaceSelector: {}
+
+    # 리소스 제한 (t3.medium 기준)
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+
+    # 스토리지 (2h 분량)
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+# kube-state-metrics 활성화 (K8s 오브젝트 상태 메트릭)
+kubeStateMetrics:
+  enabled: true
+
+# node-exporter 활성화 (K8s 노드 메트릭)
+nodeExporter:
+  enabled: true
+
+prometheus-node-exporter:
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+
+# 기본 PrometheusRule (K8s 인프라 알림) 활성화
+defaultRules:
+  create: true
+  rules:
+    alertmanager: false  # EC2 alertmanager 사용
+    etcd: true
+    configReloaders: true
+    general: true
+    k8sContainerCpuUsageSecondsTotal: true
+    k8sContainerMemoryCache: true
+    k8sContainerMemoryRss: true
+    k8sContainerMemorySwap: true
+    k8sContainerResource: true
+    k8sPodOwner: true
+    kubeApiserverAvailability: true
+    kubeApiserverBurnrate: true
+    kubeApiserverHistogram: true
+    kubeApiserverSlos: true
+    kubeControllerManager: false
+    kubelet: true
+    kubeProxy: false
+    kubePrometheusGeneral: true
+    kubePrometheusNodeRecording: true
+    kubernetesApps: true
+    kubernetesResources: true
+    kubernetesStorage: true
+    kubernetesSystem: true
+    kubeSchedulerAlerting: false
+    kubeSchedulerRecording: false
+    kubeStateMetrics: true
+    network: true
+    node: true
+    nodeExporterAlerting: true
+    nodeExporterRecording: true
+    prometheus: true

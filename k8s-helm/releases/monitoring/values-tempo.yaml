@@ -1,0 +1,65 @@
+# Tempo Helm values (nonprod K8s)
+# Chart: grafana/tempo
+# 역할: K8s 서비스에서 OTLP 트레이스 수신 → S3 저장, EC2 Grafana에서 NodePort로 접근
+
+tempo:
+  reportingEnabled: false
+
+  storage:
+    trace:
+      backend: s3
+      s3:
+        bucket: TEMPO_S3_BUCKET_NAME   # network Terraform output에서 확인
+        region: ap-northeast-2
+
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "0.0.0.0:4317"
+        http:
+          endpoint: "0.0.0.0:4318"
+
+  distributor:
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: "0.0.0.0:4317"
+          http:
+            endpoint: "0.0.0.0:4318"
+
+  ingester:
+    max_block_duration: 5m
+
+  compactor:
+    compaction:
+      block_retention: 720h  # 30d
+
+  querier:
+    frontend_worker:
+      frontend_address: tempo-query-frontend:9095
+
+  server:
+    http_listen_port: 3200
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 300m
+    memory: 512Mi
+
+persistence:
+  enabled: true
+  size: 10Gi
+
+# EC2 Grafana에서 접근할 NodePort 서비스
+# NodePort: 32200
+# 배포 후 패치 필요:
+# kubectl patch svc tempo -n monitoring -p '{"spec":{"type":"NodePort","ports":[{"port":3200,"nodePort":32200}]}}'
+
+serviceAccount:
+  create: true
+  name: tempo

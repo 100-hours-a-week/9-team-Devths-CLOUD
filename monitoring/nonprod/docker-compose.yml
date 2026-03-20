@@ -1,5 +1,5 @@
 services:
-  # 프로메테우스 설정
+  # 프로메테우스 (EC2 메트릭 장기 보관 + remote_write 수신)
   prometheus:
     image: prom/prometheus:latest
     container_name: devths-prometheus
@@ -40,7 +40,7 @@ services:
     depends_on:
       - prometheus
 
-  # 그라파나
+  # 그라파나 (대시보드 — Loki/Tempo는 K8s NodePort로 연결)
   grafana:
     image: grafana/grafana:latest
     container_name: devths-grafana
@@ -62,65 +62,10 @@ services:
     depends_on:
       - prometheus
 
-  # 그라파나 Tempo
-  tempo:
-    image: grafana/tempo:2.6.1
-    container_name: devths-tempo
-    restart: unless-stopped
-    environment:
-      - AWS_REGION=${AWS_REGION}
-      - TEMPO_S3_BUCKET=${TEMPO_S3_BUCKET}
-    ports:
-      - "3200:3200"
-      - "4318:4318"
-      - "4317:4317"
-    volumes:
-      - ./tempo/tempo-config.yml:/etc/tempo.yml:ro
-      - tempo-data:/var/tempo
-    command: [ "-config.file=/etc/tempo.yml" ]
-    networks:
-      - monitoring
-
-  # Loki
-  loki:
-    image: grafana/loki:latest
-    container_name: devths-loki
-    restart: unless-stopped
-    environment:
-      - AWS_REGION=${AWS_REGION}
-      - LOKI_S3_BUCKET=${LOKI_S3_BUCKET}
-    ports:
-      - "3100:3100"
-    volumes:
-      - ./loki/loki-config.yml:/etc/loki/local-config.yaml:ro
-      - loki-data:/loki
-    command: -config.file=/etc/loki/local-config.yaml
-    networks:
-      - monitoring
-
-  # Promtail
-  promtail:
-    image: grafana/promtail:latest
-    container_name: devths-promtail
-    restart: unless-stopped
-    volumes:
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/log:/var/log:ro
-      - ./promtail/config.yml:/etc/promtail/config.yml:ro
-    command: -config.file=/etc/promtail/config.yml
-    networks:
-      - monitoring
-    depends_on:
-      - loki
-
 volumes:
   prometheus-data:
     driver: local
   grafana-data:
-    driver: local
-  loki-data:
-    driver: local
-  tempo-data:
     driver: local
 
 networks:

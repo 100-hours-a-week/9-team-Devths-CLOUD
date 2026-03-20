@@ -1,0 +1,84 @@
+# Loki Helm values (nonprod K8s)
+# Chart: grafana/loki
+# 역할: K8s Pod 로그 수집 → S3 저장, EC2 Grafana에서 NodePort로 접근
+
+deploymentMode: SingleBinary
+
+loki:
+  auth_enabled: false
+
+  commonConfig:
+    replication_factor: 1
+
+  storage:
+    type: s3
+    s3:
+      region: ap-northeast-2
+      # S3 버킷명은 network Terraform output에서 확인
+      # terraform output -state=../network/terraform.tfstate loki_bucket_name
+      bucketNames:
+        chunks: LOKI_S3_BUCKET_NAME
+        ruler: LOKI_S3_BUCKET_NAME
+        admin: LOKI_S3_BUCKET_NAME
+
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+
+  limits_config:
+    retention_period: 30d
+    ingestion_rate_mb: 8
+    ingestion_burst_size_mb: 16
+    max_cache_freshness_per_query: 10m
+    reject_old_samples: true
+    reject_old_samples_max_age: 1h
+    split_queries_by_interval: 24h
+
+  rulerConfig:
+    storage:
+      type: local
+      local:
+        directory: /rules
+    rule_path: /rules
+
+singleBinary:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi
+  persistence:
+    enabled: true
+    size: 10Gi
+
+# EC2 Grafana에서 접근할 NodePort 서비스
+# NodePort: 30100
+gateway:
+  enabled: false
+
+# 직접 Loki 서비스를 NodePort로 노출
+# (gateway 비활성화 시 직접 loki-singleBinary 서비스 사용)
+# 배포 후 NodePort 서비스는 별도 패치 필요:
+# kubectl patch svc loki -n monitoring -p '{"spec":{"type":"NodePort","ports":[{"port":3100,"nodePort":30100}]}}'
+
+# IAM 권한: K8s 노드 instance profile에 S3 접근 권한 필요
+# (ServiceAccount + IRSA 또는 node instance profile)
+serviceAccount:
+  create: true
+  name: loki
+
+# 테스트용 canary 비활성화
+test:
+  enabled: false
+
+lokiCanary:
+  enabled: false

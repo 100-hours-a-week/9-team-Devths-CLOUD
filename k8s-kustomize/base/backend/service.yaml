@@ -15,6 +15,7 @@ spec:
 
   # 포트 및 타겟 포트
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
       targetPort: 8080

@@ -7,3 +7,4 @@ resources:
   - celery-workers.yaml
   - celery-beat.yaml
   - service.yaml
+  - servicemonitor.yaml
