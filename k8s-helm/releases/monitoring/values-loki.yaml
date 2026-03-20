@@ -44,11 +44,17 @@ loki:
     delete_request_store: s3  # retention_enabled: true 시 필수
 
   rulerConfig:
+    wal:
+      dir: /tmp/loki/ruler-wal  # 기본값 /var/loki/ruler-wal → read-only
     storage:
       type: local
       local:
         directory: /tmp/loki/rules
     rule_path: /tmp/loki/rules
+
+  storage_config:
+    bloom_shipper:
+      working_directory: /tmp/loki/data/bloomshipper  # 기본값 /var/loki/data/bloomshipper → read-only
 
 singleBinary:
   replicas: 1
