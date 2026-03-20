@@ -19,7 +19,7 @@ prometheus:
     # EC2 Prometheus로 remote_write
     # MONITORING_EC2_PRIVATE_IP: 모니터링 EC2 배포 후 실제 IP로 교체
     remoteWrite:
-      - url: http://MONITORING_EC2_PRIVATE_IP:9090/api/v1/write
+      - url: http://${MONITORING_EC2_PRIVATE_IP}:9090/api/v1/write
         name: ec2-prometheus
         remoteTimeout: 30s
         queueConfig:

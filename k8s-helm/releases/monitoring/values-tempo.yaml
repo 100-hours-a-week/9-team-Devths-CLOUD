@@ -9,7 +9,7 @@ tempo:
     trace:
       backend: s3
       s3:
-        bucket: TEMPO_S3_BUCKET_NAME   # network Terraform output에서 확인
+        bucket: ${TEMPO_S3_BUCKET_NAME}   # network Terraform output에서 확인
         region: ap-northeast-2
 
   receivers:
