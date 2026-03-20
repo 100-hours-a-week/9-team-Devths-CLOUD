@@ -56,7 +56,9 @@ envsubst '${MONITORING_EC2_PRIVATE_IP}' < values-kube-prometheus-stack.yaml | he
   -f -
 
 # 2. Loki (로그 저장 → S3)
+# kubectl patch로 NodePort 변경 시 Helm field manager 충돌 방지: 업그레이드 전 서비스 삭제
 echo "Loki 설치 중..."
+kubectl delete svc loki -n ${NAMESPACE} --ignore-not-found=true
 envsubst '${LOKI_S3_BUCKET_NAME}' < values-loki.yaml | helm upgrade --install loki \
   grafana/loki \
   --namespace ${NAMESPACE} \
@@ -64,7 +66,9 @@ envsubst '${LOKI_S3_BUCKET_NAME}' < values-loki.yaml | helm upgrade --install lo
   -f -
 
 # 3. Tempo (트레이스 저장 → S3)
+# 동일한 이유로 업그레이드 전 서비스 삭제
 echo "Tempo 설치 중..."
+kubectl delete svc tempo -n ${NAMESPACE} --ignore-not-found=true
 envsubst '${TEMPO_S3_BUCKET_NAME}' < values-tempo.yaml | helm upgrade --install tempo \
   grafana/tempo \
   --namespace ${NAMESPACE} \
