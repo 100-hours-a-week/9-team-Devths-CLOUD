@@ -24,17 +24,15 @@ services:
       - "host.docker.internal:host-gateway"
 
   # 알림매니저
+  # alertmanager.yml은 setup-env.sh가 alertmanager.yml.tmpl에서 envsubst로 생성
   alertmanager:
     image: prom/alertmanager
     container_name: alertmanager-nonprod
     restart: unless-stopped
-    environment:
-      - DISCORD_WEBHOOK_NONPROD=${DISCORD_WEBHOOK_NONPROD}
     volumes:
       - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
-      - '--config.expand-env=true'
     ports:
       - "9093:9093"
     networks:

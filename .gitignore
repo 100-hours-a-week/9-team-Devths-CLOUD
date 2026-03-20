@@ -58,6 +58,9 @@ terraform.rc
 # 모니터링 values 파일은 플레이스홀더만 포함 (실제 민감값 없음) — commit 허용
 !k8s-helm/releases/monitoring/values-*.yaml
 
+# alertmanager.yml은 setup-env.sh가 .tmpl에서 생성 (실제 webhook URL 포함 → gitignore)
+monitoring/nonprod/alertmanager/alertmanager.yml
+
 # Kustomize overlay files with sensitive data (선택사항)
 # k8s-kustomize/overlays/**/secrets.yaml
 

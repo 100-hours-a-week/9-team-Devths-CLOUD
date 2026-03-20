@@ -55,3 +55,11 @@ echo "  GF_URL: ${GF_URL}"
 echo "  GF_DOMAIN: ${GF_DOMAIN}"
 echo "  GF_PASSWORD: (hidden)"
 echo "  DISCORD_WEBHOOK_NONPROD: (hidden)"
+
+# alertmanager.yml 생성 (템플릿에서 envsubst로 치환)
+# Alertmanager는 환경변수 확장 미지원 → setup-env.sh에서 런타임 생성
+envsubst '${DISCORD_WEBHOOK_NONPROD}' \
+  < alertmanager/alertmanager.yml.tmpl \
+  > alertmanager/alertmanager.yml
+
+echo "alertmanager/alertmanager.yml 생성 완료 (DISCORD_WEBHOOK_NONPROD 치환됨)"

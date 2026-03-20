@@ -14,8 +14,19 @@ datasources:
       queryTimeout: "60s"
       httpMethod: POST
 
+  # Loki - K8s in-cluster (NodePort: 마스터 노드 172.16.10.177:30100)
+  # derivedFields(datasourceUid 참조) 제거 — Grafana 12.4.1 일괄 검증 실패 원인
+  # 트레이스 연동은 아래 Tempo의 tracesToLogsV2로 단방향 처리 (Tempo → Loki)
+  - name: Loki
+    uid: loki
+    type: loki
+    access: proxy
+    url: http://172.16.10.177:30100
+    isDefault: false
+    editable: true
+
   # Tempo - K8s in-cluster (NodePort: 마스터 노드 172.16.10.177:32200)
-  # Loki보다 먼저 선언해야 Loki derivedFields에서 uid 참조 오류 없음
+  # tracesToLogsV2: Tempo 트레이스 → Loki 로그 이동 (Loki가 먼저 선언되어 uid 참조 안전)
   - name: Tempo
     type: tempo
     uid: tempo
@@ -23,6 +34,12 @@ datasources:
     url: http://172.16.10.177:32200
     editable: true
     jsonData:
+      tracesToLogsV2:
+        datasourceUid: loki
+        spanStartTimeShift: "-1h"
+        spanEndTimeShift: "1h"
+        filterByTraceID: true
+        filterBySpanID: false
       tracesToMetrics:
         datasourceUid: prometheus
         spanStartTimeShift: "-1h"
@@ -33,23 +50,3 @@ datasources:
         hide: false
       serviceMap:
         datasourceUid: prometheus
-
-  # Loki - K8s in-cluster (NodePort: 마스터 노드 172.16.10.177:30100)
-  - name: Loki
-    uid: loki
-    type: loki
-    access: proxy
-    url: http://172.16.10.177:30100
-    isDefault: false
-    editable: true
-    jsonData:
-      derivedFields:
-        - datasourceUid: tempo
-          name: TraceID
-          matcherRegex: '"traceId":"([^"]+)"'
-          url: '${__value.raw}'
-
-        - datasourceUid: tempo
-          name: SpanID
-          matcherRegex: '"spanId":"([^"]+)"'
-          url: '${__value.raw}'
