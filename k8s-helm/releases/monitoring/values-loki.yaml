@@ -58,6 +58,14 @@ singleBinary:
     enabled: true
     size: 10Gi
 
+# SingleBinary 모드에서 SimpleScalable 컴포넌트 비활성화 (충돌 방지)
+read:
+  replicas: 0
+write:
+  replicas: 0
+backend:
+  replicas: 0
+
 # EC2 Grafana에서 접근할 NodePort 서비스
 # NodePort: 30100
 gateway:

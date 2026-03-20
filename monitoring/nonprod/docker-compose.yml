@@ -33,6 +33,7 @@ services:
       - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--config.expand-env=true'
     ports:
       - "9093:9093"
     networks:
