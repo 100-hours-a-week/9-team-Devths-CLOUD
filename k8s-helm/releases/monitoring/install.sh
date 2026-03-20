@@ -90,5 +90,6 @@ kubectl patch svc tempo -n ${NAMESPACE} -p '{"spec":{"type":"NodePort","ports":[
 
 echo ""
 echo "완료"
-echo "  Loki NodePort:  http://172.16.10.177:30100"
-echo "  Tempo NodePort: http://172.16.10.177:32200"
+NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}' 2>/dev/null || echo "<NODE_IP>")
+echo "  Loki NodePort:  http://${NODE_IP}:30100"
+echo "  Tempo NodePort: http://${NODE_IP}:32200"
