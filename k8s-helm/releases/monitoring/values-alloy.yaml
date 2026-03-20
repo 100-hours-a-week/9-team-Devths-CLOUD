@@ -144,8 +144,8 @@ controller:
 
 # Pod 로그 파일 마운트
 mounts:
-  varlog: true
-  dockercontainers: true
+  varlog: true          # /var/log/pods/ 마운트 — 실제 로그 수집 경로
+  dockercontainers: false  # containerd 클러스터에서 불필요 (/var/lib/docker/containers 미사용)
 
 # OTLP 수신 포트 노출
 service:

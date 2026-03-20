@@ -38,6 +38,9 @@ loki:
     reject_old_samples_max_age: 1h
     split_queries_by_interval: 24h
 
+  compactor:
+    retention_enabled: true  # limits_config.retention_period 적용에 필수
+
   rulerConfig:
     storage:
       type: local
@@ -55,8 +58,7 @@ singleBinary:
       cpu: 300m
       memory: 512Mi
   persistence:
-    enabled: true
-    size: 10Gi
+    enabled: false  # S3를 백엔드로 사용하므로 로컬 PVC 불필요
 
 # SingleBinary 모드에서 SimpleScalable 컴포넌트 비활성화 (충돌 방지)
 read:
@@ -81,6 +83,13 @@ gateway:
 serviceAccount:
   create: true
   name: loki
+
+# memcached 캐시 비활성화 (SingleBinary 모드에서 리소스 절약)
+chunksCache:
+  enabled: false
+
+resultsCache:
+  enabled: false
 
 # 테스트용 canary 비활성화
 test:

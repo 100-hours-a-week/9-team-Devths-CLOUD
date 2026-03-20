@@ -3,6 +3,7 @@ apiVersion: 1
 datasources:
   # Prometheus - EC2 장기 보관 (30d)
   - name: Prometheus
+    uid: prometheus
     type: prometheus
     access: proxy
     url: http://prometheus:9090
@@ -15,6 +16,7 @@ datasources:
 
   # Loki - K8s in-cluster (NodePort: 마스터 노드 172.16.10.177:30100)
   - name: Loki
+    uid: loki
     type: loki
     access: proxy
     url: http://172.16.10.177:30100
@@ -41,13 +43,13 @@ datasources:
     editable: true
     jsonData:
       tracesToLogsV2:
-        datasourceUid: Loki
+        datasourceUid: loki
         spanStartTimeShift: "-1h"
         spanEndTimeShift: "1h"
         filterByTraceID: true
         filterBySpanID: false
       tracesToMetrics:
-        datasourceUid: Prometheus
+        datasourceUid: prometheus
         spanStartTimeShift: "-1h"
         spanEndTimeShift: "1h"
       nodeGraph:

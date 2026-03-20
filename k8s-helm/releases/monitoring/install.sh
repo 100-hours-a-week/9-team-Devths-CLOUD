@@ -49,7 +49,7 @@ kubectl create namespace ${NAMESPACE} --dry-run=client -o yaml | kubectl apply -
 
 # 1. kube-prometheus-stack (in-cluster Prometheus + node-exporter + kube-state-metrics)
 echo "kube-prometheus-stack 설치 중..."
-envsubst < values-kube-prometheus-stack.yaml | helm upgrade --install kube-prometheus-stack \
+envsubst '${MONITORING_EC2_PRIVATE_IP}' < values-kube-prometheus-stack.yaml | helm upgrade --install kube-prometheus-stack \
   prometheus-community/kube-prometheus-stack \
   --namespace ${NAMESPACE} \
   --timeout 10m \
@@ -57,7 +57,7 @@ envsubst < values-kube-prometheus-stack.yaml | helm upgrade --install kube-prome
 
 # 2. Loki (로그 저장 → S3)
 echo "Loki 설치 중..."
-envsubst < values-loki.yaml | helm upgrade --install loki \
+envsubst '${LOKI_S3_BUCKET_NAME}' < values-loki.yaml | helm upgrade --install loki \
   grafana/loki \
   --namespace ${NAMESPACE} \
   --timeout 5m \
@@ -65,7 +65,7 @@ envsubst < values-loki.yaml | helm upgrade --install loki \
 
 # 3. Tempo (트레이스 저장 → S3)
 echo "Tempo 설치 중..."
-envsubst < values-tempo.yaml | helm upgrade --install tempo \
+envsubst '${TEMPO_S3_BUCKET_NAME}' < values-tempo.yaml | helm upgrade --install tempo \
   grafana/tempo \
   --namespace ${NAMESPACE} \
   --timeout 5m \

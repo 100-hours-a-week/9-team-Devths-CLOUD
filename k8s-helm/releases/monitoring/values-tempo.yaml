@@ -12,14 +12,15 @@ tempo:
         bucket: ${TEMPO_S3_BUCKET_NAME}   # network Terraform output에서 확인
         region: ap-northeast-2
 
-  distributor:
-    receivers:
-      otlp:
-        protocols:
-          grpc:
-            endpoint: "0.0.0.0:4317"
-          http:
-            endpoint: "0.0.0.0:4318"
+  # tempo.receivers: 차트가 이 값을 읽어 K8s Service에 OTLP 포트(4317/4318) 추가
+  # distributor.receivers와 중복 정의 시 포트 충돌 위험이 있어 여기서 단일 정의
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "0.0.0.0:4317"
+        http:
+          endpoint: "0.0.0.0:4318"
 
   ingester:
     max_block_duration: 5m
@@ -44,8 +45,7 @@ resources:
     memory: 512Mi
 
 persistence:
-  enabled: true
-  size: 10Gi
+  enabled: false  # S3를 백엔드로 사용하므로 로컬 PVC 불필요
 
 # EC2 Grafana에서 접근할 NodePort 서비스
 # NodePort: 32200
