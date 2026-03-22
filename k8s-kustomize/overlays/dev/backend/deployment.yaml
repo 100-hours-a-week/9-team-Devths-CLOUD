@@ -24,8 +24,8 @@ spec:
           # 자원 제한
           resources:
             requests:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "384Mi"
+              cpu: "200m"
             limits:
               memory: "1024Mi"
               cpu: "1000m"

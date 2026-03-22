@@ -39,8 +39,8 @@ prometheus:
     # 리소스 제한 (t3.medium 기준)
     resources:
       requests:
-        cpu: 200m
-        memory: 512Mi
+        cpu: 100m
+        memory: 256Mi
       limits:
         cpu: 500m
         memory: 1Gi

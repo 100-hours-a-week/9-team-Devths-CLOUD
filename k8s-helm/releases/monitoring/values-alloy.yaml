@@ -14,6 +14,10 @@ alloy:
       targetPort: 4318
       protocol: TCP
 
+  mounts:
+    varlog: true          # /var/log hostPath 마운트 (chart 공식 지원)
+    dockercontainers: false
+
   configMap:
     create: true
     # River DSL 설정
@@ -155,10 +159,6 @@ controller:
       operator: Exists
       effect: NoSchedule
 
-# Pod 로그 파일 마운트
-mounts:
-  varlog: true          # /var/log/pods/ 마운트 — 실제 로그 수집 경로
-  dockercontainers: false  # containerd 클러스터에서 불필요 (/var/lib/docker/containers 미사용)
 
 # OTLP 수신 포트 노출
 service:
