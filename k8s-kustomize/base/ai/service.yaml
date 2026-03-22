@@ -4,6 +4,8 @@ kind: Service
 # 기본 정보
 metadata:
   name: ai-service
+  labels:
+    app: ai
 
 # 스펙
 spec:
