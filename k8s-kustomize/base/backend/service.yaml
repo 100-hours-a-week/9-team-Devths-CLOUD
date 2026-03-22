@@ -4,6 +4,8 @@ kind: Service
 # 기본 정보
 metadata:
   name: backend-service
+  labels:
+    app: backend
 
 # 스펙
 spec:

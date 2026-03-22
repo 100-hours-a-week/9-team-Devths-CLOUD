@@ -86,7 +86,7 @@
           {"matcher": {"id": "byName", "options": "WARN"}, "properties": [{"id": "color", "value": {"fixedColor": "yellow", "mode": "fixed"}}]},
           {"matcher": {"id": "byName", "options": "WARNING"}, "properties": [{"id": "color", "value": {"fixedColor": "yellow", "mode": "fixed"}}]},
           {"matcher": {"id": "byName", "options": "INFO"}, "properties": [{"id": "color", "value": {"fixedColor": "blue", "mode": "fixed"}}]},
-          {"matcher": {"id": "byName", "options": "DEBUG"}, "properties": [{"id": "color", "value": {"fixedColor": "grey", "mode": "fixed"}}]}
+          {"matcher": {"id": "byName", "options": "DEBUG"}, "properties": [{"id": "color", "value": {"fixedColor": "#808080", "mode": "fixed"}}]}
         ]
       },
       "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"]}}
