@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - REPLACE_ME=174678835309.dkr.ecr.ap-northeast-2.amazonaws.com/devths/ai-dev:20260320_010245-57a1f2b
+  - REPLACE_ME=174678835309.dkr.ecr.ap-northeast-2.amazonaws.com/devths/ai-dev:20260322_102614-bf1591b
