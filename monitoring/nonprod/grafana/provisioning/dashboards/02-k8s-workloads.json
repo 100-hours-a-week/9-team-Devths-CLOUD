@@ -1,0 +1,295 @@
+{
+  "title": "02. K8s Workloads",
+  "uid": "devths-k8s-workloads",
+  "description": "K8s Pod/Deployment/네임스페이스별 리소스 현황 (kube-state-metrics + container metrics)",
+  "tags": ["devths", "kubernetes"],
+  "timezone": "browser",
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "version": 1,
+  "id": null,
+  "time": {"from": "now-1h", "to": "now"},
+  "graphTooltip": 1,
+  "editable": true,
+  "annotations": {"list": []},
+  "links": [],
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "type": "query",
+        "label": "Namespace",
+        "datasource": {"type": "prometheus", "uid": "prometheus"},
+        "query": {"query": "label_values(kube_pod_info, namespace)", "refId": "StandardVariableQuery"},
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": false,
+        "current": {}
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Running Pods",
+      "id": 1,
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "sum(kube_pod_status_phase{phase=\"Running\",namespace=~\"$namespace\"})", "legendFormat": "", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}
+        }
+      },
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"}
+    },
+    {
+      "type": "stat",
+      "title": "Pending Pods",
+      "id": 2,
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "sum(kube_pod_status_phase{phase=\"Pending\",namespace=~\"$namespace\"})", "legendFormat": "", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}, {"color": "red", "value": 5}]}
+        }
+      },
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"}
+    },
+    {
+      "type": "stat",
+      "title": "Failed / Unknown Pods",
+      "id": 3,
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "sum(kube_pod_status_phase{phase=~\"Failed|Unknown\",namespace=~\"$namespace\"})", "legendFormat": "", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 1}]}
+        }
+      },
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"}
+    },
+    {
+      "type": "stat",
+      "title": "Nodes Ready",
+      "id": 4,
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "sum(kube_node_status_condition{condition=\"Ready\",status=\"true\"})", "legendFormat": "", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "green", "value": 1}]}
+        }
+      },
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"}
+    },
+    {
+      "type": "row",
+      "title": "Pod 상태 테이블",
+      "id": 5,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 4},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "table",
+      "title": "Namespace별 Pod 상태",
+      "id": 6,
+      "gridPos": {"h": 10, "w": 24, "x": 0, "y": 5},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum by (namespace, phase) (kube_pod_status_phase{namespace=~\"$namespace\"})",
+          "legendFormat": "{{namespace}} / {{phase}}",
+          "refId": "A",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "short"},
+        "overrides": [
+          {
+            "matcher": {"id": "byName", "options": "phase"},
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-text"
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {"type": "value", "options": {"Running": {"color": "green", "index": 0}}},
+                  {"type": "value", "options": {"Pending": {"color": "yellow", "index": 1}}},
+                  {"type": "value", "options": {"Failed": {"color": "red", "index": 2}}},
+                  {"type": "value", "options": {"Unknown": {"color": "orange", "index": 3}}}
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "sortBy": [{"displayName": "namespace", "desc": false}],
+        "cellHeight": "sm",
+        "footer": {"show": false}
+      },
+      "transformations": [
+        {"id": "filterFieldsByName", "options": {"include": {"names": ["namespace", "phase", "Value"]}}},
+        {"id": "organize", "options": {"renameByName": {"Value": "Pod 수"}}}
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Pod 재시작 및 리소스",
+      "id": 7,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 15},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "Pod 재시작 횟수 (최근 1h, 상위 10개)",
+      "id": 8,
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "topk(10, sum by (namespace, pod) (increase(kube_pod_container_status_restarts_total{namespace=~\"$namespace\"}[1h])))",
+          "legendFormat": "{{namespace}} / {{pod}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {"lineWidth": 2, "fillOpacity": 10},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 3}, {"color": "red", "value": 10}]}
+        }
+      },
+      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "table", "placement": "right", "calcs": ["lastNotNull"]}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Namespace별 CPU 사용량",
+      "id": 9,
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum by (namespace) (rate(container_cpu_usage_seconds_total{container!=\"\",namespace=~\"$namespace\"}[5m]))",
+          "legendFormat": "{{namespace}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores",
+          "custom": {"lineWidth": 2, "fillOpacity": 10}
+        }
+      },
+      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"]}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Namespace별 Memory 사용량",
+      "id": 10,
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum by (namespace) (container_memory_working_set_bytes{container!=\"\",namespace=~\"$namespace\"})",
+          "legendFormat": "{{namespace}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {"lineWidth": 2, "fillOpacity": 10}
+        }
+      },
+      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"]}}
+    },
+    {
+      "type": "row",
+      "title": "Deployment 상태",
+      "id": 11,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 32},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "Deployment Available vs Desired Replicas",
+      "id": 12,
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 33},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum by (namespace, deployment) (kube_deployment_status_replicas_available{namespace=~\"$namespace\"})",
+          "legendFormat": "{{namespace}}/{{deployment}} available",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (namespace, deployment) (kube_deployment_spec_replicas{namespace=~\"$namespace\"})",
+          "legendFormat": "{{namespace}}/{{deployment}} desired",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {"lineWidth": 2, "fillOpacity": 5}
+        },
+        "overrides": [
+          {
+            "matcher": {"id": "byFrameRefID", "options": "B"},
+            "properties": [{"id": "custom.lineStyle", "value": {"dash": [10, 10], "fill": "dash"}}]
+          }
+        ]
+      },
+      "options": {"tooltip": {"mode": "multi"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"]}}
+    },
+    {
+      "type": "table",
+      "title": "Deployment 상태 현황",
+      "id": 13,
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 41},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "kube_deployment_status_replicas_available{namespace=~\"$namespace\"}",
+          "legendFormat": "",
+          "refId": "A",
+          "instant": true,
+          "format": "table"
+        },
+        {
+          "expr": "kube_deployment_spec_replicas{namespace=~\"$namespace\"}",
+          "legendFormat": "",
+          "refId": "B",
+          "instant": true,
+          "format": "table"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {"unit": "short"},
+        "overrides": []
+      },
+      "options": {"cellHeight": "sm", "footer": {"show": false}},
+      "transformations": [
+        {"id": "filterFieldsByName", "options": {"include": {"names": ["namespace", "deployment", "Value #A", "Value #B"]}}},
+        {"id": "organize", "options": {"renameByName": {"Value #A": "Available", "Value #B": "Desired"}}}
+      ]
+    }
+  ]
+}

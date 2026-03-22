@@ -24,8 +24,8 @@ spec:
           # 자원 설정
           resources:
             requests:
-              memory: "1Gi"
-              cpu: "500m"
+              memory: "768Mi"
+              cpu: "300m"
             limits:
               memory: "2Gi"
               cpu: "1000m"

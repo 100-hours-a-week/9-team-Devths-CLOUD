@@ -1,0 +1,205 @@
+{
+  "title": "04. K8s Pod Logs",
+  "uid": "devths-k8s-logs",
+  "description": "K8s Pod 로그 탐색 (Loki — namespace/app/level 필터)",
+  "tags": ["devths", "logs", "loki"],
+  "timezone": "browser",
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "version": 1,
+  "id": null,
+  "time": {"from": "now-1h", "to": "now"},
+  "graphTooltip": 0,
+  "editable": true,
+  "annotations": {"list": []},
+  "links": [],
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "type": "query",
+        "label": "Namespace",
+        "datasource": {"type": "loki", "uid": "loki"},
+        "query": "label_values(namespace)",
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": ".+",
+        "multi": false,
+        "current": {}
+      },
+      {
+        "name": "app",
+        "type": "query",
+        "label": "App",
+        "datasource": {"type": "loki", "uid": "loki"},
+        "query": "label_values({namespace=~\"$namespace\"}, app)",
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": ".+",
+        "multi": false,
+        "current": {}
+      },
+      {
+        "name": "level",
+        "type": "custom",
+        "label": "Log Level",
+        "query": "ALL,DEBUG,INFO,WARN,WARNING,ERROR,CRITICAL",
+        "refresh": 0,
+        "includeAll": false,
+        "multi": false,
+        "current": {"value": "ALL", "text": "ALL"}
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "title": "로그 볼륨",
+      "id": 1,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "로그 볼륨 (레벨별)",
+      "id": 2,
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 1},
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "expr": "sum by (level) (rate({cluster=\"devths-nonprod\", namespace=~\"$namespace\", app=~\"$app\"}[5m]))",
+          "legendFormat": "{{level}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"lineWidth": 2, "fillOpacity": 10}
+        },
+        "overrides": [
+          {"matcher": {"id": "byName", "options": "ERROR"}, "properties": [{"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}]},
+          {"matcher": {"id": "byName", "options": "CRITICAL"}, "properties": [{"id": "color", "value": {"fixedColor": "dark-red", "mode": "fixed"}}]},
+          {"matcher": {"id": "byName", "options": "WARN"}, "properties": [{"id": "color", "value": {"fixedColor": "yellow", "mode": "fixed"}}]},
+          {"matcher": {"id": "byName", "options": "WARNING"}, "properties": [{"id": "color", "value": {"fixedColor": "yellow", "mode": "fixed"}}]},
+          {"matcher": {"id": "byName", "options": "INFO"}, "properties": [{"id": "color", "value": {"fixedColor": "blue", "mode": "fixed"}}]},
+          {"matcher": {"id": "byName", "options": "DEBUG"}, "properties": [{"id": "color", "value": {"fixedColor": "grey", "mode": "fixed"}}]}
+        ]
+      },
+      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull"]}}
+    },
+    {
+      "type": "timeseries",
+      "title": "에러 로그 발생률 (앱별)",
+      "id": 3,
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 1},
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "expr": "sum by (app) (rate({cluster=\"devths-nonprod\", namespace=~\"$namespace\", level=~\"ERROR|CRITICAL\"}[5m]))",
+          "legendFormat": "{{app}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"lineWidth": 2, "fillOpacity": 10},
+          "color": {"mode": "palette-classic"}
+        }
+      },
+      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]}}
+    },
+    {
+      "type": "row",
+      "title": "로그 탐색",
+      "id": 4,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 9},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "logs",
+      "title": "전체 로그 스트림",
+      "id": 5,
+      "gridPos": {"h": 15, "w": 24, "x": 0, "y": 10},
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "expr": "{cluster=\"devths-nonprod\", namespace=~\"$namespace\", app=~\"$app\"}",
+          "refId": "A",
+          "maxLines": 500
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      }
+    },
+    {
+      "type": "row",
+      "title": "에러 / 경고 집중 보기",
+      "id": 6,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 25},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "logs",
+      "title": "ERROR / CRITICAL 로그",
+      "id": 7,
+      "gridPos": {"h": 15, "w": 24, "x": 0, "y": 26},
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "expr": "{cluster=\"devths-nonprod\", namespace=~\"$namespace\", app=~\"$app\", level=~\"ERROR|CRITICAL\"}",
+          "refId": "A",
+          "maxLines": 300
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      }
+    },
+    {
+      "type": "logs",
+      "title": "WARN / WARNING 로그",
+      "id": 8,
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 41},
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "expr": "{cluster=\"devths-nonprod\", namespace=~\"$namespace\", app=~\"$app\", level=~\"WARN|WARNING\"}",
+          "refId": "A",
+          "maxLines": 200
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      }
+    }
+  ]
+}
