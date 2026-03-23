@@ -1,0 +1,595 @@
+{
+  "title": "05. AI Service",
+  "uid": "devths-ai-service",
+  "description": "AI 서비스 커스텀 메트릭: HTTP, LLM 생성, VectorDB, Celery, 외부 API, 보안",
+  "tags": ["devths", "ai", "fastapi"],
+  "timezone": "browser",
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "version": 1,
+  "id": null,
+  "time": {"from": "now-1h", "to": "now"},
+  "graphTooltip": 1,
+  "editable": true,
+  "annotations": {"list": []},
+  "links": [],
+  "templating": {
+    "list": [
+      {
+        "name": "path",
+        "type": "query",
+        "label": "API Path",
+        "datasource": {"type": "prometheus", "uid": "prometheus"},
+        "query": {"query": "label_values(http_requests_total{job=~\".*ai.*\"}, path)", "refId": "StandardVariableQuery"},
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": false,
+        "current": {}
+      },
+      {
+        "name": "model",
+        "type": "query",
+        "label": "LLM Model",
+        "datasource": {"type": "prometheus", "uid": "prometheus"},
+        "query": {"query": "label_values(ai_generation_duration_seconds_count, model)", "refId": "StandardVariableQuery"},
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": false,
+        "current": {}
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "title": "HTTP 요청 요약",
+      "id": 1,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "title": "RPS (요청/초)",
+      "id": 2,
+      "gridPos": {"h": 4, "w": 4, "x": 0, "y": 1},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "sum(rate(http_requests_total[1m]))", "legendFormat": "", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 2,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}
+        }
+      },
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"}
+    },
+    {
+      "type": "stat",
+      "title": "5xx 에러율",
+      "id": 3,
+      "gridPos": {"h": 4, "w": 4, "x": 4, "y": 1},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) / sum(rate(http_requests_total[5m])) * 100",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 2,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}, {"color": "red", "value": 5}]}
+        }
+      },
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"}
+    },
+    {
+      "type": "stat",
+      "title": "P95 응답시간",
+      "id": 4,
+      "gridPos": {"h": 4, "w": 4, "x": 8, "y": 1},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}, {"color": "red", "value": 3}]}
+        }
+      },
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"}
+    },
+    {
+      "type": "stat",
+      "title": "진행중 요청",
+      "id": 5,
+      "gridPos": {"h": 4, "w": 4, "x": 12, "y": 1},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "sum(http_requests_in_progress)", "legendFormat": "", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 20}, {"color": "red", "value": 50}]}
+        }
+      },
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"}
+    },
+    {
+      "type": "stat",
+      "title": "4xx 에러율",
+      "id": 6,
+      "gridPos": {"h": 4, "w": 4, "x": 16, "y": 1},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{status=~\"4..\"}[5m])) / sum(rate(http_requests_total[5m])) * 100",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 2,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 5}, {"color": "red", "value": 20}]}
+        }
+      },
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"}
+    },
+    {
+      "type": "stat",
+      "title": "프롬프트 인젝션 차단",
+      "id": 7,
+      "gridPos": {"h": 4, "w": 4, "x": 20, "y": 1},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "sum(increase(ai_prompt_injection_blocked_total[1h]))", "legendFormat": "", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}, {"color": "red", "value": 5}]}
+        }
+      },
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"}
+    },
+    {
+      "type": "timeseries",
+      "title": "HTTP 요청률 (상태코드별)",
+      "id": 8,
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 5},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum by (status) (rate(http_requests_total[1m]))",
+          "legendFormat": "{{status}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {"lineWidth": 2, "fillOpacity": 10}
+        },
+        "overrides": [
+          {"matcher": {"id": "byRegexp", "options": "^2..$"}, "properties": [{"id": "color", "value": {"fixedColor": "green", "mode": "fixed"}}]},
+          {"matcher": {"id": "byRegexp", "options": "^4..$"}, "properties": [{"id": "color", "value": {"fixedColor": "#ff9900", "mode": "fixed"}}]},
+          {"matcher": {"id": "byRegexp", "options": "^5..$"}, "properties": [{"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}]}
+        ]
+      },
+      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]}}
+    },
+    {
+      "type": "timeseries",
+      "title": "HTTP 응답 지연 (P50 / P95 / P99)",
+      "id": 9,
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 5},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "P50",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "P95",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(http_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "P99",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {"lineWidth": 2, "fillOpacity": 5}
+        }
+      },
+      "options": {"tooltip": {"mode": "multi"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]}}
+    },
+    {
+      "type": "timeseries",
+      "title": "엔드포인트별 요청률 (Top 10)",
+      "id": 10,
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 13},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "topk(10, sum by (path) (rate(http_requests_total[1m])))",
+          "legendFormat": "{{path}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {"lineWidth": 1, "fillOpacity": 5}
+        }
+      },
+      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]}}
+    },
+    {
+      "type": "timeseries",
+      "title": "엔드포인트별 P95 지연",
+      "id": 11,
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 13},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, path) (rate(http_request_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{path}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {"lineWidth": 1, "fillOpacity": 5}
+        }
+      },
+      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]}}
+    },
+    {
+      "type": "row",
+      "title": "LLM 생성 메트릭",
+      "id": 20,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 21},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "title": "TTFT P95 (Time to First Token)",
+      "id": 21,
+      "gridPos": {"h": 4, "w": 6, "x": 0, "y": 22},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(ai_time_to_first_token_seconds_bucket[5m])))",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 2}, {"color": "red", "value": 5}]}
+        }
+      },
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"}
+    },
+    {
+      "type": "stat",
+      "title": "생성 P95 (Generation Duration)",
+      "id": 22,
+      "gridPos": {"h": 4, "w": 6, "x": 6, "y": 22},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(ai_generation_duration_seconds_bucket[5m])))",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 2,
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 10}, {"color": "red", "value": 30}]}
+        }
+      },
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"}
+    },
+    {
+      "type": "stat",
+      "title": "LLM 호출 수 (1h)",
+      "id": 23,
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 22},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "sum(increase(ai_generation_duration_seconds_count[1h]))", "legendFormat": "", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]}
+        }
+      },
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value"}
+    },
+    {
+      "type": "stat",
+      "title": "외부 API 에러 (1h)",
+      "id": 24,
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 22},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [{"expr": "sum(increase(external_api_errors_total[1h]))", "legendFormat": "", "refId": "A"}],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 1}, {"color": "red", "value": 10}]}
+        }
+      },
+      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background"}
+    },
+    {
+      "type": "timeseries",
+      "title": "TTFT 분포 (모델별 P50/P95/P99)",
+      "id": 25,
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 26},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (le, model) (rate(ai_time_to_first_token_seconds_bucket[5m])))",
+          "legendFormat": "P50 {{model}}",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, model) (rate(ai_time_to_first_token_seconds_bucket[5m])))",
+          "legendFormat": "P95 {{model}}",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by (le, model) (rate(ai_time_to_first_token_seconds_bucket[5m])))",
+          "legendFormat": "P99 {{model}}",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {"lineWidth": 2, "fillOpacity": 5}
+        }
+      },
+      "options": {"tooltip": {"mode": "multi"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]}}
+    },
+    {
+      "type": "timeseries",
+      "title": "LLM 전체 생성 시간 (모델별 P50/P95/P99)",
+      "id": 26,
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 26},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (le, model) (rate(ai_generation_duration_seconds_bucket[5m])))",
+          "legendFormat": "P50 {{model}}",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, model) (rate(ai_generation_duration_seconds_bucket[5m])))",
+          "legendFormat": "P95 {{model}}",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by (le, model) (rate(ai_generation_duration_seconds_bucket[5m])))",
+          "legendFormat": "P99 {{model}}",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {"lineWidth": 2, "fillOpacity": 5}
+        }
+      },
+      "options": {"tooltip": {"mode": "multi"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]}}
+    },
+    {
+      "type": "timeseries",
+      "title": "외부 API 에러 (provider별)",
+      "id": 27,
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 34},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum by (provider, error_type) (rate(external_api_errors_total[5m]))",
+          "legendFormat": "{{provider}} — {{error_type}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"lineWidth": 2, "fillOpacity": 10},
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "red", "value": 0.01}]}
+        }
+      },
+      "options": {"tooltip": {"mode": "multi"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "sum"]}}
+    },
+    {
+      "type": "timeseries",
+      "title": "프롬프트 인젝션 차단 (엔드포인트별)",
+      "id": 28,
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 34},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum by (endpoint) (rate(ai_prompt_injection_blocked_total[5m]))",
+          "legendFormat": "{{endpoint}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"lineWidth": 2, "fillOpacity": 15},
+          "color": {"fixedColor": "red", "mode": "fixed"}
+        }
+      },
+      "options": {"tooltip": {"mode": "multi"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "sum"]}}
+    },
+    {
+      "type": "row",
+      "title": "VectorDB 메트릭",
+      "id": 40,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 40},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "VectorDB Insert 지연 (컬렉션별 P95)",
+      "id": 41,
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 41},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, collection_name) (rate(vector_db_insert_duration_seconds_bucket[5m])))",
+          "legendFormat": "insert P95 — {{collection_name}}",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.50, sum by (le, collection_name) (rate(vector_db_insert_duration_seconds_bucket[5m])))",
+          "legendFormat": "insert P50 — {{collection_name}}",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {"lineWidth": 2, "fillOpacity": 5}
+        }
+      },
+      "options": {"tooltip": {"mode": "multi"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]}}
+    },
+    {
+      "type": "timeseries",
+      "title": "VectorDB Query 지연 (컬렉션별 P95)",
+      "id": 42,
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 41},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, collection_name) (rate(vector_db_query_duration_seconds_bucket[5m])))",
+          "legendFormat": "query P95 — {{collection_name}}",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.50, sum by (le, collection_name) (rate(vector_db_query_duration_seconds_bucket[5m])))",
+          "legendFormat": "query P50 — {{collection_name}}",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {"lineWidth": 2, "fillOpacity": 5}
+        }
+      },
+      "options": {"tooltip": {"mode": "multi"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]}}
+    },
+    {
+      "type": "row",
+      "title": "Celery 작업 메트릭",
+      "id": 50,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 49},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "Celery 활성 작업 수 (태스크별)",
+      "id": 51,
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 50},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "celery_tasks_active_gauge",
+          "legendFormat": "{{task_name}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {"lineWidth": 2, "fillOpacity": 15}
+        }
+      },
+      "options": {"tooltip": {"mode": "multi"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Celery 태스크 대기 시간 P95",
+      "id": 52,
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 50},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, task_name) (rate(celery_task_wait_time_seconds_bucket[5m])))",
+          "legendFormat": "대기 P95 — {{task_name}}",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.50, sum by (le, task_name) (rate(celery_task_wait_time_seconds_bucket[5m])))",
+          "legendFormat": "대기 P50 — {{task_name}}",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {"lineWidth": 2, "fillOpacity": 5}
+        }
+      },
+      "options": {"tooltip": {"mode": "multi"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "max"]}}
+    },
+    {
+      "type": "timeseries",
+      "title": "백그라운드 작업 처리량 (job_type / status별)",
+      "id": 53,
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 58},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "targets": [
+        {
+          "expr": "sum by (job_type, status) (rate(ai_background_job_count_total[5m]))",
+          "legendFormat": "{{job_type}} — {{status}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cps",
+          "custom": {"lineWidth": 2, "fillOpacity": 10}
+        },
+        "overrides": [
+          {"matcher": {"id": "byRegexp", "options": ".*success.*"}, "properties": [{"id": "color", "value": {"fixedColor": "green", "mode": "fixed"}}]},
+          {"matcher": {"id": "byRegexp", "options": ".*fail.*"}, "properties": [{"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}]}
+        ]
+      },
+      "options": {"tooltip": {"mode": "multi", "sort": "desc"}, "legend": {"displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "sum"]}}
+    }
+  ]
+}

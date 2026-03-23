@@ -41,3 +41,5 @@ spec:
               value: "none"
             - name: OTEL_LOGS_EXPORTER
               value: "none"
+            - name: ANONYMIZED_TELEMETRY
+              value: "false"

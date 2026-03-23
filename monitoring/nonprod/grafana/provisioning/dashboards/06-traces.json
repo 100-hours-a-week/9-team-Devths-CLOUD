@@ -1,0 +1,311 @@
+{
+  "title": "06. Distributed Traces",
+  "uid": "devths-traces",
+  "description": "분산 트레이스: 요청 흐름 (FE→BE→AI→DB), 서비스별 레이턴시, 에러 트레이스 (Tempo)",
+  "tags": ["devths", "traces", "tempo"],
+  "timezone": "browser",
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "version": 1,
+  "id": null,
+  "time": {"from": "now-1h", "to": "now"},
+  "graphTooltip": 1,
+  "editable": true,
+  "annotations": {"list": []},
+  "links": [
+    {
+      "title": "K8s Logs",
+      "type": "dashboards",
+      "url": "/d/devths-k8s-logs",
+      "tags": ["devths", "logs"]
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "type": "query",
+        "label": "Service",
+        "datasource": {"type": "tempo", "uid": "tempo"},
+        "query": {
+          "query": "{} | select(resource.service.name)",
+          "queryType": "traceql"
+        },
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": false,
+        "current": {}
+      },
+      {
+        "name": "min_duration",
+        "type": "custom",
+        "label": "최소 지연 (느린 트레이스)",
+        "query": "500ms,1s,2s,5s,10s",
+        "refresh": 0,
+        "includeAll": false,
+        "multi": false,
+        "current": {"value": "1s", "text": "1s"}
+      },
+      {
+        "name": "environment",
+        "type": "custom",
+        "label": "Environment",
+        "query": "dev,stg",
+        "refresh": 0,
+        "includeAll": false,
+        "multi": false,
+        "current": {"value": "dev", "text": "dev"}
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "title": "트레이스 탐색",
+      "id": 1,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "traces",
+      "title": "최근 트레이스 목록 (전체)",
+      "id": 2,
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 1},
+      "datasource": {"type": "tempo", "uid": "tempo"},
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "tempo", "uid": "tempo"},
+          "queryType": "traceql",
+          "query": "{resource.deployment.environment=\"$environment\"}",
+          "limit": 20,
+          "tableType": "traces"
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none"
+      }
+    },
+    {
+      "type": "traces",
+      "title": "에러 트레이스 (status=error)",
+      "id": 3,
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 13},
+      "datasource": {"type": "tempo", "uid": "tempo"},
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "tempo", "uid": "tempo"},
+          "queryType": "traceql",
+          "query": "{status=error && resource.deployment.environment=\"$environment\"}",
+          "limit": 20,
+          "tableType": "traces"
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none"
+      }
+    },
+    {
+      "type": "traces",
+      "title": "느린 트레이스 (duration > $min_duration)",
+      "id": 4,
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 25},
+      "datasource": {"type": "tempo", "uid": "tempo"},
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "tempo", "uid": "tempo"},
+          "queryType": "traceql",
+          "query": "{resource.deployment.environment=\"$environment\" && duration > $min_duration}",
+          "limit": 20,
+          "tableType": "traces"
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none"
+      }
+    },
+    {
+      "type": "row",
+      "title": "서비스별 트레이스",
+      "id": 10,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 37},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "traces",
+      "title": "BE (Spring Boot) 트레이스",
+      "id": 11,
+      "gridPos": {"h": 12, "w": 12, "x": 0, "y": 38},
+      "datasource": {"type": "tempo", "uid": "tempo"},
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "tempo", "uid": "tempo"},
+          "queryType": "traceql",
+          "query": "{resource.service.name=\"devths-be\" && resource.deployment.environment=\"$environment\"}",
+          "limit": 15,
+          "tableType": "traces"
+        }
+      ],
+      "options": {"dedupStrategy": "none"}
+    },
+    {
+      "type": "traces",
+      "title": "AI 서비스 트레이스",
+      "id": 12,
+      "gridPos": {"h": 12, "w": 12, "x": 12, "y": 38},
+      "datasource": {"type": "tempo", "uid": "tempo"},
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "tempo", "uid": "tempo"},
+          "queryType": "traceql",
+          "query": "{resource.service.name=~\"devths-ai.*\" && resource.deployment.environment=\"$environment\"}",
+          "limit": 15,
+          "tableType": "traces"
+        }
+      ],
+      "options": {"dedupStrategy": "none"}
+    },
+    {
+      "type": "traces",
+      "title": "Celery Worker 트레이스",
+      "id": 13,
+      "gridPos": {"h": 12, "w": 12, "x": 0, "y": 50},
+      "datasource": {"type": "tempo", "uid": "tempo"},
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "tempo", "uid": "tempo"},
+          "queryType": "traceql",
+          "query": "{resource.service.component=\"celery-worker\" && resource.deployment.environment=\"$environment\"}",
+          "limit": 15,
+          "tableType": "traces"
+        }
+      ],
+      "options": {"dedupStrategy": "none"}
+    },
+    {
+      "type": "traces",
+      "title": "Celery Beat 트레이스",
+      "id": 14,
+      "gridPos": {"h": 12, "w": 12, "x": 12, "y": 50},
+      "datasource": {"type": "tempo", "uid": "tempo"},
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "tempo", "uid": "tempo"},
+          "queryType": "traceql",
+          "query": "{resource.service.component=\"celery-beat\" && resource.deployment.environment=\"$environment\"}",
+          "limit": 15,
+          "tableType": "traces"
+        }
+      ],
+      "options": {"dedupStrategy": "none"}
+    },
+    {
+      "type": "row",
+      "title": "요청 흐름: BE → AI (연동 트레이스)",
+      "id": 20,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 62},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "traces",
+      "title": "BE→AI 연동 트레이스 (httpx 외부 호출 포함)",
+      "id": 21,
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 63},
+      "datasource": {"type": "tempo", "uid": "tempo"},
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "tempo", "uid": "tempo"},
+          "queryType": "traceql",
+          "query": "{resource.deployment.environment=\"$environment\" && span:http.target=~\"/ai/.*\"}",
+          "limit": 20,
+          "tableType": "traces"
+        }
+      ],
+      "options": {"dedupStrategy": "none"}
+    },
+    {
+      "type": "traces",
+      "title": "DB 트랜잭션이 포함된 트레이스 (Spring JDBC/JPA span)",
+      "id": 22,
+      "gridPos": {"h": 12, "w": 24, "x": 0, "y": 75},
+      "datasource": {"type": "tempo", "uid": "tempo"},
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "tempo", "uid": "tempo"},
+          "queryType": "traceql",
+          "query": "{resource.deployment.environment=\"$environment\" && span:db.system=\"postgresql\"}",
+          "limit": 20,
+          "tableType": "traces"
+        }
+      ],
+      "options": {"dedupStrategy": "none"}
+    },
+    {
+      "type": "row",
+      "title": "트레이스 로그 연동",
+      "id": 30,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 87},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "logs",
+      "title": "BE 서비스 로그 (traceId 있는 로그)",
+      "id": 31,
+      "gridPos": {"h": 10, "w": 12, "x": 0, "y": 88},
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "loki", "uid": "loki"},
+          "expr": "{namespace=\"devths\", app=\"backend\"} |= \"traceId\"",
+          "queryType": "range"
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false,
+        "enableLogDetails": true
+      }
+    },
+    {
+      "type": "logs",
+      "title": "AI 서비스 로그 (ERROR 레벨)",
+      "id": 32,
+      "gridPos": {"h": 10, "w": 12, "x": 12, "y": 88},
+      "datasource": {"type": "loki", "uid": "loki"},
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "loki", "uid": "loki"},
+          "expr": "{namespace=\"devths\", app=\"ai\"} |~ \"ERROR|Exception|Traceback\"",
+          "queryType": "range"
+        }
+      ],
+      "options": {
+        "dedupStrategy": "none",
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true,
+        "enableLogDetails": true
+      }
+    }
+  ]
+}
